@@ -1,0 +1,15 @@
+workflow:
+    name: "POLLING-TEST-PROCESS-WF"
+    author: "Qore Technologies s.r.o."
+    version: "1.0"
+    desc: "XXX"
+    workflow-modules: ["BuildingBlocksCommon", "SftpWorkflowModule",]
+    keylist: ["file_id", "file_name", "parent_jiid",]
+    steps:
+        - name: "PollingTestProcess_MoveFileToProcessing:1.0"
+          classname: "PollingTestProcess_MoveFileToProcessing"
+        - name: "PollingTestProcess_DownloadToLocal:1.0"
+          classname: "PollingTestProcess_DownloadToLocal"
+        - name: "PollingTestProcess_UploadFile:1.0"
+          classname: "PollingTestProcess_UploadFile"
+
