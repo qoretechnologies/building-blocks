@@ -1,0 +1,25 @@
+stages:
+  - test
+
+sftp-module-tests:
+  stage: test
+  image: $CI_REGISTRY/infrastructure/qorus-test-base/qorus-test-base:develop
+  tags:
+    - docker-exec
+  services:
+    - name: atmoz/sftp
+      command: ["foo:pass:::sftp_root"]
+      alias: local-sftp
+    - name: postgres:11
+  variables:
+    POSTGRES_PASSWORD: omq
+    OMQ_DB_NAME: postgres
+    OMQ_DB_TYPE: pgsql
+    OMQ_DB_HOST: postgres
+    OMQ_DB_USER: postgres
+    OMQ_DB_PASS: omq
+  script:
+    - tests/docker-test-entrypoint.sh
+    - qore tests/SftpJobModule/SftpJobModule.qtest
+    #- qore tests/SftpWorkflowModule/SftpWorkflowModule.qtest
+
