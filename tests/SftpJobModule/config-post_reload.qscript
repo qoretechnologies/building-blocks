@@ -11,7 +11,7 @@ hash cfg = {
         "sftp_connection_name": "sftp-local-test",
         "rejection_wf_name": "POLLING-TEST-REJECTION-WF",
         "wf_name": "POLLING-TEST-PROCESS-WF",
-        "wf_unique_key": "{\"filename\": \"$filename\",}",
+        "wf_unique_key": "{\"filename\": \"$local:filename\",}",
         "rejection_wf_unique_key": "{}",
         "regex_mask": "test1_.*",
     },
@@ -22,20 +22,16 @@ hash cfg = {
     },
     "workflows/POLLING-TEST-PROCESS-WF/stepinfo/PollingTestProcess_MoveFileToProcessing": {
         "input_data": '
-            orig_file_path:
-                type: static
-                field: file_path
-            new_file_path:
-                type: config
-                field: new_file_path
+            orig_file_path: $static:file_path
+            new_file_path: $config:new_file_path
         ',
-        "new_file_path": "processing/$orig_file_name.$wfiid",
+        "new_file_path": "processing/$local:orig_file_name.$local:wfiid",
     },
     "workflows/POLLING-TEST-PROCESS-WF/stepinfo/PollingTestProcess_DownloadToLocal": {
-        "local_file_path": "/tmp/$sftp_file_name",
+        "local_file_path": "/tmp/$local:sftp_file_name",
     },
     "workflows/POLLING-TEST-PROCESS-WF/stepinfo/PollingTestProcess_UploadFile": {
-        "sftp_file_path": "upload/$local_file_name",
+        "sftp_file_path": "upload/$local:local_file_name",
     },
 
     # configure the rejection workflow
@@ -44,14 +40,10 @@ hash cfg = {
     },
     "workflows/POLLING-TEST-REJECTION-WF/stepinfo/PollingTestRejection_MoveFileToRejected": {
         "input_data": '
-            orig_file_path:
-                type: static
-                field: file_path
-            new_file_path:
-                type: config
-                field: new_file_path
+            orig_file_path: $static:file_path
+            new_file_path: $config:new_file_path
         ',
-        "new_file_path": "rejected/$filename.$wfiid",
+        "new_file_path": "rejected/$local:filename.$local:wfiid",
     },
 
     # configure the second job (which does move files to processing dir)
@@ -59,7 +51,7 @@ hash cfg = {
         "sftp_connection_name": "sftp-local-test",
         "rejection_wf_name": "POLLING-TEST-REJECTION-WF",
         "wf_name": "POLLING-TEST-PROCESS2-WF",
-        "wf_unique_key": "{\"filename\": \"$filename\",}",
+        "wf_unique_key": "{\"filename\": \"$local:filename\",}",
         "rejection_wf_unique_key": "{}",
         "processing_path": "processing",
         "regex_mask": "test2_.*",
@@ -70,18 +62,14 @@ hash cfg = {
         "sftp_connection_name": "sftp-local-test",
     },
     "workflows/POLLING-TEST-PROCESS2-WF/stepinfo/PollingTestProcess2_DownloadToLocal": {
-        "local_file_path": "/tmp/$sftp_file_name",
+        "local_file_path": "/tmp/$local:sftp_file_name",
         "input_data": '
-            sftp_file_path:
-                type: static
-                field: file_path
-            local_file_path:
-                type: config
-                field: local_file_path
+            sftp_file_path: $static:file_path
+            local_file_path: $config:local_file_path
         ',
     },
     "workflows/POLLING-TEST-PROCESS2-WF/stepinfo/PollingTestProcess2_UploadFile": {
-        "sftp_file_path": "upload/$local_file_name.$wfiid",
+        "sftp_file_path": "upload/$local:local_file_name.$local:wfiid",
     },
 };
 

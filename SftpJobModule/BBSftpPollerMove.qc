@@ -35,8 +35,7 @@ public namespace SftpModule {
 
         static hash confEnforced() {
             return {
-                # TODO
-                #"sleep": \UserApi::omqsleep(),
+                "sleep": \UserApi::sleep(),
             };
         }
 
@@ -57,13 +56,17 @@ public namespace SftpModule {
             - $filepath - path to the polled file
             - $jobiid - instance id of the polling job
         */
-        hash<string, string> replaceVariables(hash config, hash file) {
-            #TODO: stupid simple implementation, needs to be improved (e.g. escaping of dollar sign, etc.)
+        hash replaceVariables(hash config, hash file) {
+            hash<auto> local_context = {
+                "filename": file.name,
+                "filepath": file.filepath,
+                "jobiid": string(self.conf.job_info.job_instanceid),
+            };
+
             foreach string k in (keys config) {
-                config{k} = replace(config{k}, "$filename", file.name);
-                config{k} = replace(config{k}, "$filepath", file.filepath);
-                config{k} = replace(config{k}, "$jobiid", string(self.conf.job_info.job_instanceid));
+                config{k} = UserApi::expandTemplatedString(config{k}, local_context);
             }
+
             return config;
         }
 

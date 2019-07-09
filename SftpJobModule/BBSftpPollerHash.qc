@@ -15,14 +15,13 @@ public namespace SftpModule {
         size, etc. to create a unique identifier for the file.
 
         If a file has never been processed yet (no active WF order associated to the file's identifier), a new order is
-        created. Otherwise the file is ignored by the poller (there is already a WF order that will process it sooner order
+        created. Otherwise the file is ignored by the poller (there is already a WF order that will process it sooner or
         later). It may happen that multiple orders are created for the same file name (e.g. if the file was
         changed/replaced in the meantime). The workflow therefore needs to check that the identifier is still valid for
         the file. If it is, the WF order can grab and process the file, otherwise it needs to leave it be and finish
         (either as completed or an error, depending on the use case), because there is (or will be) another WF order
         associated to the file.
 
-        # TODO: Does it make sense though? There should never appear a different/new file with the same unique ID
         A rejection WF order still makes sense here and may be created - e.g. when a file is "grabbed" by a WF order
         (i.e. dd.file_name is set) but the file is still on the SFTP for some weird reason, or if the same ID is
         assigned to different files (this shouldn't happen though).
@@ -86,18 +85,26 @@ public namespace SftpModule {
             - $filepath - path to the polled file
             - $jobiid - instance id of the polling job
         */
-        hash<string, string> replaceVariables(hash config, hash file) {
-            #TODO: stupid simple implementation, needs to be improved (e.g. escaping of dollar sign, etc.)
-            foreach string k in (keys config) {
-                config{k} = replace(config{k}, "$filename", file.name);
-                config{k} = replace(config{k}, "$orig_filename", regex_subst(file.name, "^(.*)\\..*$", "$1"));
-                if (self.conf.processing_path) {
-                    config{k} = replace(config{k}, "$filepath", join_paths(self.conf.processing_path, file.filepath));
-                } else {
-                    config{k} = replace(config{k}, "$filepath", file.filepath);
-                }
-                config{k} = replace(config{k}, "$jobiid", string(self.conf.job_info.job_instanceid));
+        hash replaceVariables(hash config, hash file) {
+
+            string filepath;
+            if (self.conf.processing_path) {
+                filepath = join_paths(self.conf.processing_path, file.filepath);
+            } else {
+                filepath = file.filepath;
             }
+
+            hash<auto> local_context = {
+                "filename": file.name,
+                "orig_filename": regex_subst(file.name, "^(.*)\\..*$", "$1"),
+                "filepath": filepath,
+                "jobiid": string(self.conf.job_info.job_instanceid),
+            };
+
+            foreach string k in (keys config) {
+                config{k} = UserApi::expandTemplatedString(config{k}, local_context);
+            }
+
             return config;
         }
 
@@ -110,7 +117,7 @@ public namespace SftpModule {
             return {
                 "orderkeys": self.replaceVariables(self.conf.order_keys, fh),
                 "staticdata": self.replaceVariables(self.conf.static_data, fh),
-                "workflow_unique_key": {"file_id": self.getFileUniqueID(fh)},   # TODO: What if there already is a "file_id" order key from config?
+                "workflow_unique_key": {"file_id": self.getFileUniqueID(fh)},
             };
         }
 
@@ -128,7 +135,7 @@ public namespace SftpModule {
             softint wfiid;
             hash<auto> wf_info;
             try {
-                wf_info = BuildingBlocksCommon::splitWfNameVersion(self.conf.wf_name);
+                wf_info = SftpJobModule::splitWfNameVersion(self.conf.wf_name);
                 wfiid = UserApi::createOrder(wf_info.name, wf_info.version, create_order_params, status);
                 logInfo("created order %s (wfiid %d) with status %s", self.conf.wf_name, wfiid, status);
             } catch (hash ex) {
@@ -156,7 +163,7 @@ public namespace SftpModule {
                         "workflow_unique_key": self.replaceVariables(self.conf.rejection_wf_unique_key, fh)
                     };
                     create_order_params.static_data += {"error": "duplicate file -> rejected"};
-                    hash<auto> rej_wf_info = BuildingBlocksCommon::splitWfNameVersion(self.conf.rejection_wf_name);
+                    hash<auto> rej_wf_info = SftpJobModule::splitWfNameVersion(self.conf.rejection_wf_name);
                     wfiid = UserApi::createOrder(rej_wf_info.name, rej_wf_info.version, create_order_params, status);
                     logInfo("created rejection order %s (wfiid %d) with status %s", self.conf.wf_name, wfiid, status);
                 } else {

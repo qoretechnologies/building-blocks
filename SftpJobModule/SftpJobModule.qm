@@ -2,9 +2,6 @@
 
 %requires qore >= 0.9
 
-# TODO shall be part of qorus
-#%requires BuildingBlocksCommon             # TODO uncomment after resolving issue #3120
-
 %new-style
 %require-types
 %strict-args
@@ -17,12 +14,7 @@ module SftpJobModule {
     url = "http://www.qoretechnologies.com";
 }
 
-public namespace SftpModule {
-
-}
-
-# TODO: splitWfNameVersion() should be a part of BuildingBlocksCommon module once issue #3120 is fixed so this all should be moved there and the module should be required in this module
-public namespace BuildingBlocksCommon {
+public namespace SftpJobModule {
     #! Split workflow name and version from one string specifying both
     /** @param wf_name_ver string in a format wf_name:wf_version where the part after colon (incl. the colon) is not
                            mandatory
