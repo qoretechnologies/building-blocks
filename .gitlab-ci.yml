@@ -7,7 +7,7 @@ sftp-module-tests:
   tags:
     - docker-exec
   services:
-    - name: atmoz/sftp
+    - name: atmoz/sftp:alpine
       command: ["foo:pass:::sftp_root"]
       alias: local-sftp
     - name: postgres:11
@@ -20,6 +20,4 @@ sftp-module-tests:
     OMQ_DB_PASS: omq
   script:
     - tests/docker-test-entrypoint.sh
-    - qore tests/SftpJobModule/SftpJobModule.qtest
-    #- qore tests/SftpWorkflowModule/SftpWorkflowModule.qtest
 

@@ -17,9 +17,14 @@ const DIR_UPLOAD = "upload";
 const FILE_DATA = "Hello world!";
 
 class MainTest inherits QorusJobTest {
-
     private {
         SFTPClient sftp;
+
+        # list of SFTP directories to create
+        const Directories = (
+            "upload",
+            "processing",
+        );
     }
 
     constructor() : QorusJobTest ("polling-test-job", "1.0", \ARGV) {
@@ -30,6 +35,9 @@ class MainTest inherits QorusJobTest {
 
     setUp() {
         sftp = get_user_connection("sftp-local-test");
+        # create directories if not already present
+        *hash<string, bool> dirs = map {$1: True}, sftp.list().directories;
+        map sftp.mkdir($1), Directories, !dirs{$1};
     }
 
     #! Create a file with given content and name on SFTP and return remote path to it
@@ -53,40 +61,60 @@ class MainTest inherits QorusJobTest {
 
     test_1() {
         string wf_name = "POLLING-TEST-PROCESS-WF";
+        # start wf and stop on exit
+        qrest.put("workflows/" + wf_name + "/setAutostart?autostart=1");
+        on_exit {
+            qrest.put("workflows/" + wf_name + "/setAutostart?autostart=0");
+        }
         string wf_ver = "1.0";
         string job_name = "polling-test-job";
-        hash order_data = test_file("test1_%s.txt", FILE_DATA, job_name, wf_name, wf_ver);
+        hash<auto> order_data = test_file("test1_%s.txt", FILE_DATA, job_name, wf_name, wf_ver);
         assert_file_on_sftp(order_data, DIR_UPLOAD);
     }
 
     test_2() {
         string wf_name = "POLLING-TEST-PROCESS2-WF";
+        # start wf and stop on exit
+        qrest.put("workflows/" + wf_name + "/setAutostart?autostart=1");
+        on_exit {
+            qrest.put("workflows/" + wf_name + "/setAutostart?autostart=0");
+        }
         string wf_ver = "1.0";
         string job_name = "polling-test-job2";
-        hash order_data = test_file("test2_%s.txt", FILE_DATA, job_name, wf_name, wf_ver);
+        hash<auto> order_data = test_file("test2_%s.txt", FILE_DATA, job_name, wf_name, wf_ver);
         assert_file_on_sftp(order_data, DIR_UPLOAD);
     }
 
-    hash test_file(string file_mask, any file_data, string job_name, string wf_name, string wf_ver) {
+    hash<auto> test_file(string file_mask, any file_data, string job_name, string wf_name, string wf_ver) {
         string file_name = sprintf(file_mask, format_date("YYYYMMDDHHmmSS", now()));
-        printf("FILE: %y\n", file_name);
+        if (m_options.verbose > 2) {
+            printf("FILE: %y\n", file_name);
+        }
 
         string rpath = create_file_on_sftp(file_name, file_data);
         file_name = (rpath =~ s/.*\///);
 
-        *hash ret = qrest.put("jobs/" + job_name + "?action=run");
-        printf("job ran: %y\n", ret);
+        *hash<auto> ret = qrest.put("jobs/" + job_name + "?action=run");
+        if (m_options.verbose > 2) {
+            printf("job ran: %y\n", ret);
+        }
 
-        any order = exec(new FindOrderByKey(wf_name, wf_ver, "file_name", file_name));
-        printf("order found: %N\n", order);
+        auto order = exec(new FindOrderByKey(wf_name, wf_ver, "file_name", file_name));
+        if (m_options.verbose > 2) {
+            printf("order found: %N\n", order);
+        }
 
         # wait for the workflow order to complete
         softint wfiid = order.getInstanceId();
-        printf("WFIID: %y\n", wfiid);
+        if (m_options.verbose > 2) {
+            printf("WFIID: %y\n", wfiid);
+        }
         exec(new WaitForWfiid(wfiid));
 
-        *hash order_data = qrest.get(sprintf("orders/%s", wfiid));
-        printf("order data: %y\n", order_data);
+        *hash<auto> order_data = qrest.get(sprintf("orders/%s", wfiid));
+        if (m_options.verbose > 2) {
+            printf("order data: %y\n", order_data);
+        }
 
         assertTrue(exists order_data);
         return order_data;

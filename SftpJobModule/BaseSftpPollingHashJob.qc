@@ -41,9 +41,9 @@ public namespace SftpModule {
                 "static_data": <ConfigItemInfo>{
                     "type": "hash",
                     "default_value": {
-                        "file_name": "$filename",
-                        "file_path": "$filepath",
-                        "parent_jiid": "$jobiid"
+                        "file_name": "$local:filename",
+                        "file_path": "$local:filepath",
+                        "parent_jiid": "$local:jobiid"
                     },
                     "description": "Static data for the workflow order that's created for a polled file",
                     "strictly_local": True,
@@ -51,8 +51,8 @@ public namespace SftpModule {
                 "order_keys": <ConfigItemInfo>{
                     "type": "hash",
                     "default_value": {
-                        "parent_jiid": "$jobiid",
-                        "file_name": "$filename"
+                        "parent_jiid": "$local:jobiid",
+                        "file_name": "$local:filename"
                     },
                     "description": "Order keys for the workflow order that's created for a polled file",
                     "strictly_local": True,
