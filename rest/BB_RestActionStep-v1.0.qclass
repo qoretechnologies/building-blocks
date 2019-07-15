@@ -278,6 +278,7 @@ class BB_RestActionStep inherits QorusNormalStep {
                 "description": "set to true to leave feedback to the parent workflow order",
             },
             "rest-headers": <ConfigItemInfo>{
+                "default_value": {},
                 "type": "hash",
                 "description": "additional headers to send with each REST request",
             },
