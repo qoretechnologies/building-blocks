@@ -1,0 +1,287 @@
+# name: BB_RestActionStep
+# version: 1.0
+# desc: generic step for making a transaction safe REST request
+# author: Qore Technologies, s.r.o.
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+%requires RestClient
+%requires Swagger
+
+#! this step creates an object in a remote REST server
+/** This step is transaction safe; in case of an error, the validation logic will query the server
+    using a unique key provided in the request to determine if the object was actually created in the
+    original request or not
+
+    The validation logic assumes that a <tt>404 Not Found</tt> response is provided if the unique request ID does not
+    exist; override the validation() method if different logic is required.
+
+    The following configuration items are supported; note that subclasses must provide default values
+    for required config items (in bold):
+    - \b \c rest-connection-name: (required) the name of the REST connection
+    - \b \c rest-api-mapper-name: (required) the name of the mapper for the REST call
+    - \b \c rest-object-uri: (required) the URI path for creating and querying the object in the REST server
+    - \b \c rest-supports-validation: (required) set to True if the request requires and supports validation,
+      False if not; if True then \c \b rest-id-location, rest-get-id-key, and rest-request-key-template must be set
+    - \b \c rest-id-location: (optional) location in the response for the unique ID in the POST response
+    - \b \c rest-get-id-key: (optional) the query key name for the recovery GET request
+    - \b \c rest-request-key-template: (optional) the template for the unique request key, substitutions as follows:
+      - \c ${wfiid} = workflow instance ID
+      - \c ${stepid} = step ID
+      - \c ${ind} = step index ID
+      .
+      Default value: \c "${wfiid}-${stepid}-${ind}"
+    - \b \c object-name: (required) the name of the object for logging purposes
+    - \c rest-swaggger-schema-resource: (optional) the name of the service resource (name:resource) for the Swagger
+      schema for the REST connection (default empty = no swaggger schema service resource for REST client)
+    - \c rest-sensitive-alias-input: (optional) a comma-separated list of colon-separated strings giving <input
+      key>:<sensitive alias> values for the mapper input (default empty = no sensitive data input for mapper)
+    - \c object-order-key: (optional) the name of the order key to set the unique ID from (default empty = do not set an
+      order key)
+    - \c object-dynamic-key: (optional) the name of the dynamic data key to set the unique ID in (default empty = do not
+      set a dymamic key)
+    - \c leave-parent-feedback: (required) set to true to leave feedback to the parent workflow order (default false)
+
+    @note The swagger schema can be set in the REST connection itself; \c rest-swaggger-schema-resource is only for
+    convenience in case the same Swagger schema is also used by a server-side service
+*/
+class BB_RestActionStep inherits QorusNormalStep {
+    #! the primary step logic: create the object in the remote REST server
+    primary() {
+        # get the connection to the REST API
+        RestClient rc = getConnection();
+        # get mapper name
+        string mapper_name = getConfigItemValue("rest-api-mapper-name");
+        # get mapper to convert from order data to the REST call
+        Mapper mapper = getMapper(mapper_name);
+
+        # setup sensitive input if required
+        hash<auto> sensitive_input;
+        {
+            *string aliases = getConfigItemValue("rest-sensitive-alias-input");
+            if (aliases) {
+                foreach string str in (aliases.split(",")) {
+                    (*string key, *string alias) = (str =~ x/([^:]+):(.*)$/);
+                    if (!key.val() || !alias.val()) {
+                        throw "ALIAS-CONFIG-ERROR", sprintf("config item \"rest-sensitive-alias-input\" has "
+                            "invalid value %y; expected a comma-separated list of <key>:<alias> values", str);
+                    }
+                    sensitive_input{key} = getSensitiveDataFromAlias(alias);
+                }
+            }
+        }
+
+        # setup raw data for making the REST API call
+        hash<auto> input_data = {
+            "static": getStaticData(),
+            "context": getUserContextInfo(),
+        } + sensitive_input;
+        hash<auto> object_info = mapper.mapData(input_data);
+        # get the URI path for the request for creating the object
+        string uri_path = getConfigItemValue("rest-object-uri");
+        bool validation = getConfigItemValue("rest-supports-validation");
+        *string unique_id_loc = getConfigItemValue("rest-id-location");
+        string rest_method = getConfigItemValue("rest-method");
+        *hash<auto> hdr = getConfigItemValue("rest-headers");
+        # create the object and get the unique ID
+        hash<auto> info;
+        logDebug("REST REQUEST: method: %y URI: %y args: %y", rest_method, uri_path, object_info);
+        hash<auto> response = rc.doRequest(
+            rest_method,
+            uri_path,
+            object_info,
+            \info,
+            NOTHING,
+            hdr,
+        );
+        logDebug("REST REQUEST INFO: %N", info);
+        logDebug("REST RESPONSE: %N", response);
+
+        if (unique_id_loc) {
+            *softstring unique_object_id = response.body{unique_id_loc};
+            if (!unique_object_id.val()) {
+                throw "REST-REQUEST-ERROR", sprintf("cannot find unique ID in response body in location %y; body: %N",
+                    unique_id_loc, response.body);
+            }
+            # save the unique ID for further processing
+            saveUniqueId(unique_object_id);
+        }
+    }
+
+    # try to get object ID from the unique request ID
+    /** this logic guarantees that we never create the object twice for the same request
+    */
+    string validation() {
+        if (!getConfigItemValue("rest-supports-validation")) {
+            logInfo("request does not support validation; retrying");
+            return OMQ::StatRetry;
+        }
+
+        # get the connection to the REST API
+        RestClient rc = getConnection();
+        # get the URI path for the GET request for creating the object
+        string get_uri_path = getConfigItemValue("rest-object-uri");
+        # get the URI query key name for the GET request
+        string key = getConfigItemValue("rest-get-id-key");
+        # get the location of the unique ID in the response
+        string unique_id_loc = getConfigItemValue("rest-id-location");
+        # get unique request key
+        string unique_request_id = getUniqueRequestId();
+        # info hash for the REST GET request
+        hash<auto> info;
+        # for the REST response
+        hash<auto> response;
+        try {
+            # try to retrieve object ID from the unique request ID
+            *hash<auto> hdr = getConfigItemValue("rest-headers");
+            response = rc.get(get_uri_path + "?" + key + "=" + unique_request_id, NOTHING, \info, hdr);
+        } catch (hash<ExceptionInfo> ex) {
+            # if not found, then retry
+            if (info."response-code" == 404) {
+                # no object exists; retry the object creation logic
+                logInfo("%s %y not found; retrying", key, unique_request_id);
+                return OMQ::StatRetry;
+            }
+            # for any other errors, rethrow the exception
+            rethrow;
+        }
+
+        # unique object ID to be returned
+        *softstring unique_object_id = response.body{unique_id_loc};
+        if (!unique_object_id.val()) {
+            throw "REST-VALIDATION-ERROR", sprintf("cannot find unique ID in response body in location %y; body: %N",
+                unique_id_loc, response.body);
+        }
+
+        # object was created; save it and continue
+        saveUniqueId(unique_object_id);
+        # step has been recovered
+        return OMQ::StatComplete;
+    }
+
+    #! saves the unique ID createed
+    /** also stores it as an order key against the order, and returns it to the parent order as workflow order feedback
+    */
+    private saveUniqueId(string unique_object_id) {
+        string object_name = getConfigItemValue("object-name");
+        logInfo("SUCCESS: got %s %y for request", object_name, unique_object_id);
+        # set order key if applicable
+        *string key = getConfigItemValue("object-order-key");
+        if (key.val()) {
+            setOrderKey(key, unique_object_id);
+        }
+        key = getConfigItemValue("object-dynamic-key");
+        if (key.val()) {
+            updateDynamicData({key: unique_object_id});
+        }
+        # leave parent feedback if applicable
+        if (getConfigItemValue("leave-parent-feedback")) {
+            leaveParentFeedback(getUniqueRequestId(), unique_object_id);
+        }
+    }
+
+    #! returns a REST connection to the server, optionally setting a Swagger schema from a service resource
+    private RestClient getConnection() {
+        # connection options, if any
+        hash<auto> connection_opts;
+        {
+            # get Swagger schema resource name, if any
+            *string schema = getConfigItemValue("rest-swaggger-schema-resource");
+            if (schema) {
+                (*string svc, *string rsc) = (schema =~ x/([^:]+):(.*)$/);
+                if (!svc.val() || !rsc.val()) {
+                    throw "SWAGGER-CONFIG-ERROR", sprintf("config item \"rest-swaggger-schema-resource\" has "
+                        "invalid value %y; format <service>:<resource> is required", schema);
+                }
+                # get Swagger schema text
+                schema = call_rest_api("GET", "services/" + svc + "/resource_files/" + rsc + "/data");
+                # create Swaggger REST schema validator object
+                SwaggerSchema swagger = SwaggerLoader::fromString(schema, False);
+                connection_opts = {
+                    "validator": swagger,
+                };
+            }
+        }
+        # get REST connecting and use validator, if present
+        return getUserConnection(getConfigItemValue("rest-connection-name"), True, True, connection_opts);
+    }
+
+    #! returns a unique key for this step: the value is <wfiid>-<stepid>-<ind>
+    private string getUniqueRequestId() {
+        hash<auto> info = getUserContextInfo();
+        string request_key_template = getConfigItemValue("rest-request-key-template");
+        request_key_template = replace(request_key_template, "${wfiid}", info.workflow_instanceid.toString());
+        request_key_template = replace(request_key_template, "${stepid}", info.stepid.toString());
+        request_key_template = replace(request_key_template, "${ind}", info.ind.toString());
+        return request_key_template;
+    }
+
+    #! config items for this step
+    private *hash<string, hash<ConfigItemInfo>> getConfigItemsImpl() {
+        return {
+            "rest-connection-name": <ConfigItemInfo>{
+                "description": "the name of the REST connection",
+            },
+            "rest-method": <ConfigItemInfo>{
+                "description": "the REST method to use",
+                "default_value": "POST",
+            },
+            "rest-api-mapper-name": <ConfigItemInfo>{
+                "description": "the name of the mapper for the REST call",
+            },
+            "rest-object-uri": <ConfigItemInfo>{
+                "description": "the URI path for creating the request(s) in the REST server",
+            },
+            "rest-supports-validation": <ConfigItemInfo>{
+                "type": "bool",
+                "default_value": True,
+                "description": "set to True if the request requires and supports validation, False if not; "
+                    "if True then rest-id-location, rest-get-id-key, and rest-request-key-template must be set",
+            },
+            "object-name": <ConfigItemInfo>{
+                "default_value": "request ID",
+                "description": "the name of the object for logging purposes",
+            },
+            # optional items
+            "rest-id-location": <ConfigItemInfo>{
+                "description": "location in the response for the unique ID in the POST response",
+            },
+            "rest-get-id-key": <ConfigItemInfo>{
+                "description": "the query key name for the recovery GET request",
+            },
+            "rest-request-key-template": <ConfigItemInfo>{
+                "default_value": "${wfiid}-${stepid}-${ind}",
+                "description": "template for the unique request key: ${wfiid} = workflow instance ID, "
+                    "${stepid} = step ID, ${ind} = step index ID",
+            },
+            "object-order-key": <ConfigItemInfo>{
+                "default_value": "",
+                "description": "the name of the order key to set the unique ID from",
+            },
+            "object-dynamic-key": <ConfigItemInfo>{
+                "default_value": "",
+                "description": "the name of the dynamic data key to set the unique ID in",
+            },
+            "rest-swaggger-schema-resource": <ConfigItemInfo>{
+                "default_value": "",
+                "description": "the name of the service resource (name:resource) for the Swagger schema for the REST connection",
+            },
+            "rest-sensitive-alias-input": <ConfigItemInfo>{
+                "default_value": "",
+                "description": "a comma-separated list of colon-separated strings giving <input key>:<sensitive alias> values for the mapper input",
+            },
+            "leave-parent-feedback": <ConfigItemInfo>{
+                "default_value": False,
+                "type": "bool",
+                "description": "set to true to leave feedback to the parent workflow order",
+            },
+            "rest-headers": <ConfigItemInfo>{
+                "type": "hash",
+                "description": "additional headers to send with each REST request",
+            },
+        };
+    }
+}
+# END
