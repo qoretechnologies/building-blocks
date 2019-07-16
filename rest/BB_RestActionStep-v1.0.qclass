@@ -26,7 +26,7 @@
     - \b \c rest-supports-validation: (required) set to True if the request requires and supports validation,
       False if not; if True then \c \b rest-id-location, rest-get-id-key, and rest-request-key-template must be set
     - \b \c rest-id-location: (optional) location in the response for the unique ID in the POST response
-    - \b \c rest-get-id-key: (optional) the query key name for the recovery GET request
+    - \b \c rest-validation-uri-path: (optional) the URI path to use for the
     - \b \c rest-request-key-template: (optional) the template for the unique request key, substitutions as follows:
       - \c ${wfiid} = workflow instance ID
       - \c ${stepid} = step ID
@@ -100,13 +100,8 @@ class BB_RestActionStep inherits QorusNormalStep {
         logDebug("REST RESPONSE: %N", response);
 
         if (unique_id_loc) {
-            *softstring unique_object_id = response.body{unique_id_loc};
-            if (!unique_object_id.val()) {
-                throw "REST-REQUEST-ERROR", sprintf("cannot find unique ID in response body in location %y; body: %N",
-                    unique_id_loc, response.body);
-            }
             # save the unique ID for further processing
-            saveUniqueId(unique_object_id);
+            saveUniqueId(getUniqueId(response, unique_id_loc));
         }
     }
 
@@ -149,16 +144,54 @@ class BB_RestActionStep inherits QorusNormalStep {
         }
 
         # unique object ID to be returned
-        *softstring unique_object_id = response.body{unique_id_loc};
+        *string unique_object_id = tryGetUniqueId(response, unique_id_loc);
         if (!unique_object_id.val()) {
-            throw "REST-VALIDATION-ERROR", sprintf("cannot find unique ID in response body in location %y; body: %N",
+            logInfo("cannot find unique ID in response body in location %y; body: %N; retrying",
                 unique_id_loc, response.body);
+            return OMQ::StatRetry;
         }
 
         # object was created; save it and continue
         saveUniqueId(unique_object_id);
         # step has been recovered
         return OMQ::StatComplete;
+    }
+
+    #! returns the unique ID in the response
+    /** @param response the response as returned from the HTTP server
+        @param unique_id_loc the unique ID location
+
+        @return the unique ID in the response
+
+        @throw REST-REQUEST-ERROR if the unique ID cannot be found in the response
+    */
+    string getUniqueId(hash<auto> response, string unique_id_loc) {
+        *string id = tryGetUniqueId(response, unique_id_loc);
+        if (!id.val()) {
+            throw "REST-REQUEST-ERROR", sprintf("cannot find unique ID in response body in location %y; body: %N",
+                unique_id_loc, response.body);
+        }
+        return id;
+    }
+
+    #! returns the unique ID in the response if available or @ref nothing if not
+    /** @param response the response as returned from the HTTP server
+        @param unique_id_loc the unique ID location
+
+        @return the unique ID in the response if available or @ref nothing if not
+    */
+    *softstring tryGetUniqueId(hash<auto> response, string unique_id_loc) {
+        # see if we have a dot notation
+        if (unique_id_loc =~ /\./) {
+            # break down string into a list off fields
+            list<string> dot_list = unique_id_loc.split(".");
+            # dereference the fields one at a time
+            auto v = response.body;
+            map v = v{dot_list[$1]}, 0..(dot_list.size() - 1), exists v;
+            return v;
+        }
+
+        return response.body{unique_id_loc};
     }
 
     #! saves the unique ID createed
@@ -249,7 +282,7 @@ class BB_RestActionStep inherits QorusNormalStep {
                 "description": "location in the response for the unique ID in the POST response",
             },
             "rest-get-id-key": <ConfigItemInfo>{
-                "description": "the query key name for the recovery GET request",
+                "description": "the key used to select the unique key for validation",
             },
             "rest-request-key-template": <ConfigItemInfo>{
                 "default_value": "${wfiid}-${stepid}-${ind}",
