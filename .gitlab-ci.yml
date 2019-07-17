@@ -1,23 +1,47 @@
 stages:
   - test
 
-sftp-module-tests:
+image: $CI_REGISTRY/infrastructure/qorus-test-base/qorus-test-base:develop
+variables:
+  POSTGRES_PASSWORD: omq
+  OMQ_DB_NAME: postgres
+  OMQ_DB_TYPE: pgsql
+  OMQ_DB_HOST: postgres
+  OMQ_DB_USER: postgres
+  OMQ_DB_PASS: omq
+before_script:
+  - $WORKDIR/qorus/test/docker_test/init.sh
+  - gosu qorus:qorus $WORKDIR/qorus/test/docker_test/launch_qorus.sh
+
+# --------------------------------
+# sftp job and wf modules are beeing test together
+sftp-modules-tests:
   stage: test
-  image: $CI_REGISTRY/infrastructure/qorus-test-base/qorus-test-base:develop
   tags:
     - docker-exec
   services:
+    - name: postgres:11
     - name: atmoz/sftp:alpine
       command: ["foo:pass:::sftp_root"]
       alias: local-sftp
-    - name: postgres:11
-  variables:
-    POSTGRES_PASSWORD: omq
-    OMQ_DB_NAME: postgres
-    OMQ_DB_TYPE: pgsql
-    OMQ_DB_HOST: postgres
-    OMQ_DB_USER: postgres
-    OMQ_DB_PASS: omq
   script:
-    - tests/docker-test-entrypoint.sh
+    - cp -rf SftpJobModule $OMQ_DIR/user/modules
+    - cp -rf SftpWorkflowModule $OMQ_DIR/user/modules
+    - gosu qorus:qorus oload -Rlv tests/SftpJobModule/*.q*
+    # TODO - gosu qorus:qorus oload -Rlv tests/SftpWorkflowModule/*.q*
+    - gosu qorus:qorus qore tests/SftpJobModule/SftpJobModule.qtest -vv
+    # TODO - gosu qorus:qorus qore tests/SftpJobModule/SftpWorkflowModule.qtest -vv
 
+# --------------------------------
+mailer-workflow-module:
+  stage: test
+  tags:
+    - docker-exec
+  services:
+    - name: postgres:11
+    - name: digiplant/fake-smtp
+      alias: fake_smtp
+  script:
+    - cp -rf MailerWorkflowModule $OMQ_DIR/user/modules
+    - gosu qorus:qorus oload -Rlv tests/MailerWorkflowModule/*.q*
+    - gosu qorus:qorus qore tests/MailerWorkflowModule/MailerWorkflowModule.qtest -vv
