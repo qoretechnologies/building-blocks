@@ -25,7 +25,7 @@ hash cfg = {
             orig_file_path: $static:file_path
             new_file_path: $config:new_file_path
         ',
-        "new_file_path": "processing/$local:orig_file_name.$local:wfiid",
+        "new_file_path": "processing/$local:{orig_file_name}.$local:wfiid",
     },
     "workflows/POLLING-TEST-PROCESS-WF/stepinfo/PollingTestProcess_DownloadToLocal": {
         "local_file_path": "/tmp/$local:sftp_file_name",
@@ -43,7 +43,7 @@ hash cfg = {
             orig_file_path: $static:file_path
             new_file_path: $config:new_file_path
         ',
-        "new_file_path": "rejected/$local:filename.$local:wfiid",
+        "new_file_path": "rejected/$local:{filename}.$local:wfiid",
     },
 
     # configure the second job (which does move files to processing dir)
@@ -69,7 +69,7 @@ hash cfg = {
         ',
     },
     "workflows/POLLING-TEST-PROCESS2-WF/stepinfo/PollingTestProcess2_UploadFile": {
-        "sftp_file_path": "upload/$local:local_file_name.$local:wfiid",
+        "sftp_file_path": "upload/$local:{local_file_name}.$local:wfiid",
     },
 };
 

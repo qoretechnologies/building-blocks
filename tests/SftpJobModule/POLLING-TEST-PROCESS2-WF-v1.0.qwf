@@ -3,7 +3,7 @@ workflow:
     author: "Qore Technologies s.r.o."
     version: "1.0"
     desc: "XXX"
-    workflow-modules: ["BuildingBlocksCommon", "SftpWorkflowModule",]
+    workflow-modules: ["SftpWorkflowModule",]
     keylist: ["file_id", "file_name", "parent_jiid",]
     steps:
         - name: "PollingTestProcess2_DownloadToLocal:1.0"
