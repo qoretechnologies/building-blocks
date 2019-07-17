@@ -10,13 +10,20 @@
 %requires RestClient
 %requires Swagger
 
-#! this step creates an object in a remote REST server
-/** This step is transaction safe; in case of an error, the validation logic will query the server
-    using a unique key provided in the request to determine if the object was actually created in the
-    original request or not
+#! this step building block creates an object in a remote REST server
+/** This step building block is transaction safe; in case of an error, the validation logic will query the server
+    using a unique key provided in the request if the config item \b \c rest-supports-validation is present
+    to determine if the object was actually created in the original request or not
 
-    The validation logic assumes that a <tt>404 Not Found</tt> response is provided if the unique request ID does not
-    exist; override the validation() method if different logic is required.
+    Validation will determine that the REST call must be retried if one of the two conditions occurs:
+    - A <tt>404 Not Found</tt> response is provided when queried with the unique request ID (generated from the
+      \c \b rest-request-key-template config item; see @ref getUniqueRequestId() for details)
+    - The request succeeds but the unique response ID (identified with config item \b \c rest-id-location) is not
+      provided in the response
+
+    If either of these conditions occur, the validation method will return @ref OMQ::StatRetry.
+
+    If the validation response returns the unique
 
     The following configuration items are supported; note that subclasses must provide default values
     for required config items (in bold):
@@ -26,13 +33,14 @@
     - \b \c rest-supports-validation: (required) set to True if the request requires and supports validation,
       False if not; if True then \c \b rest-id-location, rest-get-id-key, and rest-request-key-template must be set
     - \b \c rest-id-location: (optional) location in the response for the unique ID in the POST response
-    - \b \c rest-validation-uri-path: (optional) the URI path to use for the
+    - \b \c rest-get-id-key: (optional) the key used to select the unique key for validation; this value is used in
+      the URI path as a query argument for the validation GET request
     - \b \c rest-request-key-template: (optional) the template for the unique request key, substitutions as follows:
       - \c ${wfiid} = workflow instance ID
       - \c ${stepid} = step ID
       - \c ${ind} = step index ID
       .
-      Default value: \c "${wfiid}-${stepid}-${ind}"
+      Default value: \c "$local:workflow_instanceid-$local:stepid-$local:ind"
     - \b \c object-name: (required) the name of the object for logging purposes
     - \c rest-swaggger-schema-resource: (optional) the name of the service resource (name:resource) for the Swagger
       schema for the REST connection (default empty = no swaggger schema service resource for REST client)
@@ -224,7 +232,7 @@ class BB_RestActionStep inherits QorusNormalStep {
     #! returns a unique key for this step
     /** @return the return value is the value of
         @ref OMQ::UserApi::expandTemplatedString() "UserApi::expandTemplatedString()" called with the value of config
-        item \c rest-request-key-template as an argument
+        item \b \c rest-request-key-template as an argument
     */
     private string getUniqueRequestId() {
         return expandTemplatedString(getConfigItemValue("rest-request-key-template"));
