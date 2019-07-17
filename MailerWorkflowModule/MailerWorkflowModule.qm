@@ -1,0 +1,345 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%requires qore >= 0.9
+
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+%requires Mime
+%requires MailMessage
+%requires SmtpClient
+
+module MailerWorkflowModule {
+    version = "1.0";
+    desc = "Mailer workflow module containning building blocks to send emails";
+    author = "Qore Technologies <info@qoretechnologies.com>";
+    url = "http://www.qoretechnologies.com";
+}
+
+public namespace MailerModule {
+
+    /**
+      * Mailer base step building block used for sending an email from a step
+      *
+      * The class represents a @ref QorusNormalStep and within its primary function
+      * it sends the email based on configuration.
+      * inherited classed must provide @ref provideConfigContext method where they
+      * may provide a local context to the building block meta language.
+      */
+    public class MailerBaseStep inherits QorusNormalStep {
+
+        private abstract *hash<auto> provideConfigContext();
+
+        public primary() {
+            *hash<auto> cfg_context = provideConfigContext();
+
+            auto smtp_connection_name = getConfigItemValue("smtp_connection_name");
+            logDebug("Smtp connection name: %n", smtp_connection_name);
+            Mailer mailer(smtp_connection_name);
+
+            auto to = getInputData("email_to", cfg_context);
+            logDebug("Email to: %n", to);
+            mailer.setTo(to);
+
+            auto from = getInputData("email_from", cfg_context);
+            logDebug("Email from: %n", from);
+            mailer.setFrom(from);
+
+            auto subject = getInputData("email_subject", cfg_context);
+            logDebug("Subject: %n", subject);
+            mailer.setSubject(subject);
+
+            auto body = getInputData("email_body", cfg_context);
+            logDebug("Body: %n", body);
+            mailer.setHtmlBody(body);
+
+            mailer.send();
+        }
+
+        private *hash<string, hash<ConfigItemInfo>> getConfigItemsImpl() {
+            return {
+                "input_data": <ConfigItemInfo>{
+                    "type": "hash",
+                    "description": "Email base step input data",
+                    "default_value": {
+                        "email_to": "$config:email_to",
+                        "email_from": "$config:email_from",
+                        "email_subject": "$config:email_subject",
+                        "email_body": "$config:email_body",
+                    },
+                    "strictly_local": True,
+                },
+
+                # -----------------------
+
+                "smtp_connection_name": <ConfigItemInfo>{
+                    "type": "string",
+                    "description": "The smtp connection name that will be used for sending emails",
+                    "strictly_local": False,
+                },
+
+                "email_to": <ConfigItemInfo>{
+                    "type": "string",
+                    "description": "The email where to sent it",
+                    "strictly_local": True,
+                },
+                "email_from": <ConfigItemInfo>{
+                    "type": "string",
+                    "description": "The email from which it will be sent",
+                    "strictly_local": False,
+                },
+                "email_subject": <ConfigItemInfo>{
+                    "type": "string",
+                    "description": "Subject of the email",
+                    "strictly_local": True,
+                },
+                "email_body":  <ConfigItemInfo>{
+                    "type": "string",
+                    "description": "Body of the email (may be HTML)",
+                    "strictly_local": True,
+                },
+            };
+        }
+    }
+
+    /**
+      * Mailer that wraps the work with Message and SmtpClient
+      */
+    public class Mailer {
+
+        private {
+            SmtpClient m_smtp;
+
+            string m_from;
+
+            list m_to = list();
+            list m_cc = list();
+            list m_bcc = list();
+
+            string m_subject;
+
+            string m_body;
+            string m_bodyMimeType = MimeTypeText;
+
+            list m_attachments = list();
+            hash m_headers = hash();
+        }
+
+        /** @param uconn a string, name of user connection to use.
+
+            @throws MAIL-ERROR
+         */
+        constructor(string uconn) {
+            m_smtp = UserApi::getUserConnection(uconn);
+        }
+
+        /** Sets 'from' email address.
+
+            @param email a string with an email address
+
+            @throw MAIL-ERROR
+          */
+        setFrom(string email) {
+            if (!Message::checkEmailAddress(email)) {
+                throw "MAIL-ERROR", sprintf("Mailer::setFrom: '%s' is not valid e-mail address", email);
+            }
+            m_from = email;
+        }
+
+        #! Sets 'To' single email address. Previous 'To' addresses are cleared
+        setTo(string email) {
+            if (!Message::checkEmailAddress(email)) {
+                throw "MAIL-ERROR", sprintf("Mailer::setTo: '%s' is not valid e-mail address", email);
+            }
+
+            m_to = list();
+            addTo(email);
+        }
+
+        #! Sets 'To' more email addresses. Previous 'To' addresses are cleared
+        /** @param emails i a string with more addresses separated with \split_char
+            @param split_char a char to split \c emails into real e-mails
+
+            @throws MAIL-ERROR
+          */
+        setTo(string emails, string split_char) {
+            m_to = list();
+            addTo(emails, split_char);
+        }
+
+        #! Adds 'To' one email address. Previous 'To' addresses are kept
+        addTo(string email) {
+            if (!Message::checkEmailAddress(email)) {
+                throw "MAIL-ERROR", sprintf("Mailer::addTo: '%s' is not valid e-mail address", email);
+            }
+
+            push m_to, email;
+        }
+
+        #! Adds 'To' more email addresses. Previous 'To' addresses are kept
+        /** @param emails i a string with more addresses separated with \split_char
+            @param split_char a char to split \c emails into real e-mails
+
+            @throws MAIL-ERROR
+          */
+        addTo(string emails, string split_char) {
+            foreach string i in (emails.split(split_char)) {
+                addTo(i);
+            }
+        }
+
+        #! Sets 'Cc' single email address. Previous 'Cc' addresses are cleared
+        setCc(string email) {
+            m_cc = list();
+            addCc(email);
+        }
+
+        #! Sets 'Cc' more email addresses. Previous 'Cc' addresses are cleared
+        /** @param emails i a string with more addresses separated with \split_char
+            @param split_char a char to split \c emails into real e-mails
+
+            @throws MAIL-ERROR
+          */
+        setCc(string emails, string split_char) {
+            m_cc = list();
+            addCc(emails, split_char);
+        }
+
+        #! Adds 'Cc' one email address. Previous 'Cc' addresses are kept
+        addCc(string email) {
+            if (!Message::checkEmailAddress(email)) {
+                throw "MAIL-ERROR", sprintf("Mailer::addCc: '%s' is not valid e-mail address", email);
+            }
+
+            push m_cc, email;
+        }
+
+        #! Adds 'Cc' more email addresses. Previous 'Cc' addresses are kept
+        /** @param emails i a string with more addresses separated with \split_char
+            @param split_char a char to split \c emails into real e-mails
+
+            @throws MAIL-ERROR
+          */
+        addCc(string emails, string split_char) {
+            foreach string i in (emails.split(split_char)) {
+                addCc(i);
+            }
+        }
+
+        #! Sets 'Bcc' single email address. Previous 'Bcc' addresses are cleared
+        setBcc(string email) {
+            m_cc = list();
+            addBcc(email);
+        }
+
+        #! Sets 'Bcc' more email addresses. Previous 'Bcc' addresses are cleared
+        /** @param emails i a string with more addresses separated with \split_char
+            @param split_char a char to split \c emails into real e-mails
+
+            @throws MAIL-ERROR
+          */
+        setBcc(string emails, string split_char) {
+            m_cc = list();
+            addBcc(emails, split_char);
+        }
+
+        #! Adds 'Bcc' one email address. Previous 'Bcc' addresses are kept
+        addBcc(string email) {
+            if (!Message::checkEmailAddress(email)) {
+                throw "MAIL-ERROR", sprintf("Mailer::addBcc: '%s' is not valid e-mail address", email);
+            }
+            push m_bcc, email;
+        }
+
+        #! Adds 'Bcc' more email addresses. Previous 'Bcc' addresses are kept
+        /** @param emails i a string with more addresses separated with \split_char
+            @param split_char a char to split \c emails into real e-mails
+
+            @throws MAIL-ERROR
+          */
+        addBcc(string emails, string split_char) {
+            foreach string i in (emails.split(split_char)) {
+                addBcc(i);
+            }
+        }
+
+        addHeader(hash h) {
+            m_headers += h;
+        }
+
+        addHeader(string key, string value) {
+            m_headers{key} = value;
+        }
+
+        #! Sets mail subject
+        setSubject(string subj) {
+            m_subject = vsprintf(subj, argv);
+        }
+
+        #! Sets mail plaintext body
+        setBody(string body) {
+            m_bodyMimeType = MimeTypeText;
+            m_body = body;
+        }
+
+        setHtmlBody(string body) {
+            m_bodyMimeType = MimeTypeHtml;
+            m_body = body;
+        }
+
+        #! Sets one attachment into mail message. Previous attachments are discarded.
+        /** @param path a full path to the file to attach. The file's mimetype
+                   is guessed automagically
+          */
+        setAttachment(string path) {
+            m_attachments = list();
+            push m_attachments, path;
+        }
+
+        #! Adds one attachment into mail message. Previous attachments are kept.
+        /** @param path a full path to the file to attach. The file's mimetype
+                   is guessed automagically
+          */
+        addAttachment(string path) {
+            push m_attachments, path;
+        }
+
+        private addAddressesToMsg(Message msg, string method, list addresses) {
+            ListIterator it(addresses);
+            while (it.next()) {
+                UserApi::logInfo("Mailer: %s: %s", method, it.getValue());
+                call_object_method(msg, method, it.getValue());
+            }
+        }
+
+        #! Sends the mail message
+        send() {
+            UserApi::logInfo("Mailer: from: %n", m_from);
+            UserApi::logInfo("Mailer: subject: %n", m_subject);
+
+            Message msg(m_from, m_subject);
+            msg.addHeader(m_headers);
+
+            addAddressesToMsg(msg, "addTO", m_to);
+            addAddressesToMsg(msg, "addCC", m_cc);
+            addAddressesToMsg(msg, "addBCC", m_bcc);
+
+            UserApi::logInfo("Mailer: body: %n", m_body);
+            msg.setBody(m_body, EncDefault, m_bodyMimeType);
+
+            ListIterator it_att(m_attachments);
+            while (it_att.next()) {
+                string path = it_att.getValue();
+                string mimetype = Mime::get_mime_type_from_ext(path);
+                data filecontent = ReadOnlyFile::readBinaryFile(path);
+                UserApi::logInfo("Mailer: subject: path: %n; mime: %n", path, mimetype);
+                msg.attach(basename(path), mimetype, filecontent, ContentTransEncBase64);
+            }
+
+            m_smtp.sendMessage(msg);
+        }
+    }
+
+}

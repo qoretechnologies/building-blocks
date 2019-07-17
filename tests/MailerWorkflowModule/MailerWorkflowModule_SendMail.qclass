@@ -1,0 +1,24 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+# name: MailerWorkflowModule_SendMail
+# version: 1.0
+# desc: MailerWorkflowModule SendMail step
+# author: Qore Technologies
+
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class MailerWorkflowModule_SendMail inherits MailerBaseStep {
+
+    private *hash<auto> provideConfigContext() {
+        return {
+            "test_var": "test_value",
+        };
+    }
+
+}
+
+# END
+
