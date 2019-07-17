@@ -101,7 +101,7 @@ class BB_RestActionStep inherits QorusNormalStep {
 
         if (unique_id_loc) {
             # save the unique ID for further processing
-            saveUniqueId(getUniqueId(response, unique_id_loc));
+            saveUniqueId(getUniqueId(response.body, unique_id_loc));
         }
     }
 
@@ -144,7 +144,7 @@ class BB_RestActionStep inherits QorusNormalStep {
         }
 
         # unique object ID to be returned
-        *string unique_object_id = tryGetUniqueId(response, unique_id_loc);
+        *string unique_object_id = getHashDotValue(response, unique_id_loc);
         if (!unique_object_id.val()) {
             logInfo("cannot find unique ID in response body in location %y; body: %N; retrying",
                 unique_id_loc, response.body);
@@ -166,32 +166,12 @@ class BB_RestActionStep inherits QorusNormalStep {
         @throw REST-REQUEST-ERROR if the unique ID cannot be found in the response
     */
     string getUniqueId(hash<auto> response, string unique_id_loc) {
-        *string id = tryGetUniqueId(response, unique_id_loc);
+        *softstring id = getHashDotValue(response, unique_id_loc);
         if (!id.val()) {
             throw "REST-REQUEST-ERROR", sprintf("cannot find unique ID in response body in location %y; body: %N",
                 unique_id_loc, response.body);
         }
         return id;
-    }
-
-    #! returns the unique ID in the response if available or @ref nothing if not
-    /** @param response the response as returned from the HTTP server
-        @param unique_id_loc the unique ID location
-
-        @return the unique ID in the response if available or @ref nothing if not
-    */
-    *softstring tryGetUniqueId(hash<auto> response, string unique_id_loc) {
-        # see if we have a dot notation
-        if (unique_id_loc =~ /\./) {
-            # break down string into a list off fields
-            list<string> dot_list = unique_id_loc.split(".");
-            # dereference the fields one at a time
-            auto v = response.body;
-            map v = v{dot_list[$1]}, 0..(dot_list.size() - 1), exists v;
-            return v;
-        }
-
-        return response.body{unique_id_loc};
     }
 
     #! saves the unique ID createed
@@ -241,14 +221,13 @@ class BB_RestActionStep inherits QorusNormalStep {
         return getUserConnection(getConfigItemValue("rest-connection-name"), True, True, connection_opts);
     }
 
-    #! returns a unique key for this step: the value is <wfiid>-<stepid>-<ind>
+    #! returns a unique key for this step
+    /** @return the return value is the value of
+        @ref OMQ::UserApi::expandTemplatedString() "UserApi::expandTemplatedString()" called with the value of config
+        item \c rest-request-key-template as an argument
+    */
     private string getUniqueRequestId() {
-        hash<auto> info = getUserContextInfo();
-        string request_key_template = getConfigItemValue("rest-request-key-template");
-        request_key_template = replace(request_key_template, "${wfiid}", info.workflow_instanceid.toString());
-        request_key_template = replace(request_key_template, "${stepid}", info.stepid.toString());
-        request_key_template = replace(request_key_template, "${ind}", info.ind.toString());
-        return request_key_template;
+        return expandTemplatedString(getConfigItemValue("rest-request-key-template"));
     }
 
     #! config items for this step
@@ -285,7 +264,7 @@ class BB_RestActionStep inherits QorusNormalStep {
                 "description": "the key used to select the unique key for validation",
             },
             "rest-request-key-template": <ConfigItemInfo>{
-                "default_value": "${wfiid}-${stepid}-${ind}",
+                "default_value": "$local:workflow_instanceid-$local:stepid-$local:ind",
                 "description": "template for the unique request key: ${wfiid} = workflow instance ID, "
                     "${stepid} = step ID, ${ind} = step index ID",
             },
