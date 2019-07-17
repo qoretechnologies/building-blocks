@@ -35,12 +35,9 @@
     - \b \c rest-id-location: (optional) location in the response for the unique ID in the POST response
     - \b \c rest-get-id-key: (optional) the key used to select the unique key for validation; this value is used in
       the URI path as a query argument for the validation GET request
-    - \b \c rest-request-key-template: (optional) the template for the unique request key, substitutions as follows:
-      - \c ${wfiid} = workflow instance ID
-      - \c ${stepid} = step ID
-      - \c ${ind} = step index ID
-      .
-      Default value: \c "$local:workflow_instanceid-$local:stepid-$local:ind"
+    - \b \c rest-request-key-template: (optional) the template for the unique request key; see
+      @ref UserApi::expandTemplatedString() for more information; default value:
+      \c "$local:workflow_instanceid-$local:stepid-$local:ind"
     - \b \c object-name: (required) the name of the object for logging purposes
     - \c rest-swaggger-schema-resource: (optional) the name of the service resource (name:resource) for the Swagger
       schema for the REST connection (default empty = no swaggger schema service resource for REST client)
@@ -273,8 +270,8 @@ class BB_RestActionStep inherits QorusNormalStep {
             },
             "rest-request-key-template": <ConfigItemInfo>{
                 "default_value": "$local:workflow_instanceid-$local:stepid-$local:ind",
-                "description": "template for the unique request key: ${wfiid} = workflow instance ID, "
-                    "${stepid} = step ID, ${ind} = step index ID",
+                "description": "template for the unique request key; see UserApi::expandTemplatedString() for "
+                    "information on supported substitutions",
             },
             "object-order-key": <ConfigItemInfo>{
                 "default_value": "",
