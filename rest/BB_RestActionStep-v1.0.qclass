@@ -47,7 +47,10 @@
       order key)
     - \c object-dynamic-key: (optional) the name of the dynamic data key to set the unique ID in (default empty = do not
       set a dymamic key)
-    - \c leave-parent-feedback: (required) set to true to leave feedback to the parent workflow order (default false)
+    - \c parent-feedback: (required) set to true to leave feedback to the parent workflow order (default false)
+    - \c parent-feedback-key-template: (optional) the template for the the parent feedback key (if \c parent-feedback
+      is @ref True); see @ref UserApi::expandTemplatedString() for more information; default value:
+      \c "$local:workflow_instanceid-$local:stepid-$local:ind"
 
     @note The swagger schema can be set in the REST connection itself; \c rest-swaggger-schema-resource is only for
     convenience in case the same Swagger schema is also used by a server-side service
@@ -126,7 +129,7 @@ class BB_RestActionStep inherits QorusNormalStep {
         # get the URI query key name for the GET request
         string key = getConfigItemValue("rest-get-id-key");
         # get the location of the unique ID in the response
-        string unique_id_loc = getConfigItemValue("rest-id-location");
+        *string unique_id_loc = getConfigItemValue("rest-id-location");
         # get unique request key
         string unique_request_id = getUniqueRequestId();
         # info hash for the REST GET request
@@ -195,8 +198,8 @@ class BB_RestActionStep inherits QorusNormalStep {
             updateDynamicData({key: unique_object_id});
         }
         # leave parent feedback if applicable
-        if (getConfigItemValue("leave-parent-feedback")) {
-            leaveParentFeedback(getUniqueRequestId(), unique_object_id);
+        if (getConfigItemValue("parent-feedback")) {
+            leaveParentFeedback(getUniqueFeedbackId(), unique_object_id);
         }
     }
 
@@ -226,78 +229,129 @@ class BB_RestActionStep inherits QorusNormalStep {
         return getUserConnection(getConfigItemValue("rest-connection-name"), True, True, connection_opts);
     }
 
-    #! returns a unique key for this step
+    #! returns a unique key for this step for the REST request
     /** @return the return value is the value of
         @ref OMQ::UserApi::expandTemplatedString() "UserApi::expandTemplatedString()" called with the value of config
         item \b \c rest-request-key-template as an argument
+
+        @see getUniqueFeedbackId()
     */
     private string getUniqueRequestId() {
         return expandTemplatedString(getConfigItemValue("rest-request-key-template"));
     }
 
+    #! returns a unique key for this step for parent feedback
+    /** @return the return value is the value of
+        @ref OMQ::UserApi::expandTemplatedString() "UserApi::expandTemplatedString()" called with the value of config
+        item \b \c parent-feedback-key-template as an argument
+
+        @see getUniqueRequestId()
+    */
+    private string getUniqueFeedbackId() {
+        return expandTemplatedString(getConfigItemValue("parent-feedback-key-template"));
+    }
+
     #! config items for this step
     private *hash<string, hash<ConfigItemInfo>> getConfigItemsImpl() {
         return {
+            # group: main
             "rest-connection-name": <ConfigItemInfo>{
                 "description": "the name of the REST connection",
+                "config_group": "main",
             },
             "rest-method": <ConfigItemInfo>{
                 "description": "the REST method to use",
                 "default_value": "POST",
+                "config_group": "main",
             },
             "rest-api-mapper-name": <ConfigItemInfo>{
                 "description": "the name of the mapper for the REST call",
+                "config_group": "main",
             },
             "rest-object-uri": <ConfigItemInfo>{
                 "description": "the URI path for creating the request(s) in the REST server",
-            },
-            "rest-supports-validation": <ConfigItemInfo>{
-                "type": "bool",
-                "default_value": True,
-                "description": "set to True if the request requires and supports validation, False if not; "
-                    "if True then rest-id-location, rest-get-id-key, and rest-request-key-template must be set",
-            },
-            "object-name": <ConfigItemInfo>{
-                "default_value": "request ID",
-                "description": "the name of the object for logging purposes",
-            },
-            # optional items
-            "rest-id-location": <ConfigItemInfo>{
-                "description": "location in the response for the unique ID in the POST response",
-            },
-            "rest-get-id-key": <ConfigItemInfo>{
-                "description": "the key used to select the unique key for validation",
+                "config_group": "main",
             },
             "rest-request-key-template": <ConfigItemInfo>{
                 "default_value": "$local:workflow_instanceid-$local:stepid-$local:ind",
                 "description": "template for the unique request key; see UserApi::expandTemplatedString() for "
                     "information on supported substitutions",
+                "config_group": "main",
             },
-            "object-order-key": <ConfigItemInfo>{
-                "default_value": "",
-                "description": "the name of the order key to set the unique ID from",
-            },
-            "object-dynamic-key": <ConfigItemInfo>{
-                "default_value": "",
-                "description": "the name of the dynamic data key to set the unique ID in",
-            },
-            "rest-swaggger-schema-resource": <ConfigItemInfo>{
-                "default_value": "",
-                "description": "the name of the service resource (name:resource) for the Swagger schema for the REST connection",
-            },
-            "rest-sensitive-alias-input": <ConfigItemInfo>{
-                "default_value": "",
-                "description": "a comma-separated list of colon-separated strings giving <input key>:<sensitive alias> values for the mapper input",
-            },
-            "leave-parent-feedback": <ConfigItemInfo>{
-                "default_value": False,
-                "type": "bool",
-                "description": "set to true to leave feedback to the parent workflow order",
+            "rest-id-location": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "location in the response for the unique ID in the POST response",
+                "config_group": "main",
             },
             "rest-headers": <ConfigItemInfo>{
                 "default_value": {},
                 "type": "hash",
                 "description": "additional headers to send with each REST request",
+                "config_group": "main",
+            },
+            "rest-swaggger-schema-resource": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "the name of the service resource (name:resource) for the Swagger schema for the REST connection",
+                "config_group": "main",
+            },
+            "rest-sensitive-alias-input": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "a comma-separated list of colon-separated strings giving <input key>:<sensitive alias> values for the mapper input",
+                "config_group": "main",
+            },
+
+            # group: recovery
+            "rest-supports-validation": <ConfigItemInfo>{
+                "type": "bool",
+                "default_value": True,
+                "description": "set to True if the request requires and supports validation, False if not; "
+                    "if True then rest-id-location, rest-get-id-key, and rest-request-key-template must be set",
+                "config_group": "recovery",
+            },
+            "rest-get-id-key": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "the key used to select the unique key for validation",
+                "config_group": "recovery",
+            },
+
+            # group: post processing
+            "object-order-key": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "the name of the order key to set the unique ID from after a successful message; "
+                    "requires \"rest-id-location\" to be set",
+                "config_group": "post processing",
+            },
+            "object-dynamic-key": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "the name of the dynamic data key to set the unique ID in after a successful message; "
+                    "requires \"rest-id-location\" to be set",
+                "config_group": "post processing",
+            },
+            "parent-feedback": <ConfigItemInfo>{
+                "default_value": False,
+                "type": "bool",
+                "description": "set to true to leave feedback to the parent workflow order; only set if this step is "
+                    "to be used in a subworkflow; requires \"rest-id-location\" to be set",
+                "config_group": "post processing",
+            },
+            "parent-feedback-key-template": <ConfigItemInfo>{
+                "default_value": "$local:workflow_instanceid-$local:stepid-$local:ind",
+                "description": "template for the parent feedback key; see UserApi::expandTemplatedString() for "
+                    "information on supported substitutions; only used if \"parent-feedback\" is True",
+                "config_group": "main",
+            },
+
+            # group: cosmetic
+            "object-name": <ConfigItemInfo>{
+                "default_value": "request ID",
+                "description": "the name of the object for logging purposes",
+                "config_group": "cosmetic",
             },
         };
     }
