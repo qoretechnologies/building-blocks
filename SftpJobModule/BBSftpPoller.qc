@@ -10,7 +10,6 @@
 %enable-all-warnings
 
 public namespace SftpModule {
-
     /** Basic SFTP Poller.
 
         If there already is an active (not canceled) workflow order created for the file that is currently being polled
@@ -33,7 +32,7 @@ public namespace SftpModule {
             hash conf;
         }
 
-        static hash confDefault() {
+        static hash<auto> confDefault() {
             return {
                 "skip_file_content_retrieval": True,
                 "start_thread": NULL, # must be like this in order to work within jobs
@@ -42,13 +41,13 @@ public namespace SftpModule {
             };
         }
 
-        static hash confEnforced() {
+        static hash<auto> confEnforced() {
             return {
                 "sleep": \UserApi::sleep(),
             };
         }
 
-        static list confRequired() {
+        static list<string> confRequired() {
             return (
                 "wf_name",
                 "ignore_duplicate_error"
@@ -80,7 +79,7 @@ public namespace SftpModule {
             - $filepath - path to the polled file
             - $jobiid - instance id of the polling job
         */
-        hash replaceVariables(hash config, hash file) {
+        hash replaceVariables(hash config, hash<auto> file) {
             hash<auto> local_context = {
                 "filename": file.name,
                 "filepath": file.filepath,
@@ -88,7 +87,7 @@ public namespace SftpModule {
             };
 
             foreach string k in (keys config) {
-                config{k} = UserApi::expandTemplatedString(config{k}, local_context);
+                config{k} = UserApi::expandTemplatedValue(config{k}, local_context);
             }
 
             return config;
@@ -99,7 +98,7 @@ public namespace SftpModule {
 
             @return hash with create order parameters
         */
-        hash getCreateOrderParams(hash fh) {
+        hash<auto> getCreateOrderParams(hash<auto> fh) {
             return {
                 "orderkeys": self.replaceVariables(self.conf.order_keys, fh),
                 "staticdata": self.replaceVariables(self.conf.static_data, fh),
@@ -127,13 +126,13 @@ public namespace SftpModule {
 
             Workflow name and the flag whether duplicates should be ignored are both taken from self.conf.
         */
-        *int createOrder(hash fh, hash create_order_params, string status = OMQ::StatReady) {
+        *int createOrder(hash<auto> fh, hash<auto> create_order_params, string status = OMQ::StatReady) {
             softint wfiid;
             try {
                 hash<auto> wf_info = SftpJobModule::splitWfNameVersion(self.conf.wf_name);
                 wfiid = UserApi::createOrder(wf_info.name, wf_info.version, create_order_params, status);
                 logInfo("created order %s (wfiid %d) with status %s", self.conf.wf_name, wfiid, status);
-            } catch (hash ex) {
+            } catch (hash<ExceptionInfo> ex) {
                 if (ex.err == "DUPLICATE-ORDER-KEY") {
                     if (self.conf.ignore_duplicate_error) {
                         logInfo("Ignoring file %s, a workflow order for it already exists.", fh.name);

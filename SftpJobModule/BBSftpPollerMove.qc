@@ -25,7 +25,7 @@ public namespace SftpModule {
             hash conf;
         }
 
-        static hash confDefault() {
+        static hash<auto> confDefault() {
             return {
                 "skip_file_content_retrieval": True,
                 "start_thread": NULL, # must be like this in order to work within jobs
@@ -33,13 +33,13 @@ public namespace SftpModule {
             };
         }
 
-        static hash confEnforced() {
+        static hash<auto> confEnforced() {
             return {
                 "sleep": \UserApi::sleep(),
             };
         }
 
-        static list confRequired() {
+        static list<string> confRequired() {
             return (
                 "processing_path",
             );
@@ -56,7 +56,7 @@ public namespace SftpModule {
             - $filepath - path to the polled file
             - $jobiid - instance id of the polling job
         */
-        hash replaceVariables(hash config, hash file) {
+        hash replaceVariables(hash config, hash<auto> file) {
             hash<auto> local_context = {
                 "filename": file.name,
                 "filepath": file.filepath,
@@ -64,14 +64,13 @@ public namespace SftpModule {
             };
 
             foreach string k in (keys config) {
-                config{k} = UserApi::expandTemplatedString(config{k}, local_context);
+                config{k} = UserApi::expandTemplatedValue(config{k}, local_context);
             }
 
             return config;
         }
 
-
-        constructor(SFTPClient sftp, hash conf, bool run=False): SftpPoller(
+        constructor(SFTPClient sftp, hash<auto> conf, bool run = False): SftpPoller(
             sftp,
             BBSftpPollerMove::confDefault() + conf + BBSftpPollerMove::confEnforced()
         ) {

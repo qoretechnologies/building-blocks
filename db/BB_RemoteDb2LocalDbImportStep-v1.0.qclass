@@ -32,12 +32,6 @@ class BB_RemoteDb2LocalDbImportStep inherits QorusNormalStep {
         *string column_name = getConfigItemValue("db2db-remote-select-column");
         auto value = getConfigItemValue("db2db-remote-select-value-template");
         if (exists column_name) {
-            if (value) {
-                value = expandTemplatedString(value);
-            }
-            if (getConfigItemValue("db2db-remote-select-value-int")) {
-                value = value.toInt();
-            }
             opts."select"."where"{column_name} = value;
         } else if (exists value) {
             stepWarning("CONFIG-ERROR", "the \"db2db-remote-select-value-template\" config item value %y has been "
@@ -78,10 +72,7 @@ class BB_RemoteDb2LocalDbImportStep inherits QorusNormalStep {
         AbstractTable table = mapper.getTable();
 
         string column_name = getConfigItemValue("db2db-recovery-column");
-        auto value = expandTemplatedString(getConfigItemValue("db2db-recovery-value-template"));
-        if (getConfigItemValue("db2db-recovery-value-int")) {
-            value = value.toInt();
-        }
+        auto value = getConfigItemValue("db2db-recovery-value-template");
 
         hash<auto> where_hash = {
             column_name: value,
@@ -131,15 +122,7 @@ class BB_RemoteDb2LocalDbImportStep inherits QorusNormalStep {
             "db2db-remote-select-value-template": <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
-                "description": "the column value for the select criteria in the remote table; this value will be "
-                    "subject to template substitution; see UserApi::expandTemplatedString() for information on "
-                    "supported substitutions",
-                "config_group": "Main",
-            },
-            "db2db-remote-select-value-int": <ConfigItemInfo>{
-                "type": "bool",
-                "default_value": False,
-                "description": "if the select value should be converted to an integer for the query",
+                "description": "the column value for the select criteria in the remote table",
                 "config_group": "Main",
             },
 
@@ -149,14 +132,7 @@ class BB_RemoteDb2LocalDbImportStep inherits QorusNormalStep {
                 "config_group": "Recovery",
             },
             "db2db-recovery-value-template": <ConfigItemInfo>{
-                "description": "value for recovery; this value will be subject to template substitution; see "
-                    "UserApi::expandTemplatedString() for information on supported substitutions",
-                "config_group": "Recovery",
-            },
-            "db2db-recovery-value-int": <ConfigItemInfo>{
-                "type": "bool",
-                "default_value": False,
-                "description": "if the value should be converted to an integer for the recovery query",
+                "description": "value for recovery",
                 "config_group": "Recovery",
             },
         };

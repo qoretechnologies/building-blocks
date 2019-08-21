@@ -8,7 +8,6 @@
 %enable-all-warnings
 
 public namespace SftpModule {
-
     /** SFTP Poller that checks file meta data to decide whether this particular file has already been processed.
 
         This poller doesn't rely solely on file name to identify a file but also uses meta data like modification time,
@@ -35,9 +34,7 @@ public namespace SftpModule {
         The unique identifier is created as a hash computed from the file's meta data (see getFileUniqueID() method).
     */
     class BBSftpPollerHash inherits BBSftpPoller {
-
-
-        constructor(SFTPClient sftp, hash conf, bool run=False): BBSftpPoller(
+        constructor(SFTPClient sftp, hash conf, bool run = False): BBSftpPoller(
             sftp,
             BBSftpPoller::confDefault() + conf + BBSftpPoller::confEnforced()
         ) {
@@ -52,7 +49,7 @@ public namespace SftpModule {
             }
         }
 
-        static list confRequired() {
+        static list<string> confRequired() {
             return (
                 "wf_name",
                 "rejection_wf_name",
@@ -70,7 +67,7 @@ public namespace SftpModule {
             - mtime: the last modified date/time of the file
             - type: the type of file (e.g. "REGULAR", "DIRECTORY", "SYMBOLIC-LINK", etc.)
         */
-        static string getFileUniqueID(hash fh) {
+        static string getFileUniqueID(hash<auto> fh) {
             return SHA512(join(":", fh.name, fh.size, fh.mtime, fh.type));
         }
 
@@ -85,8 +82,7 @@ public namespace SftpModule {
             - $filepath - path to the polled file
             - $jobiid - instance id of the polling job
         */
-        hash replaceVariables(hash config, hash file) {
-
+        hash replaceVariables(hash config, hash<auto> file) {
             string filepath;
             if (self.conf.processing_path) {
                 filepath = join_paths(self.conf.processing_path, file.filepath);
@@ -102,7 +98,7 @@ public namespace SftpModule {
             };
 
             foreach string k in (keys config) {
-                config{k} = UserApi::expandTemplatedString(config{k}, local_context);
+                config{k} = UserApi::expandTemplatedValue(config{k}, local_context);
             }
 
             return config;
@@ -113,7 +109,7 @@ public namespace SftpModule {
 
             @return hash with create order parameters
         */
-        hash getCreateOrderParams(hash fh) {
+        hash<auto> getCreateOrderParams(hash<auto> fh) {
             return {
                 "orderkeys": self.replaceVariables(self.conf.order_keys, fh),
                 "staticdata": self.replaceVariables(self.conf.static_data, fh),
@@ -131,7 +127,7 @@ public namespace SftpModule {
 
             Workflow name and the flag whether duplicates should be ignored are both taken from self.conf.
         */
-        *int createOrder(hash fh, hash create_order_params, string status = OMQ::StatReady) {
+        *int createOrder(hash<auto> fh, hash<auto> create_order_params, string status = OMQ::StatReady) {
             softint wfiid;
             hash<auto> wf_info;
             try {

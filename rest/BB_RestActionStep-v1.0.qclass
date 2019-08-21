@@ -35,8 +35,7 @@
     - \b \c rest-id-location: (optional) location in the response for the unique ID in the POST response
     - \b \c rest-get-id-key: (optional) the key used to select the unique key for validation; this value is used in
       the URI path as a query argument for the validation GET request
-    - \b \c rest-request-key-template: (optional) the template for the unique request key; see
-      @ref UserApi::expandTemplatedString() for more information; default value:
+    - \b \c rest-request-key-template: (optional) the template for the unique request key; default value:
       \c "$local:workflow_instanceid-$local:stepid-$local:ind"
     - \b \c object-name: (required) the name of the object for logging purposes
     - \c rest-swaggger-schema-resource: (optional) the name of the service resource (name:resource) for the Swagger
@@ -49,8 +48,7 @@
       set a dymamic key)
     - \c parent-feedback: (required) set to true to leave feedback to the parent workflow order (default false)
     - \c parent-feedback-key-template: (optional) the template for the the parent feedback key (if \c parent-feedback
-      is @ref True); see @ref UserApi::expandTemplatedString() for more information; default value:
-      \c "$local:workflow_instanceid-$local:stepid-$local:ind"
+      is @ref True); default value: \c "$local:workflow_instanceid-$local:stepid-$local:ind"
 
     @note The swagger schema can be set in the REST connection itself; \c rest-swaggger-schema-resource is only for
     convenience in case the same Swagger schema is also used by a server-side service
@@ -230,25 +228,21 @@ class BB_RestActionStep inherits QorusNormalStep {
     }
 
     #! returns a unique key for this step for the REST request
-    /** @return the return value is the value of
-        @ref OMQ::UserApi::expandTemplatedString() "UserApi::expandTemplatedString()" called with the value of config
-        item \b \c rest-request-key-template as an argument
+    /** @return the return value is the value of config item \b \c rest-request-key-template
 
         @see getUniqueFeedbackId()
     */
     private string getUniqueRequestId() {
-        return expandTemplatedString(getConfigItemValue("rest-request-key-template"));
+        return getConfigItemValue("rest-request-key-template");
     }
 
     #! returns a unique key for this step for parent feedback
-    /** @return the return value is the value of
-        @ref OMQ::UserApi::expandTemplatedString() "UserApi::expandTemplatedString()" called with the value of config
-        item \b \c parent-feedback-key-template as an argument
+    /** @return the return value is the value of config item \b \c parent-feedback-key-template
 
         @see getUniqueRequestId()
     */
     private string getUniqueFeedbackId() {
-        return expandTemplatedString(getConfigItemValue("parent-feedback-key-template"));
+        return getConfigItemValue("parent-feedback-key-template");
     }
 
     #! config items for this step
@@ -274,8 +268,7 @@ class BB_RestActionStep inherits QorusNormalStep {
             },
             "rest-request-key-template": <ConfigItemInfo>{
                 "default_value": "$local:workflow_instanceid-$local:stepid-$local:ind",
-                "description": "template for the unique request key; see UserApi::expandTemplatedString() for "
-                    "information on supported substitutions",
+                "description": "template for the unique request key",
                 "config_group": "main",
             },
             "rest-id-location": <ConfigItemInfo>{
@@ -342,8 +335,7 @@ class BB_RestActionStep inherits QorusNormalStep {
             },
             "parent-feedback-key-template": <ConfigItemInfo>{
                 "default_value": "$local:workflow_instanceid-$local:stepid-$local:ind",
-                "description": "template for the parent feedback key; see UserApi::expandTemplatedString() for "
-                    "information on supported substitutions; only used if \"parent-feedback\" is True",
+                "description": "template for the parent feedback key; only used if \"parent-feedback\" is True",
                 "config_group": "main",
             },
 

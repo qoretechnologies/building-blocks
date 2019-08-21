@@ -17,13 +17,10 @@ module SftpWorkflowModule {
 }
 
 public namespace SftpModule {
-
     class SftpStepHelper {
-
         public const SFTP_CONNECTION_NAME_CONFIG_ITEM = {
             "sftp_connection_name": <ConfigItemInfo>{
                 "type": "string",
-                "default_value": NOTHING,
                 "description": "SFTP connection name",
                 "strictly_local": False,
             },
@@ -41,7 +38,6 @@ public namespace SftpModule {
         public const LOCAL_CONNECTION_NAME_CONFIG_ITEM = {
             "local_connection_name": <ConfigItemInfo>{
                 "type": "string",
-                "default_value": NOTHING,
                 "description": "Local connection name",
                 "strictly_local": False,
             },
@@ -113,7 +109,7 @@ public namespace SftpModule {
                 "wfiid": getWfiid().toString(),
             };
             string new_file_path = UserApi::getInputData("new_file_path", templates);
-            new_file_path = UserApi::expandTemplatedString(new_file_path, templates);
+            new_file_path = UserApi::expandTemplatedValue(new_file_path, templates);
             logDebug("new_file_path='%s';", new_file_path);
             return new_file_path;
         }
@@ -188,7 +184,6 @@ public namespace SftpModule {
     }
 
     public class DownloadFileStep inherits QorusNormalStep {
-
         private string getSftpFilePath() {
             string sftp_file_path = UserApi::getInputData("sftp_file_path");
             logDebug("sftp_file_path='%s'", sftp_file_path);
@@ -202,7 +197,7 @@ public namespace SftpModule {
                 "wfiid": getWfiid().toString(),
             };
             string local_file_path = UserApi::getInputData("local_file_path", templates);
-            local_file_path = UserApi::expandTemplatedString(local_file_path, templates);
+            local_file_path = UserApi::expandTemplatedValue(local_file_path, templates);
             logDebug("local_file_path='%s';", local_file_path);
             return local_file_path;
         }
@@ -257,7 +252,6 @@ public namespace SftpModule {
                 {
                     "local_file_path": <ConfigItemInfo>{
                         "type": "string",
-                        "default_value": NOTHING,
                         "description": "Local file path using template args: $local:sftp_file_name, "
                                        "$local:sftp_file_path, $local:wfiid",
                         "strictly_local": True,
@@ -291,7 +285,6 @@ public namespace SftpModule {
     }
 
     public class UploadFileStep inherits QorusNormalStep {
-
         private string getLocalFilePath() {
             string local_file_path = UserApi::getInputData("local_file_path");
             logDebug("local_file_path='%s'", local_file_path);
@@ -305,7 +298,7 @@ public namespace SftpModule {
                 "wfiid": getWfiid().toString(),
             };
             string sftp_file_path = UserApi::getInputData("sftp_file_path", templates);
-            sftp_file_path = UserApi::expandTemplatedString(sftp_file_path, templates);
+            sftp_file_path = UserApi::expandTemplatedValue(sftp_file_path, templates);
             logDebug("sftp_file_path='%s';", sftp_file_path);
             return sftp_file_path;
         }
@@ -402,7 +395,7 @@ public namespace SftpModule {
                 "wfiid": getWfiid().toString(),
             };
             string sftp_file_path = UserApi::getInputData("sftp_file_path");
-            sftp_file_path = UserApi::expandTemplatedString(sftp_file_path, templates);
+            sftp_file_path = UserApi::expandTemplatedValue(sftp_file_path, templates);
             logDebug("sftp_file_path='%s';", sftp_file_path);
             return sftp_file_path;
         }
