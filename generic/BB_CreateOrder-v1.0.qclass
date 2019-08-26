@@ -23,7 +23,7 @@ class BB_CreateOrder {
         string mapper_name = UserApi::getConfigItemValue("workflow-order-mapper");
         Mapper mapper = UserApi::getMapper(mapper_name);
         hash<auto> order_data = mapper.mapData(order_context_data);
-        UserApi::logDebug("mapper %y mapped order data: %y", mapper_name, order_data);
+        UserApi::logInfo("mapper %y mapped order data: %y", mapper_name, order_data);
 
         softint workflow_instanceid;
         try {
