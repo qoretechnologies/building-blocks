@@ -16,8 +16,8 @@
     to determine if the object was actually created in the original request or not
 
     Validation will determine that the REST call must be retried if one of the two conditions occurs:
-    - A <tt>404 Not Found</tt> response is provided when queried with the unique request ID (generated from the
-      \c \b rest-request-key-template config item; see @ref getUniqueRequestId() for details)
+    - A <tt>404 Not Found</tt> response is provided when queried with the recovery URI path
+      (config item \b \c rest-recovery-uri)
     - The request succeeds but the unique response ID (identified with config item \b \c rest-id-location) is not
       provided in the response
 
@@ -31,12 +31,10 @@
     - \b \c rest-api-mapper-name: (required) the name of the mapper for the REST call
     - \b \c rest-object-uri: (required) the URI path for creating and querying the object in the REST server
     - \b \c rest-supports-validation: (required) set to True if the request requires and supports validation,
-      False if not; if True then \c \b rest-id-location, rest-get-id-key, and rest-request-key-template must be set
+      False if not; if True then \c \b rest-recovery-uri must be set
     - \b \c rest-id-location: (optional) location in the response for the unique ID in the POST response
-    - \b \c rest-get-id-key: (optional) the key used to select the unique key for validation; this value is used in
-      the URI path as a query argument for the validation GET request
-    - \b \c rest-request-key-template: (optional) the template for the unique request key; default value:
-      \c "$local:workflow_instanceid-$local:stepid-$local:ind"
+    - \b \c rest-recovery-uri: (optional) the template for the GET request when querying the server about the original
+      request
     - \b \c object-name: (required) the name of the object for logging purposes
     - \c rest-swaggger-schema-resource: (optional) the name of the service resource (name:resource) for the Swagger
       schema for the REST connection (default empty = no swaggger schema service resource for REST client)
@@ -46,7 +44,8 @@
       order key)
     - \c object-dynamic-key: (optional) the name of the dynamic data key to set the unique ID in (default empty = do not
       set a dymamic key)
-    - \c parent-feedback: (required) set to true to leave feedback to the parent workflow order (default false)
+    - \c parent-feedback: (required) set to true to leave feedback to the parent workflow order (default false);
+      requires \"rest-id-location\" to be set
     - \c parent-feedback-key-template: (optional) the template for the the parent feedback key (if \c parent-feedback
       is @ref True); default value: \c "$local:workflow_instanceid-$local:stepid-$local:ind"
 
@@ -87,14 +86,15 @@ class BB_RestActionStep inherits QorusNormalStep {
             # setup raw data for making the REST API call
             hash<auto> input_data = {
                 "static": getStaticData(),
+                "dynamic": getDynamicData(),
                 "context": getUserContextInfo(),
+                "orderkeys": getOrderKeys(),
             } + sensitive_input;
             object_info = mapper.mapData(input_data);
         }
         # get the URI path for the request for creating the object
         string uri_path = getConfigItemValue("rest-object-uri");
         bool validation = getConfigItemValue("rest-supports-validation");
-        *string unique_id_loc = getConfigItemValue("rest-id-location");
         string rest_method = getConfigItemValue("rest-method");
         *hash<auto> hdr = getConfigItemValue("rest-headers");
         # create the object and get the unique ID
@@ -117,6 +117,7 @@ class BB_RestActionStep inherits QorusNormalStep {
         }
         logDebug("REST RESPONSE: %N", response);
 
+        *string unique_id_loc = getConfigItemValue("rest-id-location");
         if (unique_id_loc) {
             # save the unique ID for further processing
             saveUniqueId(getUniqueId(response.body, unique_id_loc));
@@ -135,44 +136,70 @@ class BB_RestActionStep inherits QorusNormalStep {
         # get the connection to the REST API
         RestClient rc = getConnection();
         # get the URI path for the GET request for creating the object
-        string get_uri_path = getConfigItemValue("rest-object-uri");
-        # get the URI query key name for the GET request
-        string key = getConfigItemValue("rest-get-id-key");
-        # get the location of the unique ID in the response
-        *string unique_id_loc = getConfigItemValue("rest-id-location");
-        # get unique request key
-        string unique_request_id = getUniqueRequestId();
+        string get_uri_path = getConfigItemValue("rest-recovery-uri");
         # info hash for the REST GET request
         hash<auto> info;
         # for the REST response
         hash<auto> response;
+        logInfo("executing REST recovery request: GET %s", get_uri_path);
         try {
+            # ensure that request info gets logged
+            on_exit {
+                logDebug("REST RECOVERY REQUEST INFO: %N", info);
+            }
             # try to retrieve object ID from the unique request ID
             *hash<auto> hdr = getConfigItemValue("rest-headers");
-            response = rc.get(get_uri_path + "?" + key + "=" + unique_request_id, NOTHING, \info, hdr);
+            response = rc.get(get_uri_path, NOTHING, \info, hdr);
         } catch (hash<ExceptionInfo> ex) {
             # if not found, then retry
             if (info."response-code" == 404) {
                 # no object exists; retry the object creation logic
-                logInfo("%s %y not found; retrying", key, unique_request_id);
+                logInfo("%y: 404 Not Found; retrying", get_uri_path);
                 return OMQ::StatRetry;
             }
             # for any other errors, rethrow the exception
             rethrow;
         }
+        logDebug("REST RECOVERY RESPONSE: %N", response);
 
-        # unique object ID to be returned
-        *string unique_object_id = getHashDotValue(response, unique_id_loc);
-        if (!unique_object_id.val()) {
-            logInfo("cannot find unique ID in response body in location %y; body: %N; retrying",
-                unique_id_loc, response.body);
-            return OMQ::StatRetry;
+        # get the location of the unique ID in the response
+        *string unique_id_loc = getConfigItemValue("rest-recovery-id-location") ?? getConfigItemValue("rest-id-location");
+        if (unique_id_loc) {
+            # unique object ID to be returned
+            *string unique_object_id = getHashDotValue(response, unique_id_loc);
+            if (!unique_object_id.val()) {
+                logInfo("cannot find unique ID in response body in location %y; body: %N; retrying",
+                    unique_id_loc, response.body);
+                return OMQ::StatRetry;
+            }
+
+            # object was created; save it and continue
+            saveUniqueId(unique_object_id);
+            # step has been recovered
+            return OMQ::StatComplete;
         }
 
-        # object was created; save it and continue
-        saveUniqueId(unique_object_id);
+        # get the recovery location
+        *string recovery_loc = getConfigItemValue("rest-recovery-response-location");
+        if (!exists recovery_loc) {
+            throw "CONFIG-ERROR", "neither \"rest-recovery-id-location\" nor "
+            "\"rest-recovery-response-location\" are set; set \"rest-supports-validation\" to false or configure "
+            "recovery options in order to continue processing this workflow order";
+        }
+        auto recovery_val = getConfigItemValue("rest-recovery-response-value");
+
+        # check response for value
+        auto val = getHashDotValue(response, recovery_loc);
+
+        if (recovery_val == val) {
+            logInfo("%y = %y in the recovery response; step is already COMPLETE", recovery_loc, val);
+            # step has been recovered
+            return OMQ::StatComplete;
+        }
+
+        logInfo("%y != %y (current value: %y); step must be retried", recovery_loc, recovery_val, val);
         # step has been recovered
-        return OMQ::StatComplete;
+        return OMQ::StatRetry;
     }
 
     #! returns the unique ID in the response
@@ -239,19 +266,8 @@ class BB_RestActionStep inherits QorusNormalStep {
         return getUserConnection(getConfigItemValue("rest-connection-name"), True, True, connection_opts);
     }
 
-    #! returns a unique key for this step for the REST request
-    /** @return the return value is the value of config item \b \c rest-request-key-template
-
-        @see getUniqueFeedbackId()
-    */
-    private string getUniqueRequestId() {
-        return getConfigItemValue("rest-request-key-template");
-    }
-
     #! returns a unique key for this step for parent feedback
     /** @return the return value is the value of config item \b \c parent-feedback-key-template
-
-        @see getUniqueRequestId()
     */
     private string getUniqueFeedbackId() {
         return getConfigItemValue("parent-feedback-key-template");
@@ -278,11 +294,6 @@ class BB_RestActionStep inherits QorusNormalStep {
             },
             "rest-object-uri": <ConfigItemInfo>{
                 "description": "the URI path for creating the request(s) in the REST server",
-                "config_group": "Rest Action",
-            },
-            "rest-request-key-template": <ConfigItemInfo>{
-                "default_value": "$local:workflow_instanceid-$local:stepid-$local:ind",
-                "description": "template for the unique request key",
                 "config_group": "Rest Action",
             },
             "rest-id-location": <ConfigItemInfo>{
@@ -315,13 +326,39 @@ class BB_RestActionStep inherits QorusNormalStep {
                 "type": "bool",
                 "default_value": True,
                 "description": "set to True if the request requires and supports validation, False if not; "
-                    "if True then rest-id-location, rest-get-id-key, and rest-request-key-template must be set",
+                    "if True then rest-recovery-uri must be set",
                 "config_group": "Rest Action Recovery",
             },
-            "rest-get-id-key": <ConfigItemInfo>{
+            "rest-recovery-uri":  <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
-                "description": "the key used to select the unique key for validation",
+                "description": "the URI path for the recovery request to the REST server",
+                "config_group": "Rest Action Recovery",
+            },
+            "rest-recovery-id-location": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "the location of the unique ID for the record in the REST recovery response; "
+                    "conflicts with \"rest-recovery-response-location\"; if not set and \"rest-id-location\" is set, "
+                    "then \"rest-id-location\" will be used for this value",
+                "config_group": "Rest Action Recovery",
+            },
+            "rest-recovery-response-location":  <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "the location of the recovery value in the recovery response message to check; the "
+                    "value to check must be set with \"rest-recovery-response-value\"; conflicts with "
+                    "\"rest-recovery-id-location\"; only used if \"rest-id-location\" is not set; the value here is "
+                    "related to the entire HTTP response; prefix with \"body.\" to compare values in the response "
+                    "message body",
+                "config_group": "Rest Action Recovery",
+            },
+            "rest-recovery-response-value":  <ConfigItemInfo>{
+                "type": "any",
+                "default_value": NOTHING,
+                "description": "the value to compare against the value given by \"rest-recovery-response-location\"; "
+                    "must be set with \"rest-recovery-response-value\"; conflicts with "
+                    "\"rest-recovery-id-location\"; only used if \"rest-id-location\" is not set",
                 "config_group": "Rest Action Recovery",
             },
 
