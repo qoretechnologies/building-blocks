@@ -263,51 +263,51 @@ class BB_RestActionStep inherits QorusNormalStep {
             # group: main
             "rest-connection-name": <ConfigItemInfo>{
                 "description": "the name of the REST connection",
-                "config_group": "Main",
+                "config_group": "Rest Action",
             },
             "rest-method": <ConfigItemInfo>{
                 "description": "the REST method to use",
                 "default_value": "POST",
-                "config_group": "Main",
+                "config_group": "Rest Action",
             },
             "rest-api-mapper-name": <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "the name of the mapper for the REST call; if no value is set, then no payload will be included; do not set with a GET request",
-                "config_group": "Main",
+                "config_group": "Rest Action",
             },
             "rest-object-uri": <ConfigItemInfo>{
                 "description": "the URI path for creating the request(s) in the REST server",
-                "config_group": "Main",
+                "config_group": "Rest Action",
             },
             "rest-request-key-template": <ConfigItemInfo>{
                 "default_value": "$local:workflow_instanceid-$local:stepid-$local:ind",
                 "description": "template for the unique request key",
-                "config_group": "Main",
+                "config_group": "Rest Action",
             },
             "rest-id-location": <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "location in the response for the unique ID in the POST response",
-                "config_group": "Main",
+                "config_group": "Rest Action",
             },
             "rest-headers": <ConfigItemInfo>{
                 "default_value": {},
                 "type": "hash",
                 "description": "additional headers to send with each REST request",
-                "config_group": "Main",
+                "config_group": "Rest Action",
             },
             "rest-swaggger-schema-resource": <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "the name of the service resource (name:resource) for the Swagger schema for the REST connection",
-                "config_group": "Main",
+                "config_group": "Rest Action",
             },
             "rest-sensitive-alias-input": <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "a comma-separated list of colon-separated strings giving <input key>:<sensitive alias> values for the mapper input",
-                "config_group": "Main",
+                "config_group": "Rest Action",
             },
 
             # group: recovery
@@ -316,13 +316,13 @@ class BB_RestActionStep inherits QorusNormalStep {
                 "default_value": True,
                 "description": "set to True if the request requires and supports validation, False if not; "
                     "if True then rest-id-location, rest-get-id-key, and rest-request-key-template must be set",
-                "config_group": "Recovery",
+                "config_group": "Rest Action Recovery",
             },
             "rest-get-id-key": <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "the key used to select the unique key for validation",
-                "config_group": "Recovery",
+                "config_group": "Rest Action Recovery",
             },
 
             # group: post processing
@@ -331,33 +331,34 @@ class BB_RestActionStep inherits QorusNormalStep {
                 "default_value": NOTHING,
                 "description": "the name of the order key to set the unique ID from after a successful message; "
                     "requires \"rest-id-location\" to be set",
-                "config_group": "Post Processing",
+                "config_group": "Rest Action Post Processing",
             },
             "object-dynamic-key": <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "the name of the dynamic data key to set the unique ID in after a successful message; "
                     "requires \"rest-id-location\" to be set",
-                "config_group": "Post Processing",
+                "config_group": "Rest Action Post Processing",
             },
             "parent-feedback": <ConfigItemInfo>{
                 "default_value": False,
                 "type": "bool",
                 "description": "set to true to leave feedback to the parent workflow order; only set if this step is "
                     "to be used in a subworkflow; requires \"rest-id-location\" to be set",
-                "config_group": "Post Processing",
+                "config_group": "Rest Action Post Processing",
             },
             "parent-feedback-key-template": <ConfigItemInfo>{
                 "default_value": "$local:workflow_instanceid-$local:stepid-$local:ind",
                 "description": "template for the parent feedback key; only used if \"parent-feedback\" is True",
-                "config_group": "Post Processing",
+                "config_group": "Rest Action Post Processing",
             },
 
             # group: cosmetic
             "object-name": <ConfigItemInfo>{
                 "default_value": "request ID",
                 "description": "the name of the object for logging purposes",
-                "config_group": "Cosmetic",
+                "config_group": "Rest Action Cosmetic",
+                "strictly_local": True,
             },
         };
     }
