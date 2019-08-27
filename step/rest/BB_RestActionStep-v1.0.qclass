@@ -236,7 +236,7 @@ class BB_RestActionStep inherits QorusNormalStep {
         }
         # leave parent feedback if applicable
         if (getConfigItemValue("parent-feedback")) {
-            leaveParentFeedback(getUniqueFeedbackId(), unique_object_id);
+            leaveParentFeedback(getUniqueFeedbackKey(), unique_object_id);
         }
     }
 
@@ -269,8 +269,13 @@ class BB_RestActionStep inherits QorusNormalStep {
     #! returns a unique key for this step for parent feedback
     /** @return the return value is the value of config item \b \c parent-feedback-key-template
     */
-    private string getUniqueFeedbackId() {
-        return getConfigItemValue("parent-feedback-key-template");
+    private softstring getUniqueFeedbackKey() {
+        auto v = getConfigItemValue("parent-feedback-key-template");
+        if (!v.strp()) {
+            throw "CONFIG-ERROR", sprintf("the value returned by \"parent-feedback-key-template\" cannot be "
+                "converted to a string: %y", v);
+        }
+        return v;
     }
 
     #! config items for this step
