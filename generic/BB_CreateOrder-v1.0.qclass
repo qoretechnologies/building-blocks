@@ -20,7 +20,7 @@ class BB_CreateOrder {
 
     static int createWorkflowOrder(hash<auto> order_context_data = {}) {
         # create the workflow order with the mapper
-        string mapper_name = UserApi::getConfigItemValue("workflow-order-mapper");
+        string mapper_name = UserApi::getConfigItemValue("create-workflow-order-mapper");
         Mapper mapper = UserApi::getMapper(mapper_name);
         hash<auto> order_data = mapper.mapData(order_context_data);
         UserApi::logInfo("mapper %y mapped order data: %y", mapper_name, order_data);
@@ -28,8 +28,8 @@ class BB_CreateOrder {
         softint workflow_instanceid;
         try {
             workflow_instanceid = UserApi::createOrder(
-                UserApi::getConfigItemValue("workflow-name"),
-                UserApi::getConfigItemValue("workflow-version"),
+                UserApi::getConfigItemValue("create-workflow-name"),
+                UserApi::getConfigItemValue("create-workflow-version"),
                 order_data,
             );
             UserApi::logInfo("Created workflow order instance id: %d", workflow_instanceid);
@@ -38,45 +38,46 @@ class BB_CreateOrder {
             if (ex.err == "DUPLICATE-ORDER-KEY") {
                 # check if there's only one order
                 if (ex.arg.workflow_instance_ids.size() == 1
-                    && UserApi::getConfigItemValue("workflow-duplicate-handling") == RE_SUCCESS) {
+                    && UserApi::getConfigItemValue("create-workflow-duplicate-handling") == RE_SUCCESS) {
                     workflow_instanceid = ex.arg.workflow_instance_ids[0];
                     log(LL_INFO, "duplicate order detected: order instance ID %y was detected (%s: %s)",
                         workflow_instanceid, ex.err, ex.desc);
                     return workflow_instanceid;
                 }
             }
+            UserApi::logError("duplicate order error: %s: %s (ids: %y)", ex.err, ex.desc, ex.arg.workflow_instance_ids);
             rethrow;
         }
     }
 
     static hash<string, hash<ConfigItemInfo>> getConfigItems() {
         return {
-            "workflow-order-mapper": <ConfigItemInfo>{
+            "create-workflow-order-mapper": <ConfigItemInfo>{
                 "description": "the name of the mapper to create the workflow order data",
                 "strictly_local": True,
-                "config_group": "Main",
+                "config_group": "Create Workflow Order",
             },
-            "workflow-name": <ConfigItemInfo>{
+            "create-workflow-name": <ConfigItemInfo>{
                 "description": "the name of the workflow",
                 "strictly_local": True,
-                "config_group": "Main",
+                "config_group": "Create Workflow Order",
             },
-            "workflow-version": <ConfigItemInfo>{
+            "create-workflow-version": <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "the version of the workflow; if not set (the default), the latest version will be used",
                 "strictly_local": True,
-                "config_group": "Main",
+                "config_group": "Create Workflow Order",
             },
 
-            "workflow-duplicate-handling": <ConfigItemInfo>{
+            "create-workflow-duplicate-handling": <ConfigItemInfo>{
                 "description": "how should workflows with duplicate unique keys be handled: SUCCESS = the workflow "
                     "order instance ID is returned normally, DUPLICATE = the DUPLICATE-ORDER-KEY exception is "
                     "rethrown",
                 "default_value": RE_SUCCESS,
                 "strictly_local": True,
                 "allowed_values": (RE_SUCCESS, RE_DUPLICATE),
-                "config_group": "Recovery",
+                "config_group": "Create Workflow Order Recovery",
             },
 
         };

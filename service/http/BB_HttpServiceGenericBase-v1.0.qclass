@@ -1,35 +1,16 @@
 # -*- mode: qore; indent-tabs-mode: nil -*-
 
-# name: BB_RestServiceBase
+# name: BB_HttpServiceGenericBase
 # version: 1.0
-# desc: base class for REST handler services
+# desc: base class for HTTP handler services
 # author: Qore Technologies, s.r.o.
+
 %new-style
 %require-types
 %strict-args
 %enable-all-warnings
 
-# import the Swagger module for Swagger 2.0 REST schema validation
-%requires Swagger
-
-class BB_RestHandlerBase inherits AbstractServiceRestHandler {
-    constructor() : AbstractServiceRestHandler(
-        ServiceApi::getConfigItemValue("root-uri"),
-        False,
-        new QorusParametrizedAuthenticator(ServiceApi::getConfigItemValue("auth-name")),
-        BB_RestHandlerBase::getSwaggerSchema()) {
-    }
-
-    private static *SwaggerSchema getSwaggerSchema() {
-        *string schema = ServiceApi::getConfigItemValue("swagger-schema");
-        if (!schema) {
-            return;
-        }
-        return SwaggerLoader::fromString(ServiceApi::getResourceData(schema).toString(), False);
-    }
-}
-
-class BB_RestServiceBase inherits QorusService {
+class BB_HttpServiceGenericBase inherits QorusService {
     public {
         const CS_REQUIRE_CLIENT_CERT = "REQUIRE-CLIENT-CERT";
         const CS_NO_CLIENT_CERT_REQUIRED = "NO-CLIENT-CERT-REQUIRED";
@@ -53,112 +34,93 @@ class BB_RestServiceBase inherits QorusService {
     }
 
     private setupHandler() {
-        AbstractServiceRestHandler handler = getHandlerImpl();
+        AbstractServiceHttpHandler handler = getHandlerImpl();
         setupHandlerIntern(handler);
         bindHttp(handler);
     }
 
-    static private setupHandlerIntern(AbstractServiceRestHandler handler) {
-        *string bind = ServiceApi::getConfigItemValue("listener-bind-address");
+    static private setupHandlerIntern(AbstractServiceHttpHandler handler) {
+        *string bind = ServiceApi::getConfigItemValue("http-listener-bind-address");
         if (!exists bind) {
             return;
         }
         hash<HttpListenerOptionInfo> info = http_get_listener_options_from_bind(bind);
-        if (*string resource_name = ServiceApi::getConfigItemValue("listener-cert-resource")) {
+        if (*string resource_name = ServiceApi::getConfigItemValue("http-listener-cert-resource")) {
             data cert_data = ServiceApi::getResourceData(resource_name);
             info.cert = new SSLCertificate(cert_data);
         }
-        if (*string resource_name = ServiceApi::getConfigItemValue("listener-key-resource")) {
+        if (*string resource_name = ServiceApi::getConfigItemValue("http-listener-key-resource")) {
             data key_data = ServiceApi::getResourceData(resource_name);
             if (key_data.typeCode() == NT_STRING) {
-                info.key = new SSLPrivateKey(key_data, ServiceApi::getConfigItemValue("listener-key-password"));
+                info.key = new SSLPrivateKey(key_data, ServiceApi::getConfigItemValue("http-listener-key-password"));
             } else {
                 info.key = new SSLPrivateKey(key_data);
             }
         }
-        if (ServiceApi::getConfigItemValue("listener-accept-all-certs")) {
+        if (ServiceApi::getConfigItemValue("http-listener-accept-all-certs")) {
             info.ssl_accept_all_certs = True;
         }
-        if (ServiceApi::getConfigItemValue("listener-capture-client-certs")) {
+        if (ServiceApi::getConfigItemValue("http-listener-capture-client-certs")) {
             info.get_remote_certs = True;
         }
-        info.ssl_verify_flags = SSL_MAP{ServiceApi::getConfigItemValue("listener-ssl-mode")};
+        info.ssl_verify_flags = SSL_MAP{ServiceApi::getConfigItemValue("http-listener-ssl-mode")};
         handler.addListener(info);
     }
 
-    private abstract AbstractServiceRestHandler getHandlerImpl();
+    private abstract AbstractServiceHttpHandler getHandlerImpl();
 
     private *hash<string, hash<ConfigItemInfo>> getConfigItemsImpl() {
         return {
-            "root-uri": <ConfigItemInfo>{
-                "description": "The root URI path for the REST service",
-                "strictly_local": True,
-                "config_group": "Main",
-            },
-            "auth-name": <ConfigItemInfo>{
-                "default_value": "auth",
-                "description": "The name of the HTTP authentication label",
-                "strictly_local": True,
-                "config_group": "Main",
-            },
-            "swagger-schema": <ConfigItemInfo>{
-                "type": "*string",
-                "description": "the name of the resource with the Swagger schema for this service",
-                "default_value": NOTHING,
-                "strictly_local": True,
-                "config_group": "Main",
-            },
-
-            "listener-bind-address":  <ConfigItemInfo>{
+            "http-listener-bind-address":  <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "optional bind address for a dedicated listener; if not set, then it will bind on all "
                     "Qorus system listeners as a global handler",
                 "strictly_local": True,
-                "config_group": "Listener",
+                "config_group": "HTTP/S Listener",
             },
-            "listener-cert-resource":  <ConfigItemInfo>{
+            "http-listener-cert-resource":  <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "optional X.509 certificate resource name for a dedicated listener",
                 "strictly_local": True,
-                "config_group": "Listener",
+                "config_group": "HTTP/S Listener",
             },
-            "listener-key-resource":  <ConfigItemInfo>{
+            "http-listener-key-resource":  <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "optional private key resource name for a dedicated listener",
                 "strictly_local": True,
-                "config_group": "Listener",
+                "config_group": "HTTP/S Listener",
             },
-            "listener-key-password":  <ConfigItemInfo>{
+            "http-listener-key-password":  <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "optional password to PEM private key data for a dedicated listener",
                 "strictly_local": True,
-                "config_group": "Listener",
+                "config_group": "HTTP/S Listener",
             },
-            "listener-ssl-mode":  <ConfigItemInfo>{
+            "http-listener-ssl-mode":  <ConfigItemInfo>{
                 "type": "string",
                 "default_value": CS_NO_CLIENT_CERT_REQUIRED,
                 "description": "set the SSL mode",
                 "allowed_values": keys SSL_MAP,
                 "strictly_local": True,
-                "config_group": "Listener",
+                "config_group": "HTTP/S Listener",
             },
-            "listener-accept-all-certs":  <ConfigItemInfo>{
+            "http-listener-accept-all-certs":  <ConfigItemInfo>{
                 "type": "bool",
                 "default_value": True,
                 "description": "flag to accept all client certificates",
                 "strictly_local": True,
-                "config_group": "Listener",
+                "config_group": "HTTP/S Listener",
             },
-            "listener-capture-client-certs":  <ConfigItemInfo>{
+            "http-listener-capture-client-certs":  <ConfigItemInfo>{
                 "type": "bool",
                 "default_value": True,
                 "description": "flag to capture client certificates",
                 "strictly_local": True,
-                "config_group": "Listener",
+                "config_group": "HTTP/S Listener",
             },
         };
     }
