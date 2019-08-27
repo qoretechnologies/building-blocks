@@ -93,47 +93,47 @@ class BB_RemoteDb2LocalDbImportStep inherits QorusNormalStep {
             # main configuration items
             "db2db-mapper-name": <ConfigItemInfo>{
                 "description": "the name of the mapper for the DB translations",
-                "config_group": "Main",
+                "config_group": "Remote DB Import",
             },
             "db2db-remote-instance": <ConfigItemInfo>{
                 "description": "the name of the remote qorus instance hosting the remote table",
-                "config_group": "Main",
+                "config_group": "Remote DB Import",
             },
             "db2db-remote-datasource": <ConfigItemInfo>{
                 "description": "the name of the datasource in the remote instance",
-                "config_group": "Main",
+                "config_group": "Remote DB Import",
             },
             "db2db-remote-table": <ConfigItemInfo>{
                 "description": "the name of the table in the remote datasource",
-                "config_group": "Main",
+                "config_group": "Remote DB Import",
             },
             "db2db-remote-options": <ConfigItemInfo>{
                 "type": "hash",
                 "default_value": {},
                 "description": "options for the DbRemoteReceive object",
-                "config_group": "Main",
+                "config_group": "Remote DB Import",
             },
             "db2db-remote-select-column": <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "the name of the column for the select criteria in the remote datasource",
-                "config_group": "Main",
+                "config_group": "Remote DB Import",
             },
             "db2db-remote-select-value-template": <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "the column value for the select criteria in the remote table",
-                "config_group": "Main",
+                "config_group": "Remote DB Import",
             },
 
             # recovery items
             "db2db-recovery-column": <ConfigItemInfo>{
                 "description": "the name of the column for recovery",
-                "config_group": "Recovery",
+                "config_group": "Remote DB Import Recovery",
             },
             "db2db-recovery-value-template": <ConfigItemInfo>{
                 "description": "value for recovery",
-                "config_group": "Recovery",
+                "config_group": "Remote DB Import Recovery",
             },
         };
     }
