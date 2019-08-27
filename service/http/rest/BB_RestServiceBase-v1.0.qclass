@@ -15,10 +15,11 @@
 %requires Swagger
 
 class BB_RestHandlerBase inherits AbstractServiceRestHandler {
-    constructor() : AbstractServiceRestHandler(
+    constructor(AbstractAuthenticator auth = new QorusParametrizedAuthenticator(ServiceApi::getConfigItemValue("rest-auth-name")))
+        : AbstractServiceRestHandler(
         ServiceApi::getConfigItemValue("rest-root-uri"),
         False,
-        new QorusParametrizedAuthenticator(ServiceApi::getConfigItemValue("rest-auth-name")),
+        auth,
         BB_RestHandlerBase::getSwaggerSchema()) {
     }
 

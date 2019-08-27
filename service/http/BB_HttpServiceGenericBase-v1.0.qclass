@@ -10,6 +10,8 @@
 %strict-args
 %enable-all-warnings
 
+%requires HttpServerUtil
+
 class BB_HttpServiceGenericBase inherits QorusService {
     public {
         const CS_REQUIRE_CLIENT_CERT = "REQUIRE-CLIENT-CERT";
@@ -48,6 +50,8 @@ class BB_HttpServiceGenericBase inherits QorusService {
         if (*string resource_name = ServiceApi::getConfigItemValue("http-listener-cert-resource")) {
             data cert_data = ServiceApi::getResourceData(resource_name);
             info.cert = new SSLCertificate(cert_data);
+        } else if (*string path = ServiceApi::getConfigItemValue("http-listener-cert-path")) {
+            info.cert = new SSLCertificate(path =~ /\.der$/ ? File::readBinaryFile(path, HttpServer::MaxSslFileLen) : File::readTextFile(path, NOTHING, HttpServer::MaxSslFileLen));
         }
         if (*string resource_name = ServiceApi::getConfigItemValue("http-listener-key-resource")) {
             data key_data = ServiceApi::getResourceData(resource_name);
@@ -56,6 +60,10 @@ class BB_HttpServiceGenericBase inherits QorusService {
             } else {
                 info.key = new SSLPrivateKey(key_data);
             }
+        } else if (*string path = ServiceApi::getConfigItemValue("http-listener-key-path")) {
+            info.key = path =~ /\.der$/
+                ? new SSLPrivateKey(File::readBinaryFile(path, HttpServer::MaxSslFileLen))
+                : new SSLPrivateKey(File::readTextFile(path, NOTHING, HttpServer::MaxSslFileLen), ServiceApi::getConfigItemValue("http-listener-key-password"));
         }
         if (ServiceApi::getConfigItemValue("http-listener-accept-all-certs")) {
             info.ssl_accept_all_certs = True;
@@ -82,14 +90,28 @@ class BB_HttpServiceGenericBase inherits QorusService {
             "http-listener-cert-resource":  <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
-                "description": "optional X.509 certificate resource name for a dedicated listener",
+                "description": "optional X.509 certificate resource name for a dedicated listener; conflicts with 'http-listener-cert-path'",
                 "strictly_local": True,
                 "config_group": "HTTP/S Listener",
             },
             "http-listener-key-resource":  <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
-                "description": "optional private key resource name for a dedicated listener",
+                "description": "optional private key resource name for a dedicated listener; conflicts with 'http-listener-key-path'",
+                "strictly_local": True,
+                "config_group": "HTTP/S Listener",
+            },
+            "http-listener-cert-path":  <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "optional X.509 certificate path for a dedicated listener; conflicts with 'http-listener-cert-resource'",
+                "strictly_local": True,
+                "config_group": "HTTP/S Listener",
+            },
+            "http-listener-key-path":  <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "optional private key path for a dedicated listener; conflicts with 'http-listener-key-resource'",
                 "strictly_local": True,
                 "config_group": "HTTP/S Listener",
             },

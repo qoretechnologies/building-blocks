@@ -12,11 +12,12 @@
 %enable-all-warnings
 
 class BB_HttpHandlerBase inherits AbstractServiceHttpHandler {
-    constructor() : AbstractServiceRestHandler(
+    constructor(AbstractAuthenticator auth = new QorusParametrizedAuthenticator(ServiceApi::getConfigItemValue("http-auth-name")))
+        : AbstractServiceRestHandler(
         ServiceApi::getConfigItemValue("http-root-uri"),
         ServiceApi::getConfigItemValue("http-match-content-types"),
         ServiceApi::getConfigItemValue("http-match-headers"),
-        new QorusParametrizedAuthenticator(ServiceApi::getConfigItemValue("http-auth-name")),
+        auth),
         ServiceApi::getConfigItemValue("http-root-uri-is-regex")) {
     }
 }
