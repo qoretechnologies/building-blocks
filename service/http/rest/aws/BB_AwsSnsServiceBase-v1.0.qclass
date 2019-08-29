@@ -4,7 +4,7 @@
 # version: 1.0
 # desc: Base IoT AWS SNS service class
 # author: Qore Technologies, s.r.o.
-## requires: BB_RestServiceBase
+# requires: BB_RestServiceBase
 
 %new-style
 %require-types

@@ -4,7 +4,7 @@
 # version: 1.0
 # desc: base class for REST handler services
 # author: Qore Technologies, s.r.o.
-## requires: BB_HttpServiceGenericBase
+# requires: BB_HttpServiceGenericBase
 
 %new-style
 %require-types
