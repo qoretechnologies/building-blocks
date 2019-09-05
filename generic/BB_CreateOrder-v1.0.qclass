@@ -9,15 +9,43 @@
 %strict-args
 %enable-all-warnings
 
+#! creates a workflow order from the input data according to the configuration
+/** supports atomic workflow order creation through handling \c DUPLICATE-ORDER-KEY exceptions thrown by
+    @ref UserApi::createOrder()
+
+    Configuration items:
+    - \c create-workflow-order-mapper: the mapper used to create the static order data for the order; the mapper
+      returns the value used for the @ref UserApi::createOrder() \a params option giving the new workflow order
+      information
+    - \c create-workflow-name: the name of the workflow to create the order for
+    - \c create-workflow-version: the optional version of the workflow, if not set, then an order will be created for
+      the latest version of the workflow
+    - \c create-workflow-duplicate-handling: set to determine how duplicate errors are handled; set to \c "SUCCESS" to
+      enable the @ref BB_CreateOrder::createWorkflowOrder() method to return the workflow_instanceid in case a single
+      workflow_instanceid matches, set to \c "DUPLICATE" to throw a \c DUPLICATE-ORDER-KEY exception in all cases if
+      duplicates are found
+
+      @note No comparison of the order data is made in case of duplicated; it is assumed that the data is identical
+*/
 class BB_CreateOrder {
     public {
         #! value indicating the duplicate orders should be returned transparently with a success response
         const RE_SUCCESS = "SUCCESS";
 
-        #! value indicating that duplicate orders should have a DUPLICATE-ORDER-KEY exception thrown
+        #! value indicating that duplicate orders should have a \c DUPLICATE-ORDER-KEY exception thrown
         const RE_DUPLICATE = "DUPLICATE";
     }
 
+    #! creates the order with the input data, returns the workflow_instanceid of the order created
+    /** @param order_context_data the input data provided to the mapper (defined by the \c create-workflow-order-mapper config item)
+
+        @return the workflow_instanceid of the order created
+
+        @throw DUPLICATE-ORDER-KEY if unique options are provided to the @ref UserApi::createOrder() call and more
+        than one order conflicts with the unique keys given, then this exception is thrown in all cases; this
+        exception is also thrown even with one match if the \c create-workflow-duplicate-handling config item is set
+        to \c "DUPLICATE"
+    */
     static int createWorkflowOrder(hash<auto> order_context_data = {}) {
         # create the workflow order with the mapper
         string mapper_name = UserApi::getConfigItemValue("create-workflow-order-mapper");
@@ -50,8 +78,10 @@ class BB_CreateOrder {
         }
     }
 
+    #! returns the config items as documented in the class documentation
     static hash<string, hash<ConfigItemInfo>> getConfigItems() {
         return {
+            # order creation
             "create-workflow-order-mapper": <ConfigItemInfo>{
                 "description": "the name of the mapper to create the workflow order data",
                 "strictly_local": True,
@@ -70,6 +100,7 @@ class BB_CreateOrder {
                 "config_group": "Create Workflow Order",
             },
 
+            # order creation recovery
             "create-workflow-duplicate-handling": <ConfigItemInfo>{
                 "description": "how should workflows with duplicate unique keys be handled: SUCCESS = the workflow "
                     "order instance ID is returned normally, DUPLICATE = the DUPLICATE-ORDER-KEY exception is "
@@ -79,7 +110,6 @@ class BB_CreateOrder {
                 "allowed_values": (RE_SUCCESS, RE_DUPLICATE),
                 "config_group": "Create Workflow Order Recovery",
             },
-
         };
     }
 }

@@ -2,6 +2,7 @@
 # version: 1.0
 # desc: generic step for making a transaction safe REST request
 # author: Qore Technologies, s.r.o.
+## requires: BB_RestActionWithRecovery
 %new-style
 %require-types
 %strict-args
@@ -12,395 +13,80 @@
 
 #! this step building block creates an object in a remote REST server
 /** This step building block is transaction safe; in case of an error, the validation logic will query the server
-    using a unique key provided in the request if the config item \b \c rest-supports-validation is present
+    using a unique key provided in the request if the config item \c rest-supports-recovery is present
     to determine if the object was actually created in the original request or not
+
+    The request mapper is provided the following additional keys to give workflow and order context information:
+    - \c static: the static data for the workflow order
+    - \c dymamic: the dynamic data for the workflow order
+    - \c orderkeys: the workflow order keys
+    .
+    plus any sensitive data provided by the \c rest-sensitive-alias-input configuration item
 
     Validation will determine that the REST call must be retried if one of the two conditions occurs:
     - A <tt>404 Not Found</tt> response is provided when queried with the recovery URI path
-      (config item \b \c rest-recovery-uri)
-    - The request succeeds but the unique response ID (identified with config item \b \c rest-id-location) is not
+      (config item \c rest-recovery-uri)
+    - The request succeeds but the unique response ID (identified with config item \c rest-id-location) is not
       provided in the response
 
     If either of these conditions occur, the validation method will return @ref OMQ::StatRetry.
 
-    If the validation response returns the unique
-
-    The following configuration items are supported; note that subclasses must provide default values
-    for required config items (in bold):
-    - \b \c rest-connection-name: (required) the name of the REST connection
-    - \b \c rest-api-mapper-name: (required) the name of the mapper for the REST call
-    - \b \c rest-object-uri: (required) the URI path for creating and querying the object in the REST server
-    - \b \c rest-supports-validation: (required) set to True if the request requires and supports validation,
-      False if not; if True then \c \b rest-recovery-uri must be set
-    - \b \c rest-id-location: (optional) location in the response for the unique ID in the POST response
-    - \b \c rest-recovery-uri: (optional) the template for the GET request when querying the server about the original
-      request
-    - \b \c object-name: (required) the name of the object for logging purposes
-    - \c rest-swaggger-schema-resource: (optional) the name of the service resource (name:resource) for the Swagger
-      schema for the REST connection (default empty = no swaggger schema service resource for REST client)
-    - \c rest-sensitive-alias-input: (optional) a comma-separated list of colon-separated strings giving <input
-      key>:<sensitive alias> values for the mapper input (default empty = no sensitive data input for mapper)
-    - \c object-order-key: (optional) the name of the order key to set the unique ID from (default empty = do not set an
-      order key)
-    - \c object-dynamic-key: (optional) the name of the dynamic data key to set the unique ID in (default empty = do not
-      set a dymamic key)
-    - \c parent-feedback: (required) set to true to leave feedback to the parent workflow order (default false);
-      requires \"rest-id-location\" to be set
-    - \c parent-feedback-key-template: (optional) the template for the the parent feedback key (if \c parent-feedback
-      is @ref True); default value: \c "$local:workflow_instanceid-$local:stepid-$local:ind"
-
-    @note The swagger schema can be set in the REST connection itself; \c rest-swaggger-schema-resource is only for
-    convenience in case the same Swagger schema is also used by a server-side service
+    @see @ref BB_RestActionWithRecovery and @ref RestAction for information on supported configuration items, plus the
+    following configuration item supplied by this class:
+    - \c rest-sensitive-alias-input
 */
-class BB_RestActionStep inherits QorusNormalStep {
+class BB_RestActionStep inherits QorusNormalStep, BB_RestActionWithRecovery {
     #! the primary step logic: create the object in the remote REST server
     primary() {
-        # get the connection to the REST API
-        RestClient rc = getConnection();
-
-        # the message body for the request
-        hash<auto> object_info;
-
-        # get mapper name
-        *string mapper_name = getConfigItemValue("rest-api-mapper-name");
-        if (exists mapper_name) {
-            # get mapper to convert from order data to the REST call
-            Mapper mapper = getMapper(mapper_name);
-
-            # setup sensitive input if required
-            hash<auto> sensitive_input;
-            {
-                *string aliases = getConfigItemValue("rest-sensitive-alias-input");
-                if (aliases) {
-                    foreach string str in (aliases.split(",")) {
-                        (*string key, *string alias) = (str =~ x/([^:]+):(.*)$/);
-                        if (!key.val() || !alias.val()) {
-                            throw "ALIAS-CONFIG-ERROR", sprintf("config item \"rest-sensitive-alias-input\" has "
-                                "invalid value %y; expected a comma-separated list of <key>:<alias> values", str);
-                        }
-                        sensitive_input{key} = getSensitiveDataFromAlias(alias);
-                    }
-                }
-            }
-
-            # setup raw data for making the REST API call
-            hash<auto> input_data = {
-                "static": getStaticData(),
-                "dynamic": getDynamicData(),
-                "context": getUserContextInfo(),
-                "orderkeys": getOrderKeys(),
-            } + sensitive_input;
-            object_info = mapper.mapData(input_data);
-        }
-        # get the URI path for the request for creating the object
-        string uri_path = getConfigItemValue("rest-object-uri");
-        bool validation = getConfigItemValue("rest-supports-validation");
-        string rest_method = getConfigItemValue("rest-method");
-        *hash<auto> hdr = getConfigItemValue("rest-headers");
-        # create the object and get the unique ID
-        hash<auto> info;
-        logDebug("REST REQUEST: method: %y URI: %y args: %y", rest_method, uri_path, object_info);
-        hash<auto> response;
-        {
-            # ensure that request info gets logged
-            on_exit {
-                logDebug("REST REQUEST INFO: %N", info);
-            }
-            response = rc.doRequest(
-                rest_method,
-                uri_path,
-                object_info,
-                \info,
-                NOTHING,
-                hdr,
-            );
-        }
-        logDebug("REST RESPONSE: %N", response);
-
-        *string unique_id_loc = getConfigItemValue("rest-id-location");
-        if (unique_id_loc) {
-            # save the unique ID for further processing
-            saveUniqueId(getUniqueId(response.body, unique_id_loc));
-        }
+        makeRestRequest();
     }
 
-    # try to get object ID from the unique request ID
+    # query the server to check if the original message was delivered
     /** this logic guarantees that we never create the object twice for the same request
     */
     string validation() {
-        if (!getConfigItemValue("rest-supports-validation")) {
-            logInfo("request does not support validation; retrying");
-            return OMQ::StatRetry;
-        }
-
-        # get the connection to the REST API
-        RestClient rc = getConnection();
-        # get the URI path for the GET request for creating the object
-        string get_uri_path = getConfigItemValue("rest-recovery-uri");
-        # info hash for the REST GET request
-        hash<auto> info;
-        # for the REST response
-        hash<auto> response;
-        logInfo("executing REST recovery request: GET %s", get_uri_path);
-        try {
-            # ensure that request info gets logged
-            on_exit {
-                logDebug("REST RECOVERY REQUEST INFO: %N", info);
-            }
-            # try to retrieve object ID from the unique request ID
-            *hash<auto> hdr = getConfigItemValue("rest-headers");
-            response = rc.get(get_uri_path, NOTHING, \info, hdr);
-        } catch (hash<ExceptionInfo> ex) {
-            # if not found, then retry
-            if (info."response-code" == 404) {
-                # no object exists; retry the object creation logic
-                logInfo("%y: 404 Not Found; retrying", get_uri_path);
-                return OMQ::StatRetry;
-            }
-            # for any other errors, rethrow the exception
-            rethrow;
-        }
-        logDebug("REST RECOVERY RESPONSE: %N", response);
-
-        # get the location of the unique ID in the response
-        *string unique_id_loc = getConfigItemValue("rest-recovery-id-location") ?? getConfigItemValue("rest-id-location");
-        if (unique_id_loc) {
-            # unique object ID to be returned
-            *string unique_object_id = getHashDotValue(response, unique_id_loc);
-            if (!unique_object_id.val()) {
-                logInfo("cannot find unique ID in response body in location %y; body: %N; retrying",
-                    unique_id_loc, response.body);
-                return OMQ::StatRetry;
-            }
-
-            # object was created; save it and continue
-            saveUniqueId(unique_object_id);
-            # step has been recovered
-            return OMQ::StatComplete;
-        }
-
-        # get the recovery location
-        *string recovery_loc = getConfigItemValue("rest-recovery-response-location");
-        if (!exists recovery_loc) {
-            throw "CONFIG-ERROR", "neither \"rest-recovery-id-location\" nor "
-            "\"rest-recovery-response-location\" are set; set \"rest-supports-validation\" to false or configure "
-            "recovery options in order to continue processing this workflow order";
-        }
-        auto recovery_val = getConfigItemValue("rest-recovery-response-value");
-
-        # check response for value
-        auto val = getHashDotValue(response, recovery_loc);
-
-        if (recovery_val == val) {
-            logInfo("%y = %y in the recovery response; step is already COMPLETE", recovery_loc, val);
-            # step has been recovered
-            return OMQ::StatComplete;
-        }
-
-        logInfo("%y != %y (current value: %y); step must be retried", recovery_loc, recovery_val, val);
-        # step has been recovered
-        return OMQ::StatRetry;
+        return recovery();
     }
 
-    #! returns the unique ID in the response
-    /** @param response the response as returned from the HTTP server
-        @param unique_id_loc the unique ID location
-
-        @return the unique ID in the response
-
-        @throw REST-REQUEST-ERROR if the unique ID cannot be found in the response
+    #! returns the input data for the mapper that creates the REST request body, if any
+    /** adds workflow data to the input data for the mapper with the following keys:
+        - \c static: workflow static data
+        - \c dynamic: workflow dynamic data
+        - \c orderkeys: workflow order keys
     */
-    string getUniqueId(hash<auto> response, string unique_id_loc) {
-        *softstring id = getHashDotValue(response, unique_id_loc);
-        if (!id.val()) {
-            throw "REST-REQUEST-ERROR", sprintf("cannot find unique ID in response body in location %y; body: %N",
-                unique_id_loc, response.body);
-        }
-        return id;
-    }
-
-    #! saves the unique ID createed
-    /** also stores it as an order key against the order, and returns it to the parent order as workflow order feedback
-    */
-    private saveUniqueId(string unique_object_id) {
-        string object_name = getConfigItemValue("object-name");
-        logInfo("SUCCESS: got %s %y for request", object_name, unique_object_id);
-        # set order key if applicable
-        *string key = getConfigItemValue("object-order-key");
-        if (key.val()) {
-            setOrderKey(key, unique_object_id);
-        }
-        key = getConfigItemValue("object-dynamic-key");
-        if (key.val()) {
-            updateDynamicData(UserApi::updateHashDotValue(getDynamicData(), key, unique_object_id));
-        }
-        # leave parent feedback if applicable
-        if (getConfigItemValue("parent-feedback")) {
-            leaveParentFeedback(getUniqueFeedbackKey(), unique_object_id);
-        }
-    }
-
-    #! returns a REST connection to the server, optionally setting a Swagger schema from a service resource
-    private RestClient getConnection() {
-        # connection options, if any
-        hash<auto> connection_opts;
+    private hash<auto> getRestInputData() {
+        # setup sensitive input if required
+        hash<auto> sensitive_input;
         {
-            # get Swagger schema resource name, if any
-            *string schema = getConfigItemValue("rest-swaggger-schema-resource");
-            if (schema) {
-                (*string svc, *string rsc) = (schema =~ x/([^:]+):(.*)$/);
-                if (!svc.val() || !rsc.val()) {
-                    throw "SWAGGER-CONFIG-ERROR", sprintf("config item \"rest-swaggger-schema-resource\" has "
-                        "invalid value %y; format <service>:<resource> is required", schema);
+            *string aliases = getConfigItemValue("rest-sensitive-alias-input");
+            if (aliases) {
+                foreach string str in (aliases.split(",")) {
+                    (*string key, *string alias) = (str =~ x/([^:]+):(.*)$/);
+                    if (!key.val() || !alias.val()) {
+                        throw "ALIAS-CONFIG-ERROR", sprintf("config item \"rest-sensitive-alias-input\" has "
+                            "invalid value %y; expected a comma-separated list of <key>:<alias> values", str);
+                    }
+                    sensitive_input{key} = getSensitiveDataFromAlias(alias);
                 }
-                # get Swagger schema text
-                schema = call_rest_api("GET", "services/" + svc + "/resource_files/" + rsc + "/data");
-                # create Swaggger REST schema validator object
-                SwaggerSchema swagger = SwaggerLoader::fromString(schema, False);
-                connection_opts = {
-                    "validator": swagger,
-                };
             }
         }
-        # get REST connecting and use validator, if present
-        return getUserConnection(getConfigItemValue("rest-connection-name"), True, True, connection_opts);
-    }
 
-    #! returns a unique key for this step for parent feedback
-    /** @return the return value is the value of config item \b \c parent-feedback-key-template
-    */
-    private softstring getUniqueFeedbackKey() {
-        auto v = getConfigItemValue("parent-feedback-key-template");
-        if (!v.strp()) {
-            throw "CONFIG-ERROR", sprintf("the value returned by \"parent-feedback-key-template\" cannot be "
-                "converted to a string: %y", v);
-        }
-        return v;
+        # setup raw data for making the REST API call
+        return BB_RestAction::getRestInputData() + {
+            "static": getStaticData(),
+            "dynamic": getDynamicData(),
+            "orderkeys": getOrderKeys(),
+        } + sensitive_input;
     }
 
     #! config items for this step
     private *hash<string, hash<ConfigItemInfo>> getConfigItemsImpl() {
-        return {
-            # group: main
-            "rest-connection-name": <ConfigItemInfo>{
-                "description": "the name of the REST connection",
-                "config_group": "Rest Action",
-            },
-            "rest-method": <ConfigItemInfo>{
-                "description": "the REST method to use",
-                "default_value": "POST",
-                "config_group": "Rest Action",
-            },
-            "rest-api-mapper-name": <ConfigItemInfo>{
-                "type": "*string",
-                "default_value": NOTHING,
-                "description": "the name of the mapper for the REST call; if no value is set, then no payload will be included; do not set with a GET request",
-                "config_group": "Rest Action",
-            },
-            "rest-object-uri": <ConfigItemInfo>{
-                "description": "the URI path for creating the request(s) in the REST server",
-                "config_group": "Rest Action",
-            },
-            "rest-id-location": <ConfigItemInfo>{
-                "type": "*string",
-                "default_value": NOTHING,
-                "description": "location in the response for the unique ID in the POST response",
-                "config_group": "Rest Action",
-            },
-            "rest-headers": <ConfigItemInfo>{
-                "default_value": {},
-                "type": "hash",
-                "description": "additional headers to send with each REST request",
-                "config_group": "Rest Action",
-            },
-            "rest-swaggger-schema-resource": <ConfigItemInfo>{
-                "type": "*string",
-                "default_value": NOTHING,
-                "description": "the name of the service resource (name:resource) for the Swagger schema for the REST connection",
-                "config_group": "Rest Action",
-            },
+        return BB_RestActionWithRecovery::getConfigItems() + {
             "rest-sensitive-alias-input": <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "a comma-separated list of colon-separated strings giving <input key>:<sensitive alias> values for the mapper input",
                 "config_group": "Rest Action",
-            },
-
-            # group: recovery
-            "rest-supports-validation": <ConfigItemInfo>{
-                "type": "bool",
-                "default_value": True,
-                "description": "set to True if the request requires and supports validation, False if not; "
-                    "if True then rest-recovery-uri must be set",
-                "config_group": "Rest Action Recovery",
-            },
-            "rest-recovery-uri":  <ConfigItemInfo>{
-                "type": "*string",
-                "default_value": NOTHING,
-                "description": "the URI path for the recovery request to the REST server",
-                "config_group": "Rest Action Recovery",
-            },
-            "rest-recovery-id-location": <ConfigItemInfo>{
-                "type": "*string",
-                "default_value": NOTHING,
-                "description": "the location of the unique ID for the record in the REST recovery response; "
-                    "conflicts with \"rest-recovery-response-location\"; if not set and \"rest-id-location\" is set, "
-                    "then \"rest-id-location\" will be used for this value",
-                "config_group": "Rest Action Recovery",
-            },
-            "rest-recovery-response-location":  <ConfigItemInfo>{
-                "type": "*string",
-                "default_value": NOTHING,
-                "description": "the location of the recovery value in the recovery response message to check; the "
-                    "value to check must be set with \"rest-recovery-response-value\"; conflicts with "
-                    "\"rest-recovery-id-location\"; only used if \"rest-id-location\" is not set; the value here is "
-                    "related to the entire HTTP response; prefix with \"body.\" to compare values in the response "
-                    "message body",
-                "config_group": "Rest Action Recovery",
-            },
-            "rest-recovery-response-value":  <ConfigItemInfo>{
-                "type": "any",
-                "default_value": NOTHING,
-                "description": "the value to compare against the value given by \"rest-recovery-response-location\"; "
-                    "must be set with \"rest-recovery-response-value\"; conflicts with "
-                    "\"rest-recovery-id-location\"; only used if \"rest-id-location\" is not set",
-                "config_group": "Rest Action Recovery",
-            },
-
-            # group: post processing
-            "object-order-key": <ConfigItemInfo>{
-                "type": "*string",
-                "default_value": NOTHING,
-                "description": "the name of the order key to set the unique ID from after a successful message; "
-                    "requires \"rest-id-location\" to be set",
-                "config_group": "Rest Action Post Processing",
-            },
-            "object-dynamic-key": <ConfigItemInfo>{
-                "type": "*string",
-                "default_value": NOTHING,
-                "description": "the name of the dynamic data key to set the unique ID in after a successful message; "
-                    "requires \"rest-id-location\" to be set",
-                "config_group": "Rest Action Post Processing",
-            },
-            "parent-feedback": <ConfigItemInfo>{
-                "default_value": False,
-                "type": "bool",
-                "description": "set to true to leave feedback to the parent workflow order; only set if this step is "
-                    "to be used in a subworkflow; requires \"rest-id-location\" to be set",
-                "config_group": "Rest Action Post Processing",
-            },
-            "parent-feedback-key-template": <ConfigItemInfo>{
-                "default_value": "$local:workflow_instanceid-$local:stepid-$local:ind",
-                "description": "template for the parent feedback key; only used if \"parent-feedback\" is True",
-                "config_group": "Rest Action Post Processing",
-            },
-
-            # group: cosmetic
-            "object-name": <ConfigItemInfo>{
-                "default_value": "request ID",
-                "description": "the name of the object for logging purposes",
-                "config_group": "Rest Action Cosmetic",
-                "strictly_local": True,
             },
         };
     }
