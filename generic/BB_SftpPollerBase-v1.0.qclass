@@ -1,0 +1,209 @@
+# name: BB_SftpPollerBase
+# version: 1.0
+# desc: generic class for polling for files from an SFTP server
+# author: Qore Technologies, s.r.o.
+# requires: BB_RegularExpressions
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+%requires SftpPoller
+
+#! this base building block polls an SFTP server for files
+/**
+*/
+class BB_SftpPollerBase {
+    private {
+        BB_SftpPollerPriv poller;
+
+        const OneToOneOpts = (
+            "minage",
+            "encoding",
+            "binary",
+        );
+    }
+
+    #! the primary SFTP polling action logic: poll the SFTP server for files
+    /** @return True if files were found
+    */
+    bool runOnce() {
+        setup();
+        return poller.runOnce();
+    }
+
+    private setup() {
+        SftpClient sftp = UserApi::getUserConnection(UserApi::getConfigItemValue("sftp-polling-connection-name"));
+
+        hash<auto> poller_opts;
+
+        string mask = UserApi::getConfigItemValue("sftp-polling-mask");
+        if (UserApi::getConfigItemValue("sftp-polling-mask-regex")) {
+            poller_opts.regex_mask = mask;
+            poller_opts.reopts = QRE_MAP{UserApi::getConfigItemValue("sftp-polling-regex-opts")};
+        }
+
+        # add 1:1 opts
+        poller_opts += map {$1: UserApi::getConfigItemValue("sftp-polling-" + $1)}, OneToOneOpts;
+
+        # add logging options
+        poller_opts += {
+            "log_info": \UserApi::logInfo(),
+            "log_detail": \UserApi::logInfo(),
+            "log_debug": \UserApi::logDebug(),
+        };
+
+        poller = new BB_SftpPollerPriv(sftp, poller_opts);
+    }
+
+    #! called for each matching file individually whenever matching files are polled with the list of matching file names; if any error occurs here, the error is logged and the polling operation is retried
+    /** @param fih a hash of file data and information with the following keys:
+        - \c name: the name of the file, link, or directory
+        - \c size: the size of the file in bytes
+        - \c uid: the UID of the owner of the file
+        - \c gid: the GID of the owner of the file
+        - \c mode: the permissions / mode of the file
+        - \c atime: the last accessed date/time of the file
+        - \c mtime: the last modified date/time of the file
+        - \c type: the type of file; one of: \c "REGULAR", \c "DIRECTORY", \c "SYMBOLIC-LINK", \c "BLOCK-DEVICE",
+          \c "CHARACTER-DEVICE", \c "FIFO", \c "SYMBOLIC-LINK", \c "SOCKET", or \c "UNKNOWN"
+        - \c perm: a string giving UNIX-style permissions for the file (ex: "-rwxr-xr-x")
+        - \c data: the file's data; this will be a string unless the \a "sftp-polling-binary" config item is
+          true, in which case this key is assigned to the file's binary data
+        - \c filepath: the remote filepath relative to SFTP root directory
+    */
+    postSingleFileEvent(hash<SftpPollerFileEventInfo> fih) {
+        if (UserApi::getConfigItemValue("sftp-polling-delete-file")) {
+            deleteFile(fih);
+            return;
+        }
+        *string move_target = UseerApi::getConfigItemValue("sftp-polling-move-target", {"filename": fih.name});
+        if (!exists move_target) {
+            throw "CONFIG-ERROR", sprintf("\"sftp-polling-delete-file\" is false but \"sftp-polling-move-target\" "
+                "is not set; no post-processing of the SFTP files is possible; fix the configuration and try again");
+        }
+        moveFile(fih, move_target);
+    }
+
+    private deleteFile(hash<SftpPollerFileEventInfo> fih) {
+        UserApi::logInfo("polling action complete; deleting file %y", fih.name);
+        poller.removeFile(fih.name);
+    }
+
+    private moveFile(hash<SftpPollerFileEventInfo> fih, string move_target) {
+        UserApi::logInfo("polling action complete; moving/renaming file %y -> %y", fih.name, move_target);
+        poller.rename(fih.name, move_target);
+    }
+
+    #! config items for this step
+    private *hash<string, hash<ConfigItemInfo>> getConfigItems() {
+        return {
+            # group: main
+            "sftp-polling-connection-name": <ConfigItemInfo>{
+                "description": "the name of the SFTP connection",
+                "strictly_local": True,
+                "config_group": "SFTP Polling",
+            },
+            "sftp-polling-mask": <ConfigItemInfo>{
+                "description": "the filename mask for files to match when polling; is a regular expression if "
+                    "\"sftp-polling-mask-regex\" is set; if not, then this value is a glob value",
+                "strictly_local": True,
+                "config_group": "SFTP Polling",
+            },
+            "sftp-polling-mask-regex": <ConfigItemInfo>{
+                "type": "bool",
+                "default_value": False,
+                "description": "if \"sftp-polling-mask\" is a regular expression or not",
+                "strictly_local": True,
+                "config_group": "SFTP Polling",
+            },
+            "sftp-polling-regex-options": <ConfigItemInfo>{
+                "type": "string",
+                "default_value": QRE_NONE,
+                "allowed_values": keys QRE_MAP,
+                "description": "regular expression options for SFTP polling; only used if "
+                    "\"sftp-polling-mask-regex\" is true",
+                "strictly_local": True,
+                "config_group": "SFTP Polling",
+            },
+
+            "sftp-polling-minage": <ConfigItemInfo>{
+                "type": "int",
+                "default_value": 0,
+                "description": "the minimum age of the file in seconds before it will be visible to the poller",
+                "strictly_local": True,
+                "config_group": "SFTP Polling Fine Tuning",
+            },
+            "sftp-polling-encoding": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "the character encoding for any text files received",
+                "strictly_local": True,
+                "config_group": "SFTP Polling Fine Tuning",
+            },
+            "sftp-polling-binary": <ConfigItemInfo>{
+                "type": "bool",
+                "default_value": False,
+                "description": "if true then files will be retrieved and returned as binary data",
+                "strictly_local": True,
+                "config_group": "SFTP Polling Fine Tuning",
+            },
+
+            "sftp-polling-delete-file": <ConfigItemInfo>{
+                "type": "bool",
+                "default_value": True,
+                "description": "if true then files will be deleted after the polling action has been executed on "
+                    "them; if false then \"sftp-polling-move-directory\" must be set",
+                "strictly_local": True,
+                "config_group": "SFTP Polling Post Processing",
+            },
+            "sftp-polling-move-target": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "the directory and target filename for moving / renaming files after the polling "
+                    "action has been executed, only used if \"sftp-polling-delete-file\" is false; the current "
+                    "filename can be referenced with $local:filename (ex: \"complete/$local:{filename}\")",
+                "strictly_local": True,
+                "config_group": "SFTP Polling Post Processing",
+            },
+        };
+    }
+
+    #! called for each matching file individually whenever matching files are polled with the list of matching file names; if any error occurs here, the error is logged and the polling operation is retried
+    /** @param fih a hash of file data and information with the following keys:
+        - \c name: the name of the file, link, or directory
+        - \c size: the size of the file in bytes
+        - \c uid: the UID of the owner of the file
+        - \c gid: the GID of the owner of the file
+        - \c mode: the permissions / mode of the file
+        - \c atime: the last accessed date/time of the file
+        - \c mtime: the last modified date/time of the file
+        - \c type: the type of file; one of: \c "REGULAR", \c "DIRECTORY", \c "SYMBOLIC-LINK", \c "BLOCK-DEVICE",
+          \c "CHARACTER-DEVICE", \c "FIFO", \c "SYMBOLIC-LINK", \c "SOCKET", or \c "UNKNOWN"
+        - \c perm: a string giving UNIX-style permissions for the file (ex: "-rwxr-xr-x")
+        - \c data: the file's data; this will be a string unless the \a "binary" option is set to
+          @ref Qore::True "True", in which case this key is assigned to the files binary data; this hash key is only
+          present if \c skip_file_content_retrieval was @ref Qore::False "False" in the @ref SftpPoller::SftpPoller::constructor options
+        - \c filepath: the remote filepath relative to SFTP root directory
+    */
+    abstract singleFileEvent(hash<SftpPollerFileEventInfo> fih);
+}
+
+class BB_SftpPollerPriv inherits SftpPoller {
+    private {
+        BB_SftpPollerBase base;
+    }
+
+    constructor(BB_SftpPollerBase base, SftpClient sftp, hash<auto> opts) : SftpPoller(sftp, opts) {
+        self.base = base;
+    }
+
+    singleFileEvent(hash<auto> fih) {
+        base.singleFileEvent(fih);
+    }
+
+    postSingleFileEvent(hash<auto> fih) {
+        base.postSingleFileEvent(fih);
+    }
+}
+# END

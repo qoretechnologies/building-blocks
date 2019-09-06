@@ -1,0 +1,201 @@
+# name: BB_RestAction
+# version: 1.0
+# desc: generic class for making a REST request
+# author: Qore Technologies, s.r.o.
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+%requires RestClient
+%requires Swagger
+
+#! this base building block makes a REST request using a REST connection
+/** The following configuration items are supported; note that subclasses must provide default values
+    for required config items (in bold):
+    - \b \c rest-connection-name: (required) the name of the REST connection
+    - \b \c rest-uri-path: (required) the URI path for creating and querying the object in the REST server
+    - \c rest-api-mapper-name: (optional) the name of the mapper to create the REST call request body; the mapper is
+      provided a hash with a single key:
+      - \c context: the return value of the
+        @ref UserApi::UserApi::getUserContextInfo() "UserApi::getUserContextInfo()" method
+      .
+      if no message body is to be sent, then this configuration item should have no value
+    - \c rest-id-location: (optional) location in the response for the unique ID in the request response
+    - \c rest-swagger-schema-location: (optional) the name of the service resource (name:resource) for the Swagger
+      schema for the REST connection (default empty = no swagger schema service resource for REST client)
+
+    @note The swagger schema can be set in the REST connection itself; \c rest-swagger-schema-location is only for
+    convenience in case the same Swagger schema is also used by a server-side service
+*/
+class BB_RestAction {
+    #! the primary REST action logic: make the REST request
+    /** @return the entire response hash (the deserialized response body is found in the \c "body" key in the value
+        returned)
+    */
+    hash<auto> makeRestRequest() {
+        # get the connection to the REST API
+        RestClient rc = getConnection();
+
+        # the message body for the request
+        hash<auto> object_info;
+
+        # get mapper name
+        *string mapper_name = UserApi::getConfigItemValue("rest-api-mapper-name");
+        if (exists mapper_name) {
+            # get mapper to convert from order data to the REST call
+            Mapper mapper = UserApi::getMapper(mapper_name);
+
+            # setup raw data for making the REST API call
+            hash<auto> input_data = getRestInputData();
+
+            # map the data to get the REST request body, if applicable
+            object_info = mapper.mapData(input_data);
+        }
+        # get the URI path for the request for creating the object
+        string uri_path = UserApi::getConfigItemValue("rest-uri-path");
+        string rest_method = UserApi::getConfigItemValue("rest-method");
+        *hash<auto> hdr = UserApi::getConfigItemValue("rest-headers");
+        # create the object and get the unique ID
+        hash<auto> info;
+        UserApi::logDebug("REST REQUEST: method: %y URI: %y args: %y", rest_method, uri_path, object_info);
+        hash<auto> response;
+        {
+            # ensure that request info gets logged
+            on_exit {
+                UserApi::logDebug("REST REQUEST INFO: %N", info);
+            }
+            response = rc.doRequest(
+                rest_method,
+                uri_path,
+                object_info,
+                \info,
+                NOTHING,
+                hdr,
+            );
+        }
+        UserApi::logDebug("REST RESPONSE: %N", response);
+
+        *string rest_id_loc = UserApi::getConfigItemValue("rest-id-location");
+        auto val;
+        if (exists rest_id_loc) {
+            val = UserApi::getHashDotValue(response, rest_id_loc);
+            if (!exists val) {
+                throw "REST-REQUEST-ERROR", sprintf("no value was found in the REST response at location %y; "
+                    "response: %y", rest_id_loc, response);
+            }
+            UserApi::logInfo(UserApi::getConfigItemValue("rest-id-log-msg", {"rest-id": val}));
+        }
+
+        # save output data
+        *hash<auto> output_data = UserApi::getConfigItemValue("output_data");
+        if (output_data) {
+            UserApi::updateOutputData(response + {"rest-id": val});
+        }
+
+        return response;
+    }
+
+    #! returns the input data for the mapper that creates the REST request body, if any
+    private hash<auto> getRestInputData() {
+        return {
+            "context": UserApi::getUserContextInfo(),
+        };
+    }
+
+    #! returns a REST connection to the server, optionally setting a Swagger schema from a service resource
+    private RestClient getConnection() {
+        # connection options, if any
+        hash<auto> connection_opts;
+        {
+            # get Swagger schema resource name, if any
+            *string schema = UserApi::getConfigItemValue("rest-swagger-schema-location");
+            if (schema) {
+                UserApi::logInfo("using swagger schema location: %y", schema);
+                # create Swagger REST schema validator object
+                connection_opts = {
+                    "validator": SwaggerLoader::fromString(UserApi::getTextFileFromLocation(schema), False),
+                };
+            }
+        }
+        # get REST connecting and use validator, if present
+        return UserApi::getUserConnection(UserApi::getConfigItemValue("rest-connection-name"), True, True, connection_opts);
+    }
+
+    #! config items for this step
+    private *hash<string, hash<ConfigItemInfo>> getConfigItems() {
+        return {
+            # group: main
+            "rest-connection-name": <ConfigItemInfo>{
+                "description": "the name of the REST connection",
+                "config_group": "Rest Action",
+                "strictly_local": True,
+            },
+            "rest-method": <ConfigItemInfo>{
+                "description": "the REST method to use",
+                "default_value": "POST",
+                "config_group": "Rest Action",
+                "strictly_local": True,
+            },
+            "rest-api-mapper-name": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "the name of the mapper for the REST call; if no value is set, then no payload will be included; do not set with a GET request",
+                "config_group": "Rest Action",
+                "strictly_local": True,
+            },
+            "rest-uri-path": <ConfigItemInfo>{
+                "description": "the URI path for creating the request(s) in the REST server",
+                "config_group": "Rest Action",
+                "strictly_local": True,
+            },
+            "rest-id-location": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "location in the response for the unique ID in the POST response; if this config item "
+                "is set and no value is found in the response at the location given here, then an exception is "
+                "thrown",
+                "config_group": "Rest Action",
+                "strictly_local": True,
+            },
+            "rest-headers": <ConfigItemInfo>{
+                "default_value": {},
+                "type": "hash",
+                "description": "additional headers to send with each REST request",
+                "config_group": "Rest Action",
+                "strictly_local": True,
+            },
+            "rest-swagger-schema-location": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "the location of the Swagger schema for the REST connection; this will be resolved by "
+                    "calling UserApi::getTextFileFromLocation()",
+                "config_group": "Rest Action",
+                "strictly_local": True,
+            },
+
+            # group: post processing
+            "output_data": <ConfigItemInfo>{
+                "type": "*hash",
+                "default_value": NOTHING,
+                "description": "the configuration of output data; the REST response hash is passed as input to the "
+                    "UserApi::updateOutputData() method; the deserialized REST response body is located in the "
+                    "'body' key of this hash; if 'rest-id-location' is configured, then the value retrieved can be "
+                    "referenced with key 'rest-id' in the output data hash",
+                "config_group": "Rest Action Post Processing",
+                "strictly_local": True,
+            },
+
+            # group: cosmetic
+            "rest-id-log-msg": <ConfigItemInfo>{
+                "default_value": "REST response retrieved ID: $local:{rest-id}",
+                "description": "a string giving a log message for successful retrieval of the ID identified by "
+                    "'rest-id-location'; this ID can be referred to as '$local:{rest-id}' in the template string",
+                "strictly_local": True,
+                "config_group": "Rest Action Cosmetic",
+                "strictly_local": True,
+            },
+        };
+    }
+}
+# END
