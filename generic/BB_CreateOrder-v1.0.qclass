@@ -46,7 +46,7 @@ class BB_CreateOrder {
         exception is also thrown even with one match if the \c create-workflow-duplicate-handling config item is set
         to \c "DUPLICATE"
     */
-    static int createWorkflowOrder(hash<auto> order_context_data = {}) {
+    static int createWorkflowOrder(hash<auto> order_context_data = {}, string status = UserApi::getConfigItemValue("create-workflow-order-status")) {
         # create the workflow order with the mapper
         string mapper_name = UserApi::getConfigItemValue("create-workflow-order-mapper");
         Mapper mapper = UserApi::getMapper(mapper_name);
@@ -59,8 +59,9 @@ class BB_CreateOrder {
                 UserApi::getConfigItemValue("create-workflow-name"),
                 UserApi::getConfigItemValue("create-workflow-version"),
                 order_data,
+                status,
             );
-            UserApi::logInfo("Created workflow order instance id: %d", workflow_instanceid);
+            UserApi::logInfo("Created workflow order instance id: %d with status %y", workflow_instanceid, status);
             return workflow_instanceid;
         } catch (hash<ExceptionInfo> ex) {
             if (ex.err == "DUPLICATE-ORDER-KEY") {
@@ -96,6 +97,14 @@ class BB_CreateOrder {
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "the version of the workflow; if not set (the default), the latest version will be used",
+                "strictly_local": True,
+                "config_group": "Create Workflow Order",
+            },
+            "create-workflow-order-status": <ConfigItemInfo>{
+                "type": "string",
+                "default_value": OMQ::StatReady,
+                "allowed_values": (OMQ::StatReady, OMQ::StatBlocked),
+                "description": "the initial status of the workflow order",
                 "strictly_local": True,
                 "config_group": "Create Workflow Order",
             },

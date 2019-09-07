@@ -2,7 +2,8 @@
 # version: 1.0
 # desc: class for polling for files from an SFTP server and creating a workflow order from them
 # author: Qore Technologies, s.r.o.
-# requires: BB_SftpPollerBase, BB_CreateOrder
+# requires: BB_SftpPollerBase
+# requires: BB_CreateOrder
 %new-style
 %require-types
 %strict-args
@@ -16,33 +17,12 @@
 class BB_SftpPollerCreateOrder inherits BB_SftpPollerBase, BB_CreateOrder {
     #! config items for this object
     private *hash<string, hash<ConfigItemInfo>> getConfigItems() {
-        return BB_SftpPollerBase::getConfigItems()
-            + BB_SftpPollerBase::getConfigItems() + {
-            "sftp-file-save-local": <ConfigItemInfo>{
-                "type": "bool",
-                "default_value": False,
-                "description": "if true then a local file will be created and the \"path\" key will be included in "
-                    "the workflow mapper context data; in this case the \"sftp-file-connection\" config item must"
-                    "also be set",
+        hash<string, hash<ConfigItemInfo>> rv = BB_SftpPollerBase::getConfigItems()
+            + BB_SftpPollerBase::getConfigItems();
+        rv."create-workflow-order-status" += {
+                "default_value": OMQ::StatBlocked,
                 "strictly_local": True,
-                "config_group": "SFTP File Options",
-            },
-            "sftp-file-connection": <ConfigItemInfo>{
-                "type": "*string",
-                "default_value": NOTHING,
-                "description": "the name of a file connection where to save files; used if \"sftp-file-save-local\" "
-                    "is true; also \"sftp-file-path\" can be set to give a subdirectory path offset from the "
-                    "connection",
-                "strictly_local": True,
-                "config_group": "SFTP File Options",
-            },
-            "sftp-file-path": <ConfigItemInfo>{
-                "type": "*string",
-                "default_value": NOTHING,
-                "description": "a subdirectory path offset from the connection; only used if "
-                    "\"sftp-file-save-local\" is set",
-                "strictly_local": True,
-                "config_group": "SFTP File Options",
+                "config_group": "Create Workflow Order",
             },
         };
     }
@@ -63,10 +43,50 @@ class BB_SftpPollerCreateOrder inherits BB_SftpPollerBase, BB_CreateOrder {
           @ref Qore::True "True", in which case this key is assigned to the files binary data; this hash key is only
           present if \c skip_file_content_retrieval was @ref Qore::False "False" in the @ref SftpPoller::SftpPoller::constructor options
         - \c filepath: the remote filepath relative to SFTP root directory
-    */
-    singleFileEvent(hash<SftpPollerFileEventInfo> fih) {
-        int wfiid = createWorkflowOrder(fih);
 
+        @return the event with the following additional keys:
+        - \c order_status: the status of the new order created
+        - \c workflow_instanceid: the workflow instance ID of the new order created
+    */
+    hash<auto> singleFileEventImpl(hash<auto> event) {
+        string status = UserApi::getConfigItemValue("create-workflow-order-status");
+        event += {
+            "order_status": status,
+            "workflow_instanceid": createWorkflowOrder(event, status),
+        };
+        return event;
+    }
+
+    #! called for each matching file individually whenever matching files are polled with the list of matching file names; if any error occurs here, the error is logged and the polling operation is retried
+    /** @param fih a hash of file data and information with the following keys:
+        - \c name: the name of the file, link, or directory
+        - \c size: the size of the file in bytes
+        - \c uid: the UID of the owner of the file
+        - \c gid: the GID of the owner of the file
+        - \c mode: the permissions / mode of the file
+        - \c atime: the last accessed date/time of the file
+        - \c mtime: the last modified date/time of the file
+        - \c type: the type of file; one of: \c "REGULAR", \c "DIRECTORY", \c "SYMBOLIC-LINK", \c "BLOCK-DEVICE",
+          \c "CHARACTER-DEVICE", \c "FIFO", \c "SYMBOLIC-LINK", \c "SOCKET", or \c "UNKNOWN"
+        - \c perm: a string giving UNIX-style permissions for the file (ex: "-rwxr-xr-x")
+        - \c data: the file's data; this will be a string unless the \a "sftp-polling-binary" config item is
+          true, in which case this key is assigned to the file's binary data
+        - \c filepath: the remote filepath relative to SFTP root directory
+        - \c local_path: this key is set to a string giving the local path where the file's data is stored if
+          config item \c sftp-polling-file-connection is set
+
+        If config item \c sftp-polling-delete-file is true, then the remote file is deleted here.
+
+        Otherwise, if \c sftp-polling-move-target is true, then the remove file is moved to the target location on the
+        remove server here.
+    */
+    postSingleFileEvent(hash<auto> event) {
+        BB_SftpPollerBase::postSingleFileEvent(event);
+        # now unblock the order if necessary
+        if (event.order_status == OMQ::StatBlocked) {
+            UserApi::unblockOrder(event.workflow_instanceid);
+            UserApi::logInfo("unblocked order %d for further processing", event.workflow_instanceid);
+        }
     }
 }
 # END

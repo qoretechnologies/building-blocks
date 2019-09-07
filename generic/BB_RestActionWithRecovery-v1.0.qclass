@@ -159,16 +159,16 @@ class BB_RestActionWithRecovery inherits BB_RestAction {
                 "description": "set to true if the request requires and supports recovery, false if not; if true "
                     "then rest-recovery-uri and at least one of 'rest-id-location' and/or "
                     "'rest-recovery-id-location' or 'rest-recovery-response-location' must be set",
-                "config_group": "Rest Action Recovery",
                 "strictly_local": True,
+                "config_group": "Rest Action Recovery",
             },
             "rest-recovery-uri":  <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "the URI path for the recovery request to the REST server; must be set if "
                     "'rest-supports-recovery' is set to true",
-                "config_group": "Rest Action Recovery",
                 "strictly_local": True,
+                "config_group": "Rest Action Recovery",
             },
             "rest-recovery-id-location": <ConfigItemInfo>{
                 "type": "*string",
@@ -176,8 +176,8 @@ class BB_RestActionWithRecovery inherits BB_RestAction {
                 "description": "the location of the unique ID for the record in the REST recovery response; "
                     "conflicts with \"rest-recovery-response-location\"; if not set and \"rest-id-location\" is set, "
                     "then \"rest-id-location\" will be used for this value",
-                "config_group": "Rest Action Recovery",
                 "strictly_local": True,
+                "config_group": "Rest Action Recovery",
             },
             "rest-recovery-response-location":  <ConfigItemInfo>{
                 "type": "*string",
@@ -187,8 +187,8 @@ class BB_RestActionWithRecovery inherits BB_RestAction {
                     "\"rest-recovery-id-location\"; only used if \"rest-id-location\" is not set; the value here is "
                     "related to the entire HTTP response; prefix with \"body.\" to compare values in the response "
                     "message body (ex: \"body.account.ID\")",
-                "config_group": "Rest Action Recovery",
                 "strictly_local": True,
+                "config_group": "Rest Action Recovery",
             },
             "rest-recovery-response-value":  <ConfigItemInfo>{
                 "type": "any",
@@ -196,8 +196,8 @@ class BB_RestActionWithRecovery inherits BB_RestAction {
                 "description": "the value to compare against the value given by \"rest-recovery-response-location\"; "
                     "must be set with \"rest-recovery-response-location\"; conflicts with "
                     "\"rest-recovery-id-location\"; only used if \"rest-id-location\" is not set",
-                "config_group": "Rest Action Recovery",
                 "strictly_local": True,
+                "config_group": "Rest Action Recovery",
             },
 
             # group: post processing
@@ -211,8 +211,8 @@ class BB_RestActionWithRecovery inherits BB_RestAction {
                     "referenced with key 'rest-id' in the output data hash; if this configuration item is not set, "
                     "and 'output_data' is set, then 'output_data' will be used instead (for example in case the "
                     "original message response is identical to the recovery message response)",
-                "config_group": "Rest Action Recovery Post Processing",
                 "strictly_local": True,
+                "config_group": "Rest Action Recovery Post Processing",
             },
 
             # group: cosmetic
@@ -223,7 +223,6 @@ class BB_RestActionWithRecovery inherits BB_RestAction {
                     "'$local:{rest-id}' in the template string",
                 "strictly_local": True,
                 "config_group": "Rest Action Cosmetic",
-                "strictly_local": True,
             },
         };
     }

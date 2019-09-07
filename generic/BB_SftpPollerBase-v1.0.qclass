@@ -15,6 +15,7 @@
 */
 class BB_SftpPollerBase {
     private {
+        SFTPClient sftpclient;
         BB_SftpPollerPriv poller;
 
         const OneToOneOpts = (
@@ -32,11 +33,17 @@ class BB_SftpPollerBase {
         return poller.runOnce();
     }
 
+    #! creates the SFTPClient and SftpPoller objects
     private setup() {
-        SftpClient sftp = UserApi::getUserConnection(UserApi::getConfigItemValue("sftp-polling-connection-name"));
+        sftpclient = UserApi::getUserConnection(UserApi::getConfigItemValue("sftp-polling-connection-name"));
 
+        hash<auto> poller_opts = setupPollerOptions();
+        poller = new BB_SftpPollerPriv(sftpclient, poller_opts);
+    }
+
+    #! returns SftpPoller options
+    private hash<auto> getPollerOptions() {
         hash<auto> poller_opts;
-
         string mask = UserApi::getConfigItemValue("sftp-polling-mask");
         if (UserApi::getConfigItemValue("sftp-polling-mask-regex")) {
             poller_opts.regex_mask = mask;
@@ -51,9 +58,66 @@ class BB_SftpPollerBase {
             "log_info": \UserApi::logInfo(),
             "log_detail": \UserApi::logInfo(),
             "log_debug": \UserApi::logDebug(),
+            "skip_file_content_retrieval": True,
         };
+        return poller_opts;
+    }
 
-        poller = new BB_SftpPollerPriv(sftp, poller_opts);
+    #! called for each matching file individually whenever matching files are polled with the list of matching file names; if any error occurs here, the error is logged and the polling operation is retried
+    /** @param fih a hash of file data and information with the following keys:
+        - \c name: the name of the file, link, or directory
+        - \c size: the size of the file in bytes
+        - \c uid: the UID of the owner of the file
+        - \c gid: the GID of the owner of the file
+        - \c mode: the permissions / mode of the file
+        - \c atime: the last accessed date/time of the file
+        - \c mtime: the last modified date/time of the file
+        - \c type: the type of file; one of: \c "REGULAR", \c "DIRECTORY", \c "SYMBOLIC-LINK", \c "BLOCK-DEVICE",
+          \c "CHARACTER-DEVICE", \c "FIFO", \c "SYMBOLIC-LINK", \c "SOCKET", or \c "UNKNOWN"
+        - \c perm: a string giving UNIX-style permissions for the file (ex: "-rwxr-xr-x")
+        - \c data: the file's data; this will be a string unless the \a "binary" option is set to
+          @ref Qore::True "True", in which case this key is assigned to the files binary data; this hash key is only
+          present if \c skip_file_content_retrieval was @ref Qore::False "False" in the @ref SftpPoller::SftpPoller::constructor options
+        - \c filepath: the remote filepath relative to SFTP root directory
+
+        if the \c sftp-polling-file-connection configuration item is set, then files are stored on the local filesystem by
+        this method,
+
+        This method then calls simpleFileEventImpl()
+    */
+    hash<auto> singleFileEvent(hash<SftpPollerFileEventInfo> fih) {
+        hash<auto> event = {} + fih;
+        UserApi::logDebug("SFTP file: %y (%d bytes) found", event.name, event.size);
+        *string file_conn = UserApi::getConfigItemValue("sftp-polling-file-connection");
+        if (file_conn) {
+            Dir dir = UserApi::getUserConnection(file_conn);
+            *string target_dir = dir.path();
+            {
+                *string path_offset = UserApi::getConfigItemValue("sftp-polling-file-path");
+                if (path_offset) {
+                    target_dir = normalize_dir(target_dir + DirSep + path_offset);
+                }
+            }
+            # add filename
+            string tmp_filename = UserApi::getConfigItemValue("sftp-polling-file-temp-template", {"filename": event.name});
+            string tmp_path = normalize_dir(target_dir + DirSep + tmp_filename);
+            string local_path = normalize_dir(target_dir + DirSep + event.name);
+            UserApi::logInfo("using local connection %y to stream %y -> %y (%d bytes)", file_conn, event.filepath,
+                tmp_path, event.size);
+            date start = now_us();
+            # stream remote file to local file
+            sftpclient.retrieveFile(event.filepath, tmp_path);
+            # move to target filename
+            if (tmp_filename != event.name) {
+                # NOTE: uses a simple rename() which may cause problems on some OSes if moving between filesystems
+                rename(tmp_path, local_path);
+                UserApi::logInfo("renamed to target %y", local_path);
+            }
+            UserApi::logInfo("retrieved %y in %y", local_path, now_us() - start);
+            event.local_path = local_path;
+        }
+
+        return simpleFileEventImpl(event);
     }
 
     #! called for each matching file individually whenever matching files are polled with the list of matching file names; if any error occurs here, the error is logged and the polling operation is retried
@@ -71,8 +135,15 @@ class BB_SftpPollerBase {
         - \c data: the file's data; this will be a string unless the \a "sftp-polling-binary" config item is
           true, in which case this key is assigned to the file's binary data
         - \c filepath: the remote filepath relative to SFTP root directory
+        - \c local_path: this key is set to a string giving the local path where the file's data is stored if
+          config item \c sftp-polling-file-connection is set
+
+        If config item \c sftp-polling-delete-file is true, then the remote file is deleted here.
+
+        Otherwise, if \c sftp-polling-move-target is true, then the remove file is moved to the target location on the
+        remove server here.
     */
-    postSingleFileEvent(hash<SftpPollerFileEventInfo> fih) {
+    postSingleFileEvent(hash<auto> event) {
         if (UserApi::getConfigItemValue("sftp-polling-delete-file")) {
             deleteFile(fih);
             return;
@@ -125,6 +196,31 @@ class BB_SftpPollerBase {
                     "\"sftp-polling-mask-regex\" is true",
                 "strictly_local": True,
                 "config_group": "SFTP Polling",
+            },
+
+            "sftp-polling-file-connection": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "the name of a local file connection where to save files; \"sftp-polling-file-path\" can be "
+                    "set to give a subdirectory path offset from the connection",
+                "strictly_local": True,
+                "config_group": "SFTP File Options",
+            },
+            "sftp-polling-file-path": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "a subdirectory path offset from the connection identified with "
+                    "\"sftp-polling-file-connection\"; ignored if \"sftp-polling-file-connection\" is not set",
+                "strictly_local": True,
+                "config_group": "SFTP File Options",
+            },
+            "sftp-polling-file-temp-template": <ConfigItemInfo>{
+                "type": "string",
+                "default_value": ".tmp.$local:{filename}.partial",
+                "description": "the template for the temporary filename used while transferring the file, the "
+                    "target filename is available as $local:filename",
+                "strictly_local": True,
+                "config_group": "SFTP Polling Fine Tuning",
             },
 
             "sftp-polling-minage": <ConfigItemInfo>{
@@ -186,7 +282,7 @@ class BB_SftpPollerBase {
           present if \c skip_file_content_retrieval was @ref Qore::False "False" in the @ref SftpPoller::SftpPoller::constructor options
         - \c filepath: the remote filepath relative to SFTP root directory
     */
-    abstract singleFileEvent(hash<SftpPollerFileEventInfo> fih);
+    abstract hash<auto> singleFileEventImpl(hash<auto> event);
 }
 
 class BB_SftpPollerPriv inherits SftpPoller {
@@ -198,12 +294,14 @@ class BB_SftpPollerPriv inherits SftpPoller {
         self.base = base;
     }
 
-    singleFileEvent(hash<auto> fih) {
-        base.singleFileEvent(fih);
-    }
-
-    postSingleFileEvent(hash<auto> fih) {
-        base.postSingleFileEvent(fih);
+    singleFileEvent(hash<SftpPollerFileEventInfo> fih) {
+        hash<auto> event = base.singleFileEvent(fih);
+        try {
+            base.postSingleFileEvent(event);
+        } catch (hash<ExceptionInfo> ex) {
+            fatal = True;
+            rethrow;
+        }
     }
 }
 # END

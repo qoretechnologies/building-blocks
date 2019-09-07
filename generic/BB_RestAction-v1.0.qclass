@@ -128,50 +128,50 @@ class BB_RestAction {
             # group: main
             "rest-connection-name": <ConfigItemInfo>{
                 "description": "the name of the REST connection",
-                "config_group": "Rest Action",
                 "strictly_local": True,
+                "config_group": "Rest Action",
             },
             "rest-method": <ConfigItemInfo>{
                 "description": "the REST method to use",
                 "default_value": "POST",
-                "config_group": "Rest Action",
                 "strictly_local": True,
+                "config_group": "Rest Action",
             },
             "rest-api-mapper-name": <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "the name of the mapper for the REST call; if no value is set, then no payload will be included; do not set with a GET request",
-                "config_group": "Rest Action",
                 "strictly_local": True,
+                "config_group": "Rest Action",
             },
             "rest-uri-path": <ConfigItemInfo>{
                 "description": "the URI path for creating the request(s) in the REST server",
-                "config_group": "Rest Action",
                 "strictly_local": True,
+                "config_group": "Rest Action",
             },
             "rest-id-location": <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "location in the response for the unique ID in the POST response; if this config item "
-                "is set and no value is found in the response at the location given here, then an exception is "
-                "thrown",
-                "config_group": "Rest Action",
+                    "is set and no value is found in the response at the location given here, then an exception is "
+                    "thrown",
                 "strictly_local": True,
+                "config_group": "Rest Action",
             },
             "rest-headers": <ConfigItemInfo>{
                 "default_value": {},
                 "type": "hash",
                 "description": "additional headers to send with each REST request",
-                "config_group": "Rest Action",
                 "strictly_local": True,
+                "config_group": "Rest Action",
             },
             "rest-swagger-schema-location": <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "the location of the Swagger schema for the REST connection; this will be resolved by "
                     "calling UserApi::getTextFileFromLocation()",
-                "config_group": "Rest Action",
                 "strictly_local": True,
+                "config_group": "Rest Action",
             },
 
             # group: post processing
@@ -182,8 +182,8 @@ class BB_RestAction {
                     "UserApi::updateOutputData() method; the deserialized REST response body is located in the "
                     "'body' key of this hash; if 'rest-id-location' is configured, then the value retrieved can be "
                     "referenced with key 'rest-id' in the output data hash",
-                "config_group": "Rest Action Post Processing",
                 "strictly_local": True,
+                "config_group": "Rest Action Post Processing",
             },
 
             # group: cosmetic
@@ -193,7 +193,6 @@ class BB_RestAction {
                     "'rest-id-location'; this ID can be referred to as '$local:{rest-id}' in the template string",
                 "strictly_local": True,
                 "config_group": "Rest Action Cosmetic",
-                "strictly_local": True,
             },
         };
     }
