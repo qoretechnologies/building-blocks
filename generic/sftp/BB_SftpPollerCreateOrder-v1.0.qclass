@@ -77,7 +77,9 @@ class BB_SftpPollerCreateOrder inherits BB_SftpPollerBase, BB_CreateOrder {
         return event;
     }
 
-    #! config items for this object
+    #! config items for this object defined in BB_SftpPollerBase and BB_CreateOrder
+    /** the \c create-workflow-order-status default value is set to @ref OMQ::StatBlocked "BLOCKED"
+    */
     static hash<string, hash<ConfigItemInfo>> getConfigItems() {
         hash<string, hash<ConfigItemInfo>> rv = BB_SftpPollerBase::getConfigItems()
             + BB_CreateOrder::getConfigItems();

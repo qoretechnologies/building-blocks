@@ -1,0 +1,25 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+# name: bb-test-sftp-job
+# version: 1.0
+# desc: class-based test job
+# author: Qore Technologies, s.r.o.
+# class-name: BB_TestSftpJob
+# active: false
+# run-skipped: true
+##schedule: min hour day month dow
+# schedule: */10 * * * *
+# remote: false
+# define-group: test: test interfaces
+# define-group: bb-test: building block test interfaces
+# groups: test, bb-test
+# classes: BB_SftpPollerCreateOrderJob
+# mappers: bb-test-sftp-job:1.0
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+class BB_TestSftpJob inherits BB_SftpPollerCreateOrderJob {
+}
+# END

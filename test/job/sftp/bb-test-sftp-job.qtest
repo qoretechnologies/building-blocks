@@ -1,0 +1,114 @@
+#!/usr/bin/env qore
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%require-types
+%strict-args
+%new-style
+%enable-all-warnings
+
+%exec-class BB_TestSftpJob
+
+%requires QorusInterfaceTest
+%requires Util
+%requires FsUtil
+
+class BB_TestSftpJob inherits QorusJobTest {
+    private {
+        #! for local files
+        TmpDir local_tmpdir();
+
+        #! for SFTP files
+        TmpDir sftp_tmpdir();
+
+        string sftp_conn_name = get_random_string(20);
+        string file_conn_name = get_random_string(20);
+
+         #! command-line options
+        const MyOpts = Opts + {
+            "privkey": "k,privkey=s",
+        };
+
+        const JobName = "bb-test-sftp-job";
+
+        const WorkflowName = "BB-TEST-SFTP-WORKFLOW";
+
+        const WorkflowOrderMapper = "bb-test-sftp-job";
+
+        const TestData = "testing - " + get_random_string();
+    }
+
+    constructor() : QorusJobTest(JobName, "1.0", \ARGV, MyOpts) {
+        addTestCase("SFTP job test", \sftpJobTest());
+        set_return_value(main());
+    }
+
+private usageIntern(int offset = OffsetColumn) {
+        TestReporter::usageIntern(OffsetColumn);
+        printOption("-k,--privkey", "the private key to use for the local SFTP connection", offset);
+    }
+
+    globalSetUp() {
+        # create file connection
+        qrest.post("remote/user", {
+            "name": file_conn_name,
+            "desc": "test connection for SFTP test job",
+            "url": "file://" + local_tmpdir.path,
+        });
+
+        # create SFTP connection
+        {
+            hash<auto> opts = {};
+            if (m_options.privkey) {
+                opts += {
+                    "keyfile": m_options.privkey,
+                };
+            }
+            qrest.post("remote/user", {
+                "name": sftp_conn_name,
+                "desc": "test connection for SFTP test job",
+                "url": "sftp://localhost/" + sftp_tmpdir.path,
+                "options": opts,
+            });
+        }
+
+        # configure job
+        qrest.put("jobs/" + JobName + "/config/sftp-polling-connection-name", {"value": sftp_conn_name});
+        qrest.put("jobs/" + JobName + "/config/sftp-polling-mask", {"value": "*.txt"});
+        qrest.put("jobs/" + JobName + "/config/sftp-polling-file-connection", {"value": file_conn_name});
+        qrest.put("jobs/" + JobName + "/config/create-workflow-name", {"value": WorkflowName});
+        qrest.put("jobs/" + JobName + "/config/create-workflow-order-mapper", {"value": WorkflowOrderMapper});
+    }
+
+    globalTearDown() {
+        # unconfigure job
+        qrest.del("jobs/" + JobName + "/config/create-workflow-order-mapper");
+        qrest.del("jobs/" + JobName + "/config/create-workflow-name");
+        qrest.del("jobs/" + JobName + "/config/sftp-polling-file-connection");
+        qrest.del("jobs/" + JobName + "/config/sftp-polling-mask");
+        qrest.del("jobs/" + JobName + "/config/sftp-polling-connection-name");
+
+        # delete connection
+        qrest.del("remote/user/" + file_conn_name);
+    }
+
+    sftpJobTest() {
+        # create example file
+        {
+            hash<TmpFileHash> tmp_file = make_tmp_file("test", "txt", sftp_tmpdir.path);
+            tmp_file.file.write(TestData);
+        }
+
+        # start test workflow
+        qrest.put("workflows/" + WorkflowName + "/setAutostart", {"autostart": 1});
+        on_exit {
+            qrest.put("workflows/" + WorkflowName + "/setAutostart", {"autostart": 0});
+        }
+
+        RunJobResult job(OMQ::StatComplete);
+        exec(job);
+
+        int jiid = job.getJobResult().job_instanceid;
+        int wfiid = qrest.get("jobresults/" + jiid + "/info")[0].workflow_instanceid;
+        assertEq(TestData, qrest.get("orders/" + wfiid + "/dynamicdata/data"));
+    }
+}

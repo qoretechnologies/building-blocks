@@ -22,7 +22,6 @@ class BB_SftpPollerBase {
         const OneToOneOpts = (
             "minage",
             "encoding",
-            "binary",
         );
 
         #! remote status: deleted
@@ -37,7 +36,16 @@ class BB_SftpPollerBase {
     */
     bool runOnce() {
         setup();
-        return poller.runOnce();
+        bool rv = poller.runOnce();
+        teardown();
+        return rv;
+    }
+
+    #! destroys the external objects
+    private teardown() {
+        delete poller;
+        delete sftpclient;
+        UserApi::logDebug("deleted connection objects");
     }
 
     #! creates the SFTPClient and SftpPoller objects
