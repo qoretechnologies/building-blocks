@@ -2,7 +2,7 @@
 # version: 1.0
 # desc: generic class for making a REST request
 # author: Qore Technologies, s.r.o.
-## requires: BB_RestAction
+# requires: BB_RestAction
 %new-style
 %require-types
 %strict-args

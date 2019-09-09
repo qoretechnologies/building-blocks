@@ -2,7 +2,7 @@
 # version: 1.0
 # desc: generic step for making a transaction safe REST request
 # author: Qore Technologies, s.r.o.
-## requires: BB_RestActionWithRecovery
+# requires: BB_RestActionWithRecovery
 %new-style
 %require-types
 %strict-args
