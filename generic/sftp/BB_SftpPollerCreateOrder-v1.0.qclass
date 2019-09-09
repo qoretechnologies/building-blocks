@@ -37,9 +37,16 @@ class BB_SftpPollerCreateOrder inherits BB_SftpPollerBase, BB_CreateOrder {
     */
     hash<auto> singleFileEventImpl(hash<auto> event) {
         string status = UserApi::getConfigItemValue("create-workflow-order-status");
+        bool dup = False;
+        int wfiid = createWorkflowOrder(event, status, \dup);
+        if (dup) {
+            # get real order status
+            status = UserApi::callRestApi("GET", "orders/" + wfiid + "/workflowstatus");
+        }
         event += {
             "order_status": status,
-            "workflow_instanceid": createWorkflowOrder(event, status),
+            "workflow_instanceid": wfiid,
+            "duplicate": dup,
         };
         return event;
     }

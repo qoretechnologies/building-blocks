@@ -115,10 +115,13 @@ private usageIntern(int offset = OffsetColumn) {
         }
 
         # create example file
+        string filename;
         {
             hash<TmpFileHash> tmp_file = make_tmp_file("test-", ".txt", sftp_tmpdir.path);
             tmp_file.file.write(TestData);
+            filename = basename(tmp_file.path);
         }
+
         # make sure files that don't match the mask are not polled
         TmpFile ignore_file("test-", ".ignore", sftp_tmpdir.path);
 
@@ -129,17 +132,30 @@ private usageIntern(int offset = OffsetColumn) {
         int wfiid = qrest.get("jobresults/" + jiid + "/info")[0].workflow_instanceid;
         # wait for workflow order to be COMPLETE
         WaitForWfiid wait(wfiid, NOTHING, 5s);
-        assertEq(TestData, qrest.get("orders/" + wfiid + "/dynamicdata/data"));
+        hash<auto> order = qrest.get("orders/" + wfiid);
+        assertEq(filename, order.keys.filename);
+        assertEq(filename, order.staticdata.name);
+        assertEq(filename, order.staticdata.filepath);
+        assertEq(Type::Date, order.staticdata.transfer_time.type());
+        assertEq(Type::Date, order.staticdata.atime.type());
+        assertEq(Type::Date, order.staticdata.mtime.type());
+        assertEq("REGULAR", order.staticdata.type);
+        assertEq(TestData, order.dynamicdata."data");
 
         assertTrue(is_file(ignore_file.path));
     }
 
     sftpJobTransferTest() {
         # create example file
+        string filename;
+        string file_path;
         {
             hash<TmpFileHash> tmp_file = make_tmp_file("test-", ".txt", sftp_tmpdir.path);
             tmp_file.file.write(TestData);
+            filename = basename(tmp_file.path);
+            file_path = tmp_file.path;
         }
+
         # make sure files that don't match the mask are not polled
         TmpFile ignore_file("test-", ".ignore", sftp_tmpdir.path);
 
@@ -156,8 +172,28 @@ private usageIntern(int offset = OffsetColumn) {
         int wfiid = qrest.get("jobresults/" + jiid + "/info")[0].workflow_instanceid;
         # wait for workflow order to be COMPLETE
         WaitForWfiid wait(wfiid, NOTHING, 5s);
-        assertEq(TestData, qrest.get("orders/" + wfiid + "/staticdata/data").toString());
+        hash<auto> order = qrest.get("orders/" + wfiid);
+        assertEq(filename, order.keys.filename);
+        assertEq(filename, order.staticdata.name);
+        assertEq(filename, order.staticdata.filepath);
+        assertEq(Type::Date, order.staticdata.transfer_time.type());
+        assertEq(Type::Date, order.staticdata.atime.type());
+        assertEq(Type::Date, order.staticdata.mtime.type());
+        assertEq("REGULAR", order.staticdata.type);
+        assertEq(TestData, order.staticdata."data".toString());
 
         assertTrue(is_file(ignore_file.path));
+
+        # test duplicate handling; make sure the same workflow_instanceid is returned for a file with the same name
+        {
+            File f();
+            f.open2(file_path, O_CREAT | O_WRONLY | O_TRUNC);
+            f.write(TestData);
+        }
+        exec(job);
+        int jiid2 = job.getJobResult().job_instanceid;
+        assertNeq(jiid, jiid2);
+        int wfiid2 = qrest.get("jobresults/" + jiid2 + "/info")[0].workflow_instanceid;
+        assertEq(wfiid, wfiid2);
     }
 }

@@ -36,9 +36,8 @@ class BB_SftpPollerBase {
     */
     bool runOnce() {
         setup();
-        bool rv = poller.runOnce();
-        teardown();
-        return rv;
+        on_exit teardown();
+        return poller.runOnce();
     }
 
     #! destroys the external objects
