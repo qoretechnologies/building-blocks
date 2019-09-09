@@ -21,7 +21,6 @@ class BB_TestSftpJob inherits QorusJobTest {
         TmpDir sftp_tmpdir();
 
         string sftp_conn_name = get_random_string(20);
-        string file_conn_name = get_random_string(20);
 
          #! command-line options
         const MyOpts = Opts + {
@@ -38,7 +37,8 @@ class BB_TestSftpJob inherits QorusJobTest {
     }
 
     constructor() : QorusJobTest(JobName, "1.0", \ARGV, MyOpts) {
-        addTestCase("SFTP job test", \sftpJobTest());
+        addTestCase("SFTP job FS test", \sftpJobFsTest());
+        addTestCase("SFTP job transfer test", \sftpJobTransferTest());
         set_return_value(main());
     }
 
@@ -48,13 +48,6 @@ private usageIntern(int offset = OffsetColumn) {
     }
 
     globalSetUp() {
-        # create file connection
-        qrest.post("remote/user", {
-            "name": file_conn_name,
-            "desc": "test connection for SFTP test job",
-            "url": "file://" + local_tmpdir.path,
-        });
-
         # create SFTP connection
         {
             hash<auto> opts = {};
@@ -72,31 +65,83 @@ private usageIntern(int offset = OffsetColumn) {
         }
 
         # configure job
-        qrest.put("jobs/" + JobName + "/config/sftp-polling-connection-name", {"value": sftp_conn_name});
-        qrest.put("jobs/" + JobName + "/config/sftp-polling-mask", {"value": "*.txt"});
-        qrest.put("jobs/" + JobName + "/config/sftp-polling-file-connection", {"value": file_conn_name});
-        qrest.put("jobs/" + JobName + "/config/create-workflow-name", {"value": WorkflowName});
-        qrest.put("jobs/" + JobName + "/config/create-workflow-order-mapper", {"value": WorkflowOrderMapper});
+        hash<auto> job_config = {
+            "sftp-polling-connection-name": sftp_conn_name,
+            "sftp-polling-mask": "*.txt",
+            "create-workflow-name": WorkflowName,
+            "create-workflow-order-mapper": WorkflowOrderMapper,
+        };
+        map qrest.put("jobs/" + JobName + "/config/" + $1.key, {"value": $1.value}), job_config.pairIterator();
+
+        # ensure default configuration
+        map qrest.del("jobs/" + JobName + "/config/" + $1.name), qrest.get("jobs/bb-test-sftp-job/config"), !job_config{$1.name};
+
+        # start test workflow
+        qrest.put("workflows/" + WorkflowName + "/setAutostart", {"autostart": 1});
     }
 
     globalTearDown() {
+        # stop test workflow
+        qrest.put("workflows/" + WorkflowName + "/setAutostart", {"autostart": 0});
+
         # unconfigure job
         qrest.del("jobs/" + JobName + "/config/create-workflow-order-mapper");
         qrest.del("jobs/" + JobName + "/config/create-workflow-name");
         qrest.del("jobs/" + JobName + "/config/sftp-polling-file-connection");
         qrest.del("jobs/" + JobName + "/config/sftp-polling-mask");
         qrest.del("jobs/" + JobName + "/config/sftp-polling-connection-name");
-
-        # delete connection
-        qrest.del("remote/user/" + file_conn_name);
     }
 
-    sftpJobTest() {
+    sftpJobFsTest() {
+        string file_conn_name = get_random_string(20);
+
+        # create file connection
+        qrest.post("remote/user", {
+            "name": file_conn_name,
+            "desc": "test connection for SFTP test job",
+            "url": "file://" + local_tmpdir.path,
+        });
+        on_exit {
+            # delete connection
+            qrest.del("remote/user/" + file_conn_name);
+        }
+
+        hash<auto> job_config = {
+            "sftp-polling-file-connection": file_conn_name,
+        };
+        map qrest.put("jobs/" + JobName + "/config/" + $1.key, {"value": $1.value}), job_config.pairIterator();
+        on_exit {
+            map qrest.del("jobs/" + JobName + "/config/" + $1), keys job_config;
+        }
+
         # create example file
         {
-            hash<TmpFileHash> tmp_file = make_tmp_file("test", "txt", sftp_tmpdir.path);
+            hash<TmpFileHash> tmp_file = make_tmp_file("test-", ".txt", sftp_tmpdir.path);
             tmp_file.file.write(TestData);
         }
+        # make sure files that don't match the mask are not polled
+        TmpFile ignore_file("test-", ".ignore", sftp_tmpdir.path);
+
+        RunJobResult job(OMQ::StatComplete);
+        exec(job);
+
+        int jiid = job.getJobResult().job_instanceid;
+        int wfiid = qrest.get("jobresults/" + jiid + "/info")[0].workflow_instanceid;
+        # wait for workflow order to be COMPLETE
+        WaitForWfiid wait(wfiid, NOTHING, 5s);
+        assertEq(TestData, qrest.get("orders/" + wfiid + "/dynamicdata/data"));
+
+        assertTrue(is_file(ignore_file.path));
+    }
+
+    sftpJobTransferTest() {
+        # create example file
+        {
+            hash<TmpFileHash> tmp_file = make_tmp_file("test-", ".txt", sftp_tmpdir.path);
+            tmp_file.file.write(TestData);
+        }
+        # make sure files that don't match the mask are not polled
+        TmpFile ignore_file("test-", ".ignore", sftp_tmpdir.path);
 
         # start test workflow
         qrest.put("workflows/" + WorkflowName + "/setAutostart", {"autostart": 1});
@@ -109,6 +154,10 @@ private usageIntern(int offset = OffsetColumn) {
 
         int jiid = job.getJobResult().job_instanceid;
         int wfiid = qrest.get("jobresults/" + jiid + "/info")[0].workflow_instanceid;
-        assertEq(TestData, qrest.get("orders/" + wfiid + "/dynamicdata/data"));
+        # wait for workflow order to be COMPLETE
+        WaitForWfiid wait(wfiid, NOTHING, 5s);
+        assertEq(TestData, qrest.get("orders/" + wfiid + "/staticdata/data").toString());
+
+        assertTrue(is_file(ignore_file.path));
     }
 }

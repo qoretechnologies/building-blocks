@@ -89,6 +89,6 @@ OPTION: output: (
     },
 )
 
-FIELD: staticdata: {"name": "local_path", "code": hash<auto> sub (string local_path, hash<auto> rec) { return rec; }}
-FIELD: workflow_unique_key: {"name": "local_path", "code": hash<auto> sub (string local_path, hash<auto> rec) { return {"filename": local_path}; }}
+FIELD: staticdata: {"name": "local_path", "code": hash<auto> sub (*string local_path, hash<auto> rec) { return rec; }}
+FIELD: workflow_unique_key: {"name": "name", "code": hash<auto> sub (string name, hash<auto> rec) { return {"filename": name}; }}
 # END

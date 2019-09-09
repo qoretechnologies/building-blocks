@@ -63,6 +63,8 @@ class BB_SftpPollerBase {
         if (UserApi::getConfigItemValue("sftp-polling-mask-regex")) {
             poller_opts.regex_mask = mask;
             poller_opts.reopts = QRE_MAP{UserApi::getConfigItemValue("sftp-polling-regex-opts")};
+        } else {
+            poller_opts.mask = mask;
         }
 
         # add 1:1 opts
