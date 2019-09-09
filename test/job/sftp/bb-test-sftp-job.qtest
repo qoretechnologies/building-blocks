@@ -129,7 +129,9 @@ private usageIntern(int offset = OffsetColumn) {
         exec(job);
 
         int jiid = job.getJobResult().job_instanceid;
-        int wfiid = qrest.get("jobresults/" + jiid + "/info")[0].workflow_instanceid;
+        hash<auto> results = qrest.get("jobresults/" + jiid).info[0];
+        assertEq(OMQ::StatBlocked, results.order_status);
+        int wfiid = results.workflow_instanceid;
         # wait for workflow order to be COMPLETE
         WaitForWfiid wait(wfiid, NOTHING, 5s);
         hash<auto> order = qrest.get("orders/" + wfiid);
@@ -169,7 +171,9 @@ private usageIntern(int offset = OffsetColumn) {
         exec(job);
 
         int jiid = job.getJobResult().job_instanceid;
-        int wfiid = qrest.get("jobresults/" + jiid + "/info")[0].workflow_instanceid;
+        hash<auto> results = qrest.get("jobresults/" + jiid).info[0];
+        assertEq(OMQ::StatBlocked, results.order_status);
+        int wfiid = results.workflow_instanceid;
         # wait for workflow order to be COMPLETE
         WaitForWfiid wait(wfiid, NOTHING, 5s);
         hash<auto> order = qrest.get("orders/" + wfiid);
@@ -193,7 +197,10 @@ private usageIntern(int offset = OffsetColumn) {
         exec(job);
         int jiid2 = job.getJobResult().job_instanceid;
         assertNeq(jiid, jiid2);
-        int wfiid2 = qrest.get("jobresults/" + jiid2 + "/info")[0].workflow_instanceid;
+        results = qrest.get("jobresults/" + jiid2).info[0];
+        int wfiid2 = results.workflow_instanceid;
         assertEq(wfiid, wfiid2);
+        assertTrue(results.duplicate);
+        assertEq(OMQ::StatComplete, results.order_status);
     }
 }
