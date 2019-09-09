@@ -136,6 +136,7 @@ private usageIntern(int offset = OffsetColumn) {
         int wfiid = results.workflow_instanceid;
         # wait for workflow order to be COMPLETE
         WaitForWfiid wait(wfiid, NOTHING, 5s);
+        wait.run(self);
         hash<auto> order = qrest.get("orders/" + wfiid);
         assertEq(filename, order.keys.filename);
         assertEq(filename, order.staticdata.name);
@@ -178,6 +179,7 @@ private usageIntern(int offset = OffsetColumn) {
         int wfiid = results.workflow_instanceid;
         # wait for workflow order to be COMPLETE
         WaitForWfiid wait(wfiid, NOTHING, 5s);
+        wait.run(self);
         hash<auto> order = qrest.get("orders/" + wfiid);
         assertEq(filename, order.keys.filename);
         assertEq(filename, order.staticdata.name);
