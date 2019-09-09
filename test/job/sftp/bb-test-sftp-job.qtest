@@ -74,7 +74,9 @@ private usageIntern(int offset = OffsetColumn) {
         map qrest.put("jobs/" + JobName + "/config/" + $1.key, {"value": $1.value}), job_config.pairIterator();
 
         # ensure default configuration
-        map qrest.del("jobs/" + JobName + "/config/" + $1.name), qrest.get("jobs/bb-test-sftp-job/config"), !job_config{$1.name};
+        map qrest.del("jobs/" + JobName + "/config/" + $1.name), qrest.get("jobs/bb-test-sftp-job/config"),
+            !job_config{$1.name} && ((exists $1.default_value && $1.default_value != $1.value)
+                                     || (!exists $1.default_value && exists $1.value));
 
         # start test workflow
         qrest.put("workflows/" + WorkflowName + "/setAutostart", {"autostart": 1});
