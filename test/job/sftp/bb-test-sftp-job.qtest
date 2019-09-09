@@ -92,6 +92,9 @@ private usageIntern(int offset = OffsetColumn) {
         qrest.del("jobs/" + JobName + "/config/sftp-polling-file-connection");
         qrest.del("jobs/" + JobName + "/config/sftp-polling-mask");
         qrest.del("jobs/" + JobName + "/config/sftp-polling-connection-name");
+
+        # delete sftp connection
+        qrest.del("remote/user/" + sftp_conn_name);
     }
 
     sftpJobFsTest() {
