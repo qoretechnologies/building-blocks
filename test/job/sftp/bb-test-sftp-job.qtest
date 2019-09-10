@@ -11,6 +11,7 @@
 %requires QorusInterfaceTest
 %requires Util
 %requires FsUtil
+%requires ssh2
 
 class BB_TestSftpJob inherits QorusJobTest {
     private {
@@ -21,6 +22,9 @@ class BB_TestSftpJob inherits QorusJobTest {
         TmpDir sftp_tmpdir();
 
         string sftp_conn_name = get_random_string(20);
+
+        # set of files must be pushed to a remote SFTP server
+        string sftp_url;
 
          #! command-line options
         const MyOpts = Opts + {
@@ -74,7 +78,11 @@ private usageIntern(int offset = OffsetColumn) {
                 remote_path =~ s/^\///;
                 url += "/" + remote_path;
             }
-            printf("creating sftp connection %y with URL %y\n", sftp_conn_name, url);
+            if (ENV.SFTP_HOST) {
+                sftp_url = url;
+            }
+
+            printf("creating sftp connection %y with URL %y (opts: %y)\n", sftp_conn_name, url, opts);
             qrest.post("remote/user", {
                 "name": sftp_conn_name,
                 "desc": "test connection for SFTP test job",
@@ -139,14 +147,8 @@ private usageIntern(int offset = OffsetColumn) {
         }
 
         # create example file
-        string filename;
-        string file_path;
-        {
-            hash<TmpFileHash> tmp_file = make_tmp_file("test-", ".txt", sftp_tmpdir.path);
-            tmp_file.file.write(TestData);
-            filename = basename(tmp_file.path);
-            file_path = tmp_file.path;
-        }
+        string file_path = writeSftpFile();
+        string filename = basename(file_path);
 
         # make sure files that don't match the mask are not polled
         TmpFile ignore_file("test-", ".ignore", sftp_tmpdir.path);
@@ -201,11 +203,7 @@ private usageIntern(int offset = OffsetColumn) {
                 map qrest.del("jobs/" + JobName + "/config/" + $1), keys dup_config;
             }
 
-            {
-                File f();
-                f.open2(file_path, O_CREAT | O_WRONLY | O_TRUNC);
-                f.write(TestData);
-            }
+            writeSftpFile(file_path);
             exec(job);
             int jiid2 = job.getJobResult().job_instanceid;
             assertNeq(jiid, jiid2);
@@ -217,16 +215,44 @@ private usageIntern(int offset = OffsetColumn) {
         }
     }
 
-    sftpJobTransferTest() {
-        # create example file
-        string filename;
-        string file_path;
-        {
+    private string writeSftpFile(*string file_path) {
+        if (sftp_url) {
+            SFTPClient sftp(sftp_url);
+            if (is_file(ENV.HOME + "/.ssh/id_rsa.old")) {
+                sftp.setKeys(ENV.HOME + "/.ssh/id_rsa.old");
+            } else if (is_file(ENV.HOME + "/.ssh/id_rsa")) {
+                sftp.setKeys(ENV.HOME + "/.ssh/id_rsa");
+            }
+            if (!file_path) {
+                file_path = sprintf("test-%s.txt", get_random_string());
+            }
+            # write to target directory
+            hash<UrlInfo> url_info = parse_url(sftp_url);
+            if (url_info.path) {
+                sftp.chdir(url_info.path);
+            }
+            int bytes = sftp.putFile(TestData, file_path);
+            if (m_options.verbose > 2) {
+                printf("wrote %d bytes of %y to %y\n", bytes, file_path, sftp_url);
+            }
+            return file_path;
+        }
+
+        if (!file_path) {
             hash<TmpFileHash> tmp_file = make_tmp_file("test-", ".txt", sftp_tmpdir.path);
             tmp_file.file.write(TestData);
-            filename = basename(tmp_file.path);
-            file_path = tmp_file.path;
+            return tmp_file.path;
         }
+        File f();
+        f.open2(file_path, O_CREAT | O_WRONLY | O_TRUNC);
+        f.write(TestData);
+        return file_path;
+    }
+
+    sftpJobTransferTest() {
+        # create example file
+        string file_path = writeSftpFile();
+        string filename = basename(file_path);
 
         # make sure files that don't match the mask are not polled
         TmpFile ignore_file("test-", ".ignore", sftp_tmpdir.path);
@@ -260,11 +286,7 @@ private usageIntern(int offset = OffsetColumn) {
         assertTrue(is_file(ignore_file.path));
 
         # test simple duplicate handling; make sure the same workflow_instanceid is returned for a file with the same name
-        {
-            File f();
-            f.open2(file_path, O_CREAT | O_WRONLY | O_TRUNC);
-            f.write(TestData);
-        }
+        writeSftpFile(file_path);
         exec(job);
         int jiid2 = job.getJobResult().job_instanceid;
         assertNeq(jiid, jiid2);
