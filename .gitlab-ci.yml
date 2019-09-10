@@ -9,12 +9,14 @@ variables:
   OMQ_DB_HOST: postgres
   OMQ_DB_USER: postgres
   OMQ_DB_PASS: omq
+  SFTP_USER: foo
+  SFTP_PASS: pass
 before_script:
   - $WORKDIR/qorus/test/docker_test/init.sh
   - gosu qorus:qorus $WORKDIR/qorus/test/docker_test/launch_qorus.sh
 
 # --------------------------------
-sftp-modules-tests:
+all-tests:
   stage: test
   tags:
     - docker-exec
@@ -31,7 +33,7 @@ sftp-modules-tests:
     #- gosu qorus:qorus qore tests/SftpJobModule/SftpJobModule.qtest -vv
     # TODO - gosu qorus:qorus qore tests/SftpJobModule/SftpWorkflowModule.qtest -vv
     - gosu qorus:qorus make load-all
-    - gosu qorus:qorus SFTP_USER=foo SFTP_PASS=pass make test
+    - gosu qorus:qorus make test
 
 # --------------------------------
 #mailer-workflow-module:

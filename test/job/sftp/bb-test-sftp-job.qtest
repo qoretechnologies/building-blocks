@@ -134,10 +134,12 @@ private usageIntern(int offset = OffsetColumn) {
 
         # create example file
         string filename;
+        string file_path;
         {
             hash<TmpFileHash> tmp_file = make_tmp_file("test-", ".txt", sftp_tmpdir.path);
             tmp_file.file.write(TestData);
             filename = basename(tmp_file.path);
+            file_path = tmp_file.path;
         }
 
         # make sure files that don't match the mask are not polled
@@ -164,6 +166,49 @@ private usageIntern(int offset = OffsetColumn) {
         assertEq(TestData, order.dynamicdata."data");
 
         assertTrue(is_file(ignore_file.path));
+
+        # test complex duplicate handling
+        {
+            # for duplicate files
+            TmpDir dup_tmpdir();
+            string dup_file_conn_name = get_random_string(20);
+
+            # create file connection
+            qrest.post("remote/user", {
+                "name": dup_file_conn_name,
+                "desc": "test connection for SFTP test job",
+                "url": "file://" + dup_tmpdir.path,
+            });
+            on_exit {
+                # delete connection
+                qrest.del("remote/user/" + dup_file_conn_name);
+            }
+
+            hash<auto> dup_config = {
+                "sftp-polling-duplicate-file-connection": dup_file_conn_name,
+                "sftp-polling-duplicate-workflow-name": "BB-TEST-SFTP-WORKFLOW-DUP",
+                "sftp-polling-duplicate-order-mapper": "bb-test-sftp-job-duplicate",
+            };
+            map qrest.put("jobs/" + JobName + "/config/" + $1.key, {"value": $1.value}), dup_config.pairIterator();
+            on_exit {
+                # ensure default configuration
+                map qrest.del("jobs/" + JobName + "/config/" + $1), keys dup_config;
+            }
+
+            {
+                File f();
+                f.open2(file_path, O_CREAT | O_WRONLY | O_TRUNC);
+                f.write(TestData);
+            }
+            exec(job);
+            int jiid2 = job.getJobResult().job_instanceid;
+            assertNeq(jiid, jiid2);
+            results = qrest.get("jobresults/" + jiid2).info[0];
+            int wfiid2 = results.workflow_instanceid;
+            assertEq(wfiid, wfiid2);
+            assertTrue(results.duplicate);
+            assertEq(OMQ::StatComplete, results.order_status);
+        }
     }
 
     sftpJobTransferTest() {
@@ -208,7 +253,7 @@ private usageIntern(int offset = OffsetColumn) {
 
         assertTrue(is_file(ignore_file.path));
 
-        # test duplicate handling; make sure the same workflow_instanceid is returned for a file with the same name
+        # test simple duplicate handling; make sure the same workflow_instanceid is returned for a file with the same name
         {
             File f();
             f.open2(file_path, O_CREAT | O_WRONLY | O_TRUNC);

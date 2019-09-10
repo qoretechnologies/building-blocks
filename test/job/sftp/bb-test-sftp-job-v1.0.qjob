@@ -14,7 +14,7 @@
 # define-group: bb-test: building block test interfaces
 # groups: test, bb-test
 # classes: BB_SftpPollerCreateOrderJob
-# mappers: bb-test-sftp-job:1.0
+# mappers: bb-test-sftp-job:1.0, bb-test-sftp-job-duplicate:1.0
 %new-style
 %require-types
 %strict-args

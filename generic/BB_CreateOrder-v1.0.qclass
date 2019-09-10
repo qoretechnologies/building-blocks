@@ -9,6 +9,18 @@
 %strict-args
 %enable-all-warnings
 
+#! for create order options
+hashdecl CreateOrderOptionInfo {
+    #! the status of the order
+    string status = UserApi::getConfigItemValue("create-workflow-order-status");
+    #! the mapper to use
+    string mapper = UserApi::getConfigItemValue("create-workflow-order-mapper");
+    #! the workflow name
+    string workflow = UserApi::getConfigItemValue("create-workflow-name");
+    #! the optional workflow version
+    *string version = UserApi::getConfigItemValue("create-workflow-version");
+}
+
 #! creates a workflow order from the input data according to the configuration
 /** supports atomic workflow order creation through handling \c DUPLICATE-ORDER-KEY exceptions thrown by
     @ref UserApi::createOrder()
@@ -51,22 +63,26 @@ class BB_CreateOrder {
         exception is also thrown even with one match if the \c create-workflow-duplicate-handling config item is set
         to \c "DUPLICATE"
     */
-    static int createWorkflowOrder(hash<auto> order_context_data = {}, string status = UserApi::getConfigItemValue("create-workflow-order-status"), *reference<bool> dup) {
+    static int createWorkflowOrder(hash<auto> order_context_data = {}, hash<CreateOrderOptionInfo> opts = <CreateOrderOptionInfo>{}, *reference<bool> dup) {
         # create the workflow order with the mapper
-        string mapper_name = UserApi::getConfigItemValue("create-workflow-order-mapper");
-        Mapper mapper = UserApi::getMapper(mapper_name);
+        Mapper mapper = UserApi::getMapper(opts.mapper);
         hash<auto> order_data = mapper.mapData(order_context_data);
-        UserApi::logInfo("mapper %y mapped order data: %y", mapper_name, order_data);
+        UserApi::logInfo("mapper %y mapped order data: %y", opts.mapper, order_data);
+
+        string wfdesc = opts.workflow;
+        if (opts.version) {
+            wfdesc += sprintf(" v%s", opts.version);
+        }
 
         softint workflow_instanceid;
         try {
             workflow_instanceid = UserApi::createOrder(
-                UserApi::getConfigItemValue("create-workflow-name"),
-                UserApi::getConfigItemValue("create-workflow-version"),
+                opts.workflow,
+                opts.version,
                 order_data,
-                status,
+                opts.status,
             );
-            UserApi::logInfo("Created workflow order instance id: %d with status %y", workflow_instanceid, status);
+            UserApi::logInfo("Created %s order instance id: %d with status %y", wfdesc, workflow_instanceid, opts.status);
             return workflow_instanceid;
         } catch (hash<ExceptionInfo> ex) {
             if (ex.err == "DUPLICATE-ORDER-KEY") {
@@ -80,7 +96,7 @@ class BB_CreateOrder {
                     return workflow_instanceid;
                 }
             }
-            UserApi::logError("duplicate order error: %s: %s (ids: %y)", ex.err, ex.desc, ex.arg.workflow_instance_ids);
+            UserApi::logError("duplicate %s order error: %s: %s (ids: %y)", wfdesc, ex.err, ex.desc, ex.arg.workflow_instance_ids);
             rethrow;
         }
     }

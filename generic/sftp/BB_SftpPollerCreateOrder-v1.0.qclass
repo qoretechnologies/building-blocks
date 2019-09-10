@@ -30,24 +30,78 @@ class BB_SftpPollerCreateOrder inherits BB_SftpPollerBase, BB_CreateOrder {
         - \c data: this key is only present if \c sftp-polling-file-connection not set; in this case the remote file
           data is retrieved in memory and stored in this key as binary data
         - \c filepath: the remote filepath relative to SFTP root directory
+        - \c local_path: this key is set to a string giving the local path where the file's data is stored if
+          config item \c sftp-polling-file-connection is set
 
         @return the event with the following additional keys:
         - \c order_status: the status of the new order created
         - \c workflow_instanceid: the workflow instance ID of the new order created
     */
     hash<auto> singleFileEventImpl(hash<auto> event) {
-        string status = UserApi::getConfigItemValue("create-workflow-order-status");
+        hash<CreateOrderOptionInfo> create_opts();
         bool dup = False;
-        int wfiid = createWorkflowOrder(event, status, \dup);
-        if (dup) {
-            # get real order status
-            status = UserApi::callRestApi("GET", "orders/" + wfiid + "/workflowstatus");
-        }
+        int wfiid = createWorkflowOrder(event, create_opts, \dup);
         event += {
-            "order_status": status,
             "workflow_instanceid": wfiid,
+            "order_status": create_opts.status,
             "duplicate": dup,
         };
+        if (dup) {
+            # get real order status
+            hash<auto> info = UserApi::callRestApi("GET", "orders/" + wfiid);
+            event.order_status = info.workflowstatus;
+
+            # if the order has step info, then the file is a duplicate file
+            if (info.StepInstances) {
+                # check for duplicate file processing if there is a local file
+                if (event.local_path) {
+                    *string dup_target = UserApi::getConfigItemValue("sftp-polling-duplicate-file-connection", event);
+                    if (dup_target) {
+                        dup_target = UserApi::getUserConnection(dup_target).path();
+                        {
+                            *string path_offset = UserApi::getConfigItemValue("sftp-polling-duplicate-file-path", event);
+                            if (path_offset) {
+                                dup_target = normalize_dir(dup_target + DirSep + path_offset);
+                            }
+                        }
+                        dup_target = normalize_dir(dup_target + DirSep +
+                            UserApi::getConfigItemValue("sftp-polling-duplicate-name-template", event));
+
+                        UserApi::logInfo("DUPLICATE FILE %y found: workflow_instanceid %d has status %y (%d step%s); "
+                            "moving %y -> %y", event.name, wfiid, event.order_status, info.StepInstances.size(),
+                            info.StepInstances.size() == 1 ? "" : "s", event.tmp_path, dup_target);
+
+                        # move file to duplicate target location
+                        rename(event.tmp_path, dup_target);
+
+                        # set local path to the new location of the file
+                        event += {
+                            "local_path": dup_target,
+                            "new_name": basename(dup_target),
+                        };
+                        # remove tmp_path so the base class will not try to move a file that's already been moved
+                        remove event.tmp_path;
+                    }
+
+                    if ((*string dup_workflow = UserApi::getConfigItemValue("sftp-polling-duplicate-workflow-name"))
+                        && (*string dup_mapper = UserApi::getConfigItemValue("sftp-polling-duplicate-order-mapper"))) {
+                        wfiid = createWorkflowOrder(event, <CreateOrderOptionInfo>{
+                            "workflow": dup_workflow,
+                            "version": UserApi::getConfigItemValue("sftp-polling-duplicate-workflow-version"),
+                            "status": OMQ::StatReady,
+                            "mapper": dup_mapper,
+                        });
+                        UserApi::logInfo("created %s order workflow_instanceid %d", dup_workflow, wfiid);
+                        event.duplicate_workflow_instanceid = wfiid;
+                    }
+                } else {
+                    UserApi::logInfo("DUPLICATE FILE %y found: workflow_instanceid %d has status %y (%d step%s); "
+                        "no local file to handle",
+                        event.name, wfiid, event.order_status, info.StepInstances.size(),
+                        info.StepInstances.size() == 1 ? "" : "s");
+                }
+            }
+        }
         return event;
     }
 
@@ -89,7 +143,64 @@ class BB_SftpPollerCreateOrder inherits BB_SftpPollerBase, BB_CreateOrder {
     */
     static hash<string, hash<ConfigItemInfo>> getConfigItems() {
         hash<string, hash<ConfigItemInfo>> rv = BB_SftpPollerBase::getConfigItems()
-            + BB_CreateOrder::getConfigItems();
+            + BB_CreateOrder::getConfigItems() + {
+            "sftp-polling-duplicate-file-connection": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "the name of a local file connection where to save duplicate files; "
+                    "\"sftp-polling-duplicate-file-path\" can be set to give a subdirectory path offset from the "
+                    "connection",
+                "strictly_local": True,
+                "config_group": "SFTP Polling Workflow Creation Duplicate File Handling",
+            },
+            "sftp-polling-duplicate-file-path": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "a subdirectory path offset from the connection identified with "
+                    "\"sftp-polling-duplicate-file-connection\"; ignored if "
+                    "\"sftp-polling-duplicate-file-connection\" is not set",
+                "strictly_local": True,
+                "config_group": "SFTP Polling Workflow Creation Duplicate File Handling",
+            },
+            "sftp-polling-duplicate-name-template": <ConfigItemInfo>{
+                "type": "string",
+                "default_value": "$local:name-$timestamp:{YYYY-MM-DD HH:mm:SS.xx}",
+                "description": "the filename template for the target file when moving duplicate files; only used if "
+                    "\"sftp-polling-file-connection\" and \"sftp-polling-duplicate-file-connection\" are set; the "
+                    "filesystem event info is available in the local context",
+                "strictly_local": True,
+                "config_group": "SFTP Polling Workflow Creation Duplicate File Handling",
+            },
+            "sftp-polling-duplicate-workflow-name": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "the name of the workflow for duplicate file handling; if not set (the default), no "
+                    "workflow order will be created; only used if \"sftp-polling-file-connection\" and "
+                    "\"sftp-polling-duplicate-order-mapper\" are also set",
+                "strictly_local": True,
+                "config_group": "SFTP Polling Workflow Creation Duplicate File Handling",
+            },
+            "sftp-polling-duplicate-workflow-version": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "the version of the workflow for duplicate file handling; if not set (the default), "
+                    "the latest version will be used",
+                "strictly_local": True,
+                "config_group": "SFTP Polling Workflow Creation Duplicate File Handling",
+            },
+            "sftp-polling-duplicate-order-mapper": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "the mapper for creating duplicate orders, only used if "
+                    "\"sftp-polling-file-connection\" and \"sftp-polling-duplicate-order-mapper\" are also set; the "
+                    "local file path is available as \"$local:local_path\" and if "
+                    "\"sftp-polling-duplicate-file-connection\" is set, then the new name is available as "
+                    "\"$local:new_name\"",
+                "strictly_local": True,
+                "config_group": "SFTP Polling Workflow Creation Duplicate File Handling",
+            },
+        };
+        # change default status of new workflow orders to BLOCKED for 2-phase commit
         rv."create-workflow-order-status".default_value = OMQ::StatBlocked;
         return rv;
     }

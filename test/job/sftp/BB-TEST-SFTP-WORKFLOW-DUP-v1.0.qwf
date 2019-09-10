@@ -1,0 +1,30 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+our float format_version = 2.6;
+
+our hash<auto> groups = {
+    "test": {"desc": "test interfaces"},
+    "bb-test": {"desc": "building block test interfaces"},
+};
+
+const Steps = (
+    {
+        "name": "bb-test-sftp-workflow:1.0",
+        "classname": "BB_TestSftpWorkflowStep:1.0",
+    },
+);
+
+our hash<auto> workflows."BB-TEST-SFTP-WORKFLOW-DUP"."1.0" = {
+    "desc": "SFTP create order job BB test workflow",
+    "author": "Qore Technologies, s.r.o.",
+    "steps": Steps,
+    "keylist": ("filename", "orig_name"),
+    "groups": ("test", "bb-test",),
+    "remote": False,
+    "sla_threshold": 20,
+};
