@@ -114,16 +114,12 @@ class BB_SftpPollerBase {
         if (file_conn) {
             Dir dir = UserApi::getUserConnection(file_conn);
             *string target_dir = dir.path();
-            {
-                *string path_offset = UserApi::getConfigItemValue("sftp-polling-file-path");
-                if (path_offset) {
-                    target_dir = normalize_dir(target_dir + DirSep + path_offset);
-                }
-            }
             # add filename
             string tmp_filename = UserApi::getConfigItemValue("sftp-polling-file-temp-template", event);
             string tmp_path = normalize_dir(target_dir + DirSep + tmp_filename);
-            string local_path = normalize_dir(target_dir + DirSep + event.name);
+            string local_path = normalize_dir(target_dir + DirSep
+                + (UserApi::getConfigItemValue("sftp-polling-file-name", event) ?? event.name));
+
             UserApi::logInfo("using local connection %y to stream %y -> %y (%d bytes)", file_conn, event.filepath,
                 tmp_path, event.size);
             date start = now_us();
@@ -255,7 +251,7 @@ class BB_SftpPollerBase {
             "sftp-polling-file-connection": <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
-                "description": "the name of a local file connection where to save files; \"sftp-polling-file-path\" "
+                "description": "the name of a local file connection where to save files; \"sftp-polling-file-name\" "
                     "can be set to give a subdirectory path offset from the connection; note that if this "
                     "configuration item is not set, then files are retrieved to memory, this should only be done for "
                     "relatively small files; if files can be large, then it's recommended to set this option and "
@@ -263,11 +259,12 @@ class BB_SftpPollerBase {
                 "strictly_local": True,
                 "config_group": "SFTP File Options",
             },
-            "sftp-polling-file-path": <ConfigItemInfo>{
+            "sftp-polling-file-name": <ConfigItemInfo>{
                 "type": "*string",
                 "default_value": NOTHING,
-                "description": "a subdirectory path offset from the connection identified with "
-                    "\"sftp-polling-file-connection\"; ignored if \"sftp-polling-file-connection\" is not set",
+                "description": "a template string giving the target local file name as offset from the connection "
+                    "identified with \"sftp-polling-file-connection\"; ignored if \"sftp-polling-file-connection\" "
+                    "is not set; local context includes the event information (ex: \"subdir/$local:name\")",
                 "strictly_local": True,
                 "config_group": "SFTP File Options",
             },

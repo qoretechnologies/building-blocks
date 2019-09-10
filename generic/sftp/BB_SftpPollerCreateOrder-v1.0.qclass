@@ -57,14 +57,7 @@ class BB_SftpPollerCreateOrder inherits BB_SftpPollerBase, BB_CreateOrder {
                 if (event.local_path) {
                     *string dup_target = UserApi::getConfigItemValue("sftp-polling-duplicate-file-connection", event);
                     if (dup_target) {
-                        dup_target = UserApi::getUserConnection(dup_target).path();
-                        {
-                            *string path_offset = UserApi::getConfigItemValue("sftp-polling-duplicate-file-path", event);
-                            if (path_offset) {
-                                dup_target = normalize_dir(dup_target + DirSep + path_offset);
-                            }
-                        }
-                        dup_target = normalize_dir(dup_target + DirSep +
+                        dup_target = normalize_dir(UserApi::getUserConnection(dup_target).path() + DirSep +
                             UserApi::getConfigItemValue("sftp-polling-duplicate-name-template", event));
 
                         UserApi::logInfo("DUPLICATE FILE %y found: workflow_instanceid %d has status %y (%d step%s); "
@@ -148,17 +141,8 @@ class BB_SftpPollerCreateOrder inherits BB_SftpPollerBase, BB_CreateOrder {
                 "type": "*string",
                 "default_value": NOTHING,
                 "description": "the name of a local file connection where to save duplicate files; "
-                    "\"sftp-polling-duplicate-file-path\" can be set to give a subdirectory path offset from the "
+                    "\"sftp-polling-duplicate-file-name\" can be set to give a subdirectory path offset from the "
                     "connection",
-                "strictly_local": True,
-                "config_group": "SFTP Polling Workflow Creation Duplicate File Handling",
-            },
-            "sftp-polling-duplicate-file-path": <ConfigItemInfo>{
-                "type": "*string",
-                "default_value": NOTHING,
-                "description": "a subdirectory path offset from the connection identified with "
-                    "\"sftp-polling-duplicate-file-connection\"; ignored if "
-                    "\"sftp-polling-duplicate-file-connection\" is not set",
                 "strictly_local": True,
                 "config_group": "SFTP Polling Workflow Creation Duplicate File Handling",
             },
@@ -167,7 +151,8 @@ class BB_SftpPollerCreateOrder inherits BB_SftpPollerBase, BB_CreateOrder {
                 "default_value": "$local:name-$timestamp:{YYYY-MM-DD HH:mm:SS.xx}",
                 "description": "the filename template for the target file when moving duplicate files; only used if "
                     "\"sftp-polling-file-connection\" and \"sftp-polling-duplicate-file-connection\" are set; the "
-                    "filesystem event info is available in the local context",
+                    "filesystem event info is available in the local context; this configuration item can also be "
+                    "used to provide a subdirectory from the file connection in which to store duplicate files",
                 "strictly_local": True,
                 "config_group": "SFTP Polling Workflow Creation Duplicate File Handling",
             },
