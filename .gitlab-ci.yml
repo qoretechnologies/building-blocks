@@ -30,8 +30,8 @@ sftp-modules-tests:
     # TODO - gosu qorus:qorus oload -Rlv tests/SftpWorkflowModule/*.q*
     #- gosu qorus:qorus qore tests/SftpJobModule/SftpJobModule.qtest -vv
     # TODO - gosu qorus:qorus qore tests/SftpJobModule/SftpWorkflowModule.qtest -vv
-    gosu qorus:qorus make load-all
-    gosu qorus:qorus SFTP_USER=foo SFTP_PASS=pass make test
+    - gosu qorus:qorus make load-all
+    - gosu qorus:qorus SFTP_USER=foo SFTP_PASS=pass make test
 
 # --------------------------------
 #mailer-workflow-module:
