@@ -70,7 +70,7 @@ private usageIntern(int offset = OffsetColumn) {
             }
             url += ENV.SFTP_HOST ?? "localhost";
             {
-                string remote_path = ENV.SFTP_PATH ?? sftp_tmpdir.path;
+                string remote_path = ENV.SFTP_DIR ?? sftp_tmpdir.path;
                 remote_path =~ s/^\///;
                 url += "/" + remote_path;
             }
