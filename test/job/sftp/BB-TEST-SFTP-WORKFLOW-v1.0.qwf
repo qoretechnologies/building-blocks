@@ -26,4 +26,5 @@ our hash<auto> workflows."BB-TEST-SFTP-WORKFLOW"."1.0" = {
     "keylist": "filename",
     "groups": ("test", "bb-test",),
     "remote": False,
+    "sla_threshold": 20,
 };

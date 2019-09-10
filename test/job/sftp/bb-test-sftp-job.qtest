@@ -50,16 +50,29 @@ private usageIntern(int offset = OffsetColumn) {
     globalSetUp() {
         # create SFTP connection
         {
+            # SFTP connection URL
+            string url = "sftp://";
             hash<auto> opts = {};
             if (m_options.privkey) {
                 opts += {
                     "keyfile": m_options.privkey,
                 };
+            } else if (is_file(ENV.HOME + "/.ssh/id_rsa.old")) {
+                opts += {
+                    "keyfile": ENV.HOME + "/.ssh/id_rsa.old",
+                };
+            } else if (is_file(ENV.HOME + "/.ssh/id_rsa")) {
+                opts += {
+                    "keyfile": ENV.HOME + "/.ssh/id_rsa",
+                };
+            } else if (ENV.SFTP_USER && ENV.SFTP_PASS) {
+                url += sprintf("%s:%s@", ENV.SFTP_USER, ENV.SFTP_PASS);
             }
+            url += "localhost/" + sftp_tmpdir.path;
             qrest.post("remote/user", {
                 "name": sftp_conn_name,
                 "desc": "test connection for SFTP test job",
-                "url": "sftp://localhost/" + sftp_tmpdir.path,
+                "url": url,
                 "options": opts,
             });
         }
