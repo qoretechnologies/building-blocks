@@ -10,6 +10,7 @@ variables:
   OMQ_DB_USER: postgres
   OMQ_DB_PASS: omq
   SFTP_HOST: local-sftp
+  SFTP_DIR: sftp_root
   SFTP_USER: foo
   SFTP_PASS: pass
 before_script:

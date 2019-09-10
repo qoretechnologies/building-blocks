@@ -69,7 +69,11 @@ private usageIntern(int offset = OffsetColumn) {
                 url += sprintf("%s:%s@", ENV.SFTP_USER, ENV.SFTP_PASS);
             }
             url += ENV.SFTP_HOST ?? "localhost";
-            url += "/" + sftp_tmpdir.path;
+            {
+                string remote_path = ENV.SFTP_PATH ?? sftp_tmpdir.path;
+                remote_path =~ s/^\///;
+                url += "/" + remote_path;
+            }
             printf("creating sftp connection %y with URL %y\n", sftp_conn_name, url);
             qrest.post("remote/user", {
                 "name": sftp_conn_name,
