@@ -13,6 +13,7 @@ variables:
   SFTP_PASS: pass
 before_script:
   - export QORUS_LOG_DIR="`pwd`/log"
+  - $WORKDIR/qorus/test/docker_test/get_external_apps.sh
   - $WORKDIR/qorus/test/docker_test/init.sh
   - gosu qorus:qorus $WORKDIR/qorus/test/docker_test/launch_qorus.sh
 
