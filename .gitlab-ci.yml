@@ -12,6 +12,7 @@ variables:
   SFTP_USER: foo
   SFTP_PASS: pass
 before_script:
+  - export QORUS_LOG_DIR="`pwd`/log"
   - $WORKDIR/qorus/test/docker_test/init.sh
   - gosu qorus:qorus $WORKDIR/qorus/test/docker_test/launch_qorus.sh
 
@@ -25,6 +26,12 @@ all-tests:
     - name: atmoz/sftp:alpine
       command: ["foo:pass:::sftp_root"]
       alias: local-sftp
+  artifacts:
+    name: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
+    paths:
+      - log
+    when: on_failure
+    expire_in: 2 days
   script:
     #- cp -rf SftpJobModule $OMQ_DIR/user/modules
     #- cp -rf SftpWorkflowModule $OMQ_DIR/user/modules
