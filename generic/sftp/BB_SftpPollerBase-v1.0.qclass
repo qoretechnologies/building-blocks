@@ -104,6 +104,8 @@ class BB_SftpPollerBase {
 
         This method then calls singleFileEventImpl() for further processing; the event argument to this method has
         the following additional keys if \c sftp-polling-file-connection is set:
+        - \c transfer_time: a relative date/time value giving the time it took to transfer the file
+        - \c tmp_filename: the temporary filename used to store the file until the post action
         - \c tmp_path: the current temporary path on the filesystem of the file
         - \c local_path: the target path for the file where the file will be moved to in the post event action
     */
@@ -127,10 +129,11 @@ class BB_SftpPollerBase {
             sftpclient.retrieveFile(event.filepath, tmp_path);
             event += {
                 "transfer_time": now_us() - start,
+                "tmp_filename": tmp_filename,
                 "tmp_path": tmp_path,
+                "local_path": local_path,
             };
-            UserApi::logInfo("retrieved %y in %y", event.name, event.transfer_time);
-            event.local_path = local_path;
+            UserApi::logInfo("retrieved %y in %y (temp path %y)", event.name, event.transfer_time, tmp_path);
         } else {
             # if we have no local filesystem connection, then by default we retrieve the remote file and place the
             # data in the "data" key in the event hash
@@ -155,13 +158,22 @@ class BB_SftpPollerBase {
         - \c data: this key is only present if \c sftp-polling-file-connection not set; in this case the remote file
           data is retrieved in memory and stored in this key as binary data
         - \c filepath: the remote filepath relative to SFTP root directory
-        - \c local_path: this key is set to a string giving the local path where the file's data is stored if
-          config item \c sftp-polling-file-connection is set
+        .
+        The following keys are included if config item \c sftp-polling-file-connection is set:
+        - \c transfer_time: a relative date/time value giving the time it took to transfer the file
+        - \c tmp_filename: the temporary filename used to store the file until the post action
+        - \c tmp_path: the current temporary path on the filesystem of the file
+        - \c local_path: this key is set to a string giving the local path where the file's data is stored
+
+        @return the event hash plus the following keys:
+        - \c remote_status: either \c "MOVED" or \c "DELETED" depending on the action taken, if
+          \c sftp-polling-delete-file if false, then \c sftp-polling-move-target must be set, in which case also the
+          \c remote_move_target key is set to the path the remote file is moved to
 
         If config item \c sftp-polling-delete-file is true, then the remote file is deleted here.
 
-        Otherwise, if \c sftp-polling-move-target is true, then the remove file is moved to the target location on the
-        remove server here.
+        Otherwise, if \c sftp-polling-move-target is true, then the remote file is moved to the target location on the
+        remote server here.
     */
     hash<auto> postSingleFileEvent(hash<auto> event) {
         # move to target filename
@@ -176,7 +188,7 @@ class BB_SftpPollerBase {
             event.remote_status = RS_DELETED;
             return event;
         }
-        *string move_target = UserApi::getConfigItemValue("sftp-polling-move-target", event.name);
+        *string move_target = UserApi::getConfigItemValue("sftp-polling-move-target", event);
         if (!exists move_target) {
             throw "CONFIG-ERROR", sprintf("\"sftp-polling-delete-file\" is false but \"sftp-polling-move-target\" "
                 "is not set; no post-processing of the SFTP files is possible; fix the configuration and try again");
