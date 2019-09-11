@@ -11,6 +11,8 @@ BB_SUBDIRS=generic job service step
 
 BB_FILES=$(shell find ${BB_SUBDIRS} -name \*.q\* | sort)
 
+BB_JAVA=$(shell find ${BB_SUBDIRS} -name \*.jar -type f | sort)
+
 TEST_FILES=$(shell find test -name \*.q\* | sort)
 
 TESTS=$(shell find test -name \*.qtest | sort)
@@ -25,14 +27,23 @@ all:
 
 dummy:
 
-release:
-	make-release -U. -Puser/building-blocks building-blocks-$(VERSION) ${BB_FILES}
-
+release: ${BB_FILES} ${BB_JAVA}
+	make-release -U. -Puser/building-blocks building-blocks-$(VERSION) $^
 load-all: load-building-blocks load-tests
 
 load-building-blocks: ${BB_FILES}
+	# copy jar files to the target dir
+	for jar in ${BB_JAVA}; do \
+		dir=`dirname "$$jar"`; \
+		target_dir="$$OMQ_DIR/user/building-blocks/$$dir"; \
+		if [ ! -d "$$target_dir" ]; then \
+			echo creating "$$target_dir"; \
+			mkdir -p "$$target_dir"; \
+		fi; \
+		cp "$$jar" "$$target_dir"; \
+	done
 	# make a temporary load file
-	make-release -l/tmp/building-blocks.qrf -U. ${BB_FILES}
+	make-release -l/tmp/building-blocks.qrf -U. $^
 	# load the release
 	oload /tmp/building-blocks.qrf -lvR
 	# delete the temporary load file
@@ -40,7 +51,7 @@ load-building-blocks: ${BB_FILES}
 
 load-tests: ${TEST_FILES}
 	# make a temporary load file
-	make-release -l/tmp/building-blocks-tests.qrf -U. ${TEST_FILES}
+	make-release -l/tmp/building-blocks-tests.qrf -U. $^
 	# load the release
 	oload /tmp/building-blocks-tests.qrf -lvR
 	# delete the temporary load file

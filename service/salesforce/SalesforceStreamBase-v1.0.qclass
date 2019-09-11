@@ -1,0 +1,57 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+# name: SalesforceStreamBase
+# version: 1.0
+# desc: base service class for Salesforce.com streaming API support
+## requires: SalesforceLoginParameters, SalesforceLongPollingTransport, AbstractSalesforceEventStreamer
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class SalesforceStreamBase inherits QorusService, private AbstractSalesforceEventStreamer {
+    constructor() : AbstractSalesforceEventStreamer(ServiceApi::getConfigItemValue("sf-stream-options")) {
+    }
+
+    # name: init
+    # desc: starts the streaming
+    init() {
+        setConnectionAndChannels(ServiceApi::getConfigItemValue("sf-stream-connection-name"),
+                                ServiceApi::getConfigItemValue("sf-stream-channel-names"));
+        initImpl();
+        start();
+    }
+
+    # name: stop
+    # desc: stops the service
+    stop() {
+        AbstractSalesforceEventStreamer::stop();
+    }
+
+    # override in child classes for custom initialization code
+    private initImpl() {
+        # this method intentionally left empty
+    }
+
+    private *hash<string, hash<ConfigItemInfo>> getConfigItemsImpl() {
+        return {
+            "sf-stream-options": <ConfigItemInfo>{
+                "type": "*hash",
+                "default_value": NOTHING,
+                "description": "options for the salesforce event streamer class",
+                "config_group": "Salesforce.com Event Streaming",
+            },
+            "sf-stream-connection-name": <ConfigItemInfo>{
+                "description": "the name of the Salesforce.com REST user connection",
+                "config_group": "Salesforce.com Event Streaming",
+            },
+            "sf-stream-channel-names": <ConfigItemInfo>{
+                "type": "*list",
+                "description": "the name of the Salesforce.com event channels to subscribe to on start",
+                "config_group": "Salesforce.com Event Streaming",
+            },
+        };
+    }
+}
+
+# END
