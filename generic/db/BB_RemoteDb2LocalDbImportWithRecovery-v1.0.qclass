@@ -1,0 +1,51 @@
+# name: BB_RemoteDb2LocalDbImportWithRecovery
+# version: 1.0
+# desc: building block base step for high-performance remote DB -> local DB data transfers supporting recovery
+# author: Qore Technologies, s.r.o.
+# requires: BB_RemoteDb2LocalDbImportBase
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+#! transfers data from a remote DB to a local DB
+class BB_RemoteDb2LocalDbImportWithRecovery inherits BB_RemoteDb2LocalDbImportBase {
+    #! returns True if local data is present, False if not
+    bool checkLocal() {
+        # get mapper name
+        string mapper_name = UserApi::getConfigItemValue("remote2local-db-mapper-name");
+        InboundTableMapper mapper = cast<InboundTableMapper>(UserApi::getMapper(mapper_name));
+        AbstractTable table = mapper.getTable();
+
+        string column_name = UserApi::getConfigItemValue("remote2local-db-recovery-column");
+        auto value = UserApi::getConfigItemValue("remote2local-db-recovery-value-template");
+
+        hash<auto> where_hash = {
+            column_name: value,
+        };
+
+        *hash<auto> row = table.findSingle(where_hash);
+        if (row) {
+            UserApi::logInfo("found data with %y = %y; transfer is already COMPLETE", column_name, value);
+            return True;
+        }
+
+        UserApi::logInfo("no data found with %y = %y; transfer will be retried", column_name, value);
+        return False;
+    }
+
+    static private *hash<string, hash<ConfigItemInfo>> getConfigItems() {
+        return BB_RemoteDb2LocalDbImportBase::getConfigItems() + {
+            # recovery items
+            "remote2local-db-recovery-column": <ConfigItemInfo>{
+                "description": "the name of the column for recovery",
+                "config_group": "Remote DB Import Recovery",
+            },
+            "remote2local-db-recovery-value-template": <ConfigItemInfo>{
+                "description": "value for recovery",
+                "config_group": "Remote DB Import Recovery",
+            },
+        };
+    }
+}
+# END

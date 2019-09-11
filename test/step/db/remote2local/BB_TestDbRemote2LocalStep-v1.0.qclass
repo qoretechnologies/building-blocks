@@ -1,0 +1,37 @@
+# name: BB_TestDbRemote2LocalStep
+# version: 1.0
+# desc: test step logic
+# author: Qore Technologies, s.r.o.
+# requires: BB_RemoteDb2LocalDbImportStep
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+#! this step creates an account in the billing system
+class BB_TestDbRemote2LocalStep inherits BB_RemoteDb2LocalDbImportStep {
+    private {
+        #! default values for config items in this step
+        const DefaultConfigItemValues = {
+            "remote2local-db-mapper-name": "bb-test-db-step",
+            "remote2local-db-remote-datasource": "omquser",
+            "remote2local-db-remote-table": "bb_remote",
+            "remote2local-db-remote-select-column": "batch_id",
+            "remote2local-db-remote-select-value-template": "$static:batch_id",
+
+            # recovery items
+            "remote2local-db-recovery-column": "qorus_wfiid",
+            "remote2local-db-recovery-value-template": "$local:workflow_instanceid",
+        };
+    }
+
+    #! config items for this step
+    /** - rest-connection-name: the name of the billing system REST connection
+    */
+    private *hash<string, hash<ConfigItemInfo>> getConfigItemsImpl() {
+        hash<string, hash<ConfigItemInfo>> rv = BB_RemoteDb2LocalDbImportStep::getConfigItemsImpl();
+        map rv{$1.key}.default_value = $1.value, DefaultConfigItemValues.pairIterator();
+        return rv;
+    }
+}
+# END
