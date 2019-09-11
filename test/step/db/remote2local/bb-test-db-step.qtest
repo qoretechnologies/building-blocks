@@ -1,0 +1,116 @@
+#! /usr/bin/env qore
+
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+%requires QorusInterfaceTest
+%requires Util
+%requires BulkSqlUtil
+
+%exec-class Test
+
+class Test inherits QorusWorkflowTest {
+    private {
+        const ConnectionName = get_random_string();
+
+        const WorkflowName = "BB-TEST-DB-WORKFLOW";
+
+        const BatchId = get_random_string();
+
+        const Id1 = get_random_string();
+        const Id2 = get_random_string();
+
+        const RemoteData = (
+            {"id": Id1, "batch_id": BatchId},
+            {"id": Id2, "batch_id": BatchId},
+        );
+
+        const StepConfig = {
+            "remote2local-db-remote-instance": ConnectionName,
+        };
+    }
+
+    constructor() : QorusWorkflowTest("BB-TEST-DB-WORKFLOW", "1.0", \ARGV) {
+        addTestCase("test", \mainTest());
+        set_return_value(main());
+    }
+
+    globalSetUp() {
+        # create remote connection to local instance
+        string url = qorus_get_local_url();
+        qrest.post("remote/qorus", {
+            "name": ConnectionName,
+            "desc": "test connection",
+            "url": url,
+        });
+
+        # apply step configuration
+        map qrest.put("workflows/" + WorkflowName + "/stepinfo/bb-test-db-remote-2-local-step/config/" + $1.key,
+            {"value": $1.value}), StepConfig.pairIterator();
+
+        # ensure workflow is running
+        qrest.put("workflows/" + WorkflowName + "/setAutostart", {"autostart": 1});
+    }
+
+    globalTearDown() {
+        # stop workflow
+        qrest.put("workflows/" + WorkflowName + "/setAutostart", {"autostart": 0});
+
+        # delete step configuration
+        map qrest.del("workflows/" + WorkflowName + "/stepinfo/bb-test-db-remote-2-local-step/config/" + $1), keys StepConfig;
+
+        # delete remote connection
+        qrest.del("remote/qorus/" + ConnectionName);
+    }
+
+    mainTest() {
+        Datasource ds;
+        try {
+            ds = omqclient.getDatasource("omquser");
+        } catch (hash<ExceptionInfo> ex) {
+            if (ex.err == "INVALID-DATASOURCE") {
+                testSkip(ex.desc);
+            }
+            rethrow;
+        }
+        Table bb_remote(ds, "bb_remote");
+        Table bb_local(ds, "bb_local");
+        {
+            on_error bb_remote.rollback();
+            on_success bb_remote.commit();
+
+            # clear tables
+            bb_remote.truncate();
+            bb_local.truncate();
+
+            # insert test data
+            BulkInsertOperation insert(bb_remote);
+            on_error insert.discard();
+            on_success insert.flush();
+
+            map insert.queueData($1), RemoteData;
+        }
+
+        int wfiid = exec(new CreateOrder(WorkflowName, {"batch_id": BatchId})).wfiid();
+        exec(new WaitForWfiid(wfiid));
+
+        # check local data
+        foreach hash<auto> rrow in (RemoteData) {
+            hash<auto> lrow = bb_local.selectRow({
+                "where": {"remote_id": rrow.id},
+            });
+            assertEq(BatchId, lrow.remote_batch_id);
+            assertEq(wfiid, lrow.qorus_wfiid);
+        }
+
+        # clear tables on exit
+        on_error bb_remote.rollback();
+        on_success bb_remote.commit();
+
+        # clear tables
+        bb_remote.truncate();
+        bb_local.truncate();
+    }
+}

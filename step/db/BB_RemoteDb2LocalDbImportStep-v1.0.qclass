@@ -1,141 +1,40 @@
 # name: BB_RemoteDb2LocalDbImportStep
 # version: 1.0
-# desc: building block base step for high-performance DB -> DB data transfers
+# desc: building block base step for high-performance remote DB -> local DB data transfers
 # author: Qore Technologies, s.r.o.
+# requires: BB_RemoteDb2LocalDbImportWithRecovery
 %new-style
 %require-types
 %strict-args
 %enable-all-warnings
 
-#! this step creates an account in the billing system
-class BB_RemoteDb2LocalDbImportStep inherits QorusNormalStep {
+#! transfers data from a remote DB to a local DB
+class BB_RemoteDb2LocalDbImportStep inherits QorusNormalStep, BB_RemoteDb2LocalDbImportWithRecovery {
     primary() {
-        # get mapper name
-        string mapper_name = getConfigItemValue("db2db-mapper-name");
-        # get mapper for data conversions
-        Mapper mapper = getMapper(mapper_name);
-
-        # get remote instance
-        string remote = getConfigItemValue("db2db-remote-instance");
-
-        # get remote datasource name
-        string datasource = getConfigItemValue("db2db-remote-datasource");
-
-        # get remote table name
-        string table = getConfigItemValue("db2db-remote-table");
-
-        # get select stream options
-        hash<auto> opts;
-        # we use += to maintain the hash<auto> type
-        opts += getConfigItemValue("db2db-remote-options");
-
-        *string column_name = getConfigItemValue("db2db-remote-select-column");
-        auto value = getConfigItemValue("db2db-remote-select-value-template");
-        if (exists column_name) {
-            opts."select"."where"{column_name} = value;
-        } else if (exists value) {
-            stepWarning("CONFIG-ERROR", "the \"db2db-remote-select-value-template\" config item value %y has been "
-                "ignored because config item \"db2db-remote-select-column\" is not set", value);
-        }
-
-        logInfo("opening select stream %s:%s:%s -> mapper %y", remote, datasource, table, mapper_name);
-        logDebug("select options: %N", opts);
-
-        # get remote instance for remote communication
-        DbRemoteReceive recv(remote,
-            datasource,
-            "select",
-            table,
-            opts,
-        );
-
-        on_error {
-            recv.disconnect();
-            mapper.discard();
-            mapper.rollback();
-        }
-        on_success {
-            mapper.flush();
-            mapper.commit();
-        }
-
-        while (*hash<auto> h = recv.getData()) {
-            log(LL_INFO, "received block: %d rows", h.firstValue().lsize());
-            mapper.queueData(h);
-        }
+        import();
     }
 
     string validation() {
-        # get mapper name
-        string mapper_name = getConfigItemValue("db2db-mapper-name");
-        InboundTableMapper mapper = cast<InboundTableMapper>(getMapper(mapper_name));
-        AbstractTable table = mapper.getTable();
+        return checkLocal()
+            ? OMQ::StatComplete
+            : OMQ::StatRetry;
+    }
 
-        string column_name = getConfigItemValue("db2db-recovery-column");
-        auto value = getConfigItemValue("db2db-recovery-value-template");
-
-        hash<auto> where_hash = {
-            column_name: value,
+    private hash<auto> getMapperConstantInput() {
+        return {
+            "context": UserApi::getUserContextInfo(),
+            "static": WorkflowApi::getStaticData(),
+            "dynamic": WorkflowApi::getDynamicData(),
+            "keys": WorkflowApi::getOrderKeys(),
         };
+    }
 
-        *hash<auto> row = table.findSingle(where_hash);
-        if (row) {
-            logInfo("found data with %y = %y; step is already COMPLETE", column_name, value);
-            return OMQ::StatComplete;
-        }
-
-        logInfo("no data found with %y = %y; step will be retried", column_name, value);
-        return OMQ::StatRetry;
+    private doWarning(string err, string fmt) {
+        stepWarning(err, vsprintf(fmt, argv));
     }
 
     private *hash<string, hash<ConfigItemInfo>> getConfigItemsImpl() {
-        return {
-            # main configuration items
-            "db2db-mapper-name": <ConfigItemInfo>{
-                "description": "the name of the mapper for the DB translations",
-                "config_group": "Remote DB Import",
-            },
-            "db2db-remote-instance": <ConfigItemInfo>{
-                "description": "the name of the remote qorus instance hosting the remote table",
-                "config_group": "Remote DB Import",
-            },
-            "db2db-remote-datasource": <ConfigItemInfo>{
-                "description": "the name of the datasource in the remote instance",
-                "config_group": "Remote DB Import",
-            },
-            "db2db-remote-table": <ConfigItemInfo>{
-                "description": "the name of the table in the remote datasource",
-                "config_group": "Remote DB Import",
-            },
-            "db2db-remote-options": <ConfigItemInfo>{
-                "type": "hash",
-                "default_value": {},
-                "description": "options for the DbRemoteReceive object",
-                "config_group": "Remote DB Import",
-            },
-            "db2db-remote-select-column": <ConfigItemInfo>{
-                "type": "*string",
-                "default_value": NOTHING,
-                "description": "the name of the column for the select criteria in the remote datasource",
-                "config_group": "Remote DB Import",
-            },
-            "db2db-remote-select-value-template": <ConfigItemInfo>{
-                "type": "*string",
-                "default_value": NOTHING,
-                "description": "the column value for the select criteria in the remote table",
-                "config_group": "Remote DB Import",
-            },
-
-            # recovery items
-            "db2db-recovery-column": <ConfigItemInfo>{
-                "description": "the name of the column for recovery",
-                "config_group": "Remote DB Import Recovery",
-            },
-            "db2db-recovery-value-template": <ConfigItemInfo>{
-                "description": "value for recovery",
-                "config_group": "Remote DB Import Recovery",
-            },
-        };
+        return BB_RemoteDb2LocalDbImportWithRecovery::getConfigItems();
     }
 }
 # END

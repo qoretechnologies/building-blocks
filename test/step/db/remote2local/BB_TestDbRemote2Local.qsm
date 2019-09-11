@@ -1,0 +1,142 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+# @file BB_TestDbRemote2Local.qsm Qorus Integration System Salesforce.com account provisioning demo user schema module
+
+/*  BB_TestDbRemote2Local.qsm Copyright 2016 - 2019 Qore Technologies, s.r.o.
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+*/
+
+%requires qore >= 0.9.3
+
+module BB_TestDbRemote2Local {
+    version = "1.0";
+    desc = "BB test schema module";
+    author = "Qore Technologies, s.r.o. <info@qoretechnologies.com>";
+    url = "http://www.qoretechnologies.com";
+}
+
+# here we add fallback paths to the QORE_MODULE_DIR search path,
+# in case QORE_MODULE_DIR is not set properly for Qorus
+%append-module-path /var/opt/qorus/qlib:$OMQ_DIR/qlib:/opt/qorus/qlib
+
+%requires Schema
+%requires SqlUtil
+
+%new-style
+%strict-args
+%require-types
+%strict-args
+%enable-all-warnings
+
+# private namespace for private schema declarations
+namespace Private {
+    const GenericOptions = {
+        "replace": True,
+    };
+
+    const IndexOptions = {
+        "driver": {
+            "oracle": {
+                "compute_statistics": True,
+            },
+        },
+    };
+
+    const ColumnOptions = {
+        "driver": {
+            "oracle": {"character_semantics": True,},
+        },
+    };
+
+    const T_BbLocalTest = {
+        "columns": {
+            "remote_id": c_varchar(20, True, "PK ID field"),
+            "remote_batch_id": c_varchar(20, True, "batch ID field"),
+            "qorus_wfiid": c_int(True),
+        },
+        "primary_key": {"name": "pk_bb_local", "columns": ("remote_id")},
+        "indexes": {
+            "sk_bb_local_q_wfiid": ("columns": ("qorus_wfiid")),
+        },
+    };
+
+    const T_BbRemoteTest = {
+        "columns": {
+            "id": c_varchar(20, True, "PK ID field"),
+            "batch_id": c_varchar(20, True, "batch ID field"),
+        },
+        "primary_key": {"name": "pk_bb_remote", "columns": ("id")},
+        "indexes": {
+            "sk_bb_remote_batch_id": ("columns": ("batch_id")),
+        },
+    };
+
+    const Tables = {
+        "bb_local": T_BbLocalTest,
+        "bb_remote": T_BbRemoteTest,
+    };
+}
+
+public namespace BB_TestDbRemote2Local {
+    public string sub get_datasource_name() {
+        return "omquser";
+    }
+
+    public BB_TestDbRemote2Local sub get_user_schema(AbstractDatasource ds, *string dts, *string its) {
+        return new BB_TestDbRemote2Local(ds, dts, its);
+    }
+
+    public class BB_TestDbRemote2Local inherits AbstractSchema {
+        public {
+            const SchemaName = "BB_TestDbRemote2Local";
+            const SchemaVersion = "1.0";
+        }
+
+        constructor(AbstractDatasource ds, *string dts, *string its) :  AbstractSchema(ds, dts, its) {
+        }
+
+        private string getNameImpl() {
+            return SchemaName;
+        }
+
+        private string getVersionImpl() {
+            return SchemaVersion;
+        }
+
+        private *hash getTablesImpl() {
+            return Tables;
+        }
+
+        private *hash getSequencesImpl() {
+            return;
+        }
+
+        private *hash getIndexOptionsImpl() {
+            return IndexOptions;
+        }
+
+        private *hash getGenericOptionsImpl() {
+            return GenericOptions;
+        }
+
+        private *hash getColumnOptionsImpl() {
+            return ColumnOptions;
+        }
+    }
+}

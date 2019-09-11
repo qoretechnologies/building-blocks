@@ -1,0 +1,27 @@
+# name: bb-test-db-step
+# version: 1.0
+# desc: BB test mapper
+# type: InboundTableMapper
+# author: Qore Technologies, s.r.o.
+# parse-options: PO_NEW_STYLE
+# define-group: test: test interfaces
+# define-group: bb-test: building block test interfaces
+# groups: test, bb-test
+
+OPTION: datasource: "omquser"
+OPTION: table: "bb_local"
+
+OPTION: input: (
+    "static": "static data",
+    "dynamic": "dynamic data",
+    "keys": "workflow order keys",
+    "context": "current execution context info",
+    "id": "input ID",
+    "batch_id": "input batch ID",
+    "qorus_wfiid": "source Qorus interface instance ID",
+)
+
+FIELD:remote_id: {"name": "id"}
+FIELD:remote_batch_id: {"name": "batch_id"}
+FIELD:qorus_wfiid: {"name": "context.workflow_instanceid"}
+# END

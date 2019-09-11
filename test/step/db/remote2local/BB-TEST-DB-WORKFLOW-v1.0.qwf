@@ -1,0 +1,34 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+# test workflow definition
+#
+# Qorus Integration Engine
+
+%new-style
+
+our string format_version = "2.6";
+
+our hash<auto> groups = {
+    "test": {"desc": "test interfaces"},
+    "bb-test": {"desc": "building block test interfaces"},
+};
+
+our list<auto> steps = (
+    {
+        "name": "bb-test-db-remote-2-local-step:1.0",
+        "desc": "BB test step",
+        "classname": "BB_TestDbRemote2LocalStep:1.0",
+    },
+);
+
+our hash<auto> workflows."BB-TEST-DB-WORKFLOW"."1.0" = {
+    "desc": "BB test: remote 2 local DB step",
+    "author": "Qore Technologies, s.r.o.",
+    "steps": steps,
+    "groups": ("test", "bb-test",),
+    "mappers": (
+        "bb-test-db-step:1.0",
+    ),
+    "sla_threshold": 20,
+    "autostart": 0,
+    "remote": False,
+};
