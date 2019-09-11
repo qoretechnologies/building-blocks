@@ -41,6 +41,7 @@ class BB_TestSftpJob inherits QorusJobTest {
     }
 
     constructor() : QorusJobTest(JobName, "1.0", \ARGV, MyOpts) {
+        addTestCase("SFTP job move test", \sftpJobMoveTest());
         addTestCase("SFTP job FS test", \sftpJobFsTest());
         addTestCase("SFTP job transfer test", \sftpJobTransferTest());
         set_return_value(main());
@@ -124,6 +125,63 @@ private usageIntern(int offset = OffsetColumn) {
         qrest.del("remote/user/" + sftp_conn_name);
     }
 
+    sftpJobMoveTest() {
+        # setup move directory
+        makeMoveDirectory();
+        hash<auto> job_config = {
+            "sftp-polling-delete-file": False,
+            "sftp-polling-move-target": "move/$local:{name}",
+        };
+        map qrest.put("jobs/" + JobName + "/config/" + $1.key, {"value": $1.value}), job_config.pairIterator();
+        on_exit {
+            map qrest.del("jobs/" + JobName + "/config/" + $1), keys job_config;
+        }
+
+        # create example file
+        string file_path = writeSftpFile();
+        string filename = basename(file_path);
+
+        # make sure files that don't match the mask are not polled
+        TmpFile ignore_file("test-", ".ignore", sftp_tmpdir.path);
+
+        RunJobResult job(OMQ::StatComplete);
+        exec(job);
+
+        int jiid = job.getJobResult().job_instanceid;
+        hash<auto> results = qrest.get("jobresults/" + jiid).info[0];
+        assertEq("MOVED", results.remote_status);
+        assertEq(OMQ::StatBlocked, results.order_status);
+        int wfiid = results.workflow_instanceid;
+        # wait for workflow order to be COMPLETE
+        WaitForWfiid wait(wfiid, NOTHING, 5s);
+        wait.run(self);
+        hash<auto> order = qrest.get("orders/" + wfiid);
+        assertEq(filename, order.keys.filename);
+        assertEq(filename, order.staticdata.name);
+        assertEq(filename, order.staticdata.filepath);
+        assertEq(Type::Date, order.staticdata.transfer_time.type());
+        assertEq(Type::Date, order.staticdata.atime.type());
+        assertEq(Type::Date, order.staticdata.mtime.type());
+        assertEq("REGULAR", order.staticdata.type);
+        assertEq(TestData, order.staticdata."data".toString());
+
+        assertTrue(is_file(ignore_file.path));
+
+        # verify that the file was moved
+        if (sftp_url) {
+            SFTPClient sftp = getClient();
+            assertEq(filename, sftp.list("move").files[0]);
+        } else {
+            assertTrue(is_file(sftp_tmpdir.path + DirSep + "move" + DirSep + filename));
+        }
+
+        # run the job again to ensure that no file is polled
+        exec(job);
+        jiid = job.getJobResult().job_instanceid;
+        results = qrest.get("jobresults/" + jiid);
+        assertEq((), results.info);
+    }
+
     sftpJobFsTest() {
         string file_conn_name = get_random_string(20);
 
@@ -158,6 +216,7 @@ private usageIntern(int offset = OffsetColumn) {
 
         int jiid = job.getJobResult().job_instanceid;
         hash<auto> results = qrest.get("jobresults/" + jiid).info[0];
+        assertEq("DELETED", results.remote_status);
         assertEq(OMQ::StatBlocked, results.order_status);
         int wfiid = results.workflow_instanceid;
         # wait for workflow order to be COMPLETE
@@ -211,25 +270,46 @@ private usageIntern(int offset = OffsetColumn) {
             int wfiid2 = results.workflow_instanceid;
             assertEq(wfiid, wfiid2);
             assertTrue(results.duplicate);
+            assertEq("DELETED", results.remote_status);
             assertEq(OMQ::StatComplete, results.order_status);
         }
+
+        # run the job again to ensure that no file is polled
+        exec(job);
+        jiid = job.getJobResult().job_instanceid;
+        results = qrest.get("jobresults/" + jiid);
+        assertEq((), results.info);
+    }
+
+    private makeMoveDirectory() {
+        if (sftp_url) {
+            SFTPClient sftp = getClient();
+            sftp.mkdir("move");
+        } else {
+            mkdir(sftp_tmpdir.path + DirSep + "move");
+        }
+    }
+
+    private SFTPClient getClient() {
+        SFTPClient sftp(sftp_url);
+        if (is_file(ENV.HOME + "/.ssh/id_rsa.old")) {
+            sftp.setKeys(ENV.HOME + "/.ssh/id_rsa.old");
+        } else if (is_file(ENV.HOME + "/.ssh/id_rsa")) {
+            sftp.setKeys(ENV.HOME + "/.ssh/id_rsa");
+        }
+        # change to target directory
+        hash<UrlInfo> url_info = parse_url(sftp_url);
+        if (url_info.path) {
+            sftp.chdir(url_info.path);
+        }
+        return sftp;
     }
 
     private string writeSftpFile(*string file_path) {
         if (sftp_url) {
-            SFTPClient sftp(sftp_url);
-            if (is_file(ENV.HOME + "/.ssh/id_rsa.old")) {
-                sftp.setKeys(ENV.HOME + "/.ssh/id_rsa.old");
-            } else if (is_file(ENV.HOME + "/.ssh/id_rsa")) {
-                sftp.setKeys(ENV.HOME + "/.ssh/id_rsa");
-            }
+            SFTPClient sftp = getClient();
             if (!file_path) {
                 file_path = sprintf("test-%s.txt", get_random_string());
-            }
-            # write to target directory
-            hash<UrlInfo> url_info = parse_url(sftp_url);
-            if (url_info.path) {
-                sftp.chdir(url_info.path);
             }
             int bytes = sftp.putFile(TestData, file_path);
             if (m_options.verbose > 2) {
@@ -257,17 +337,12 @@ private usageIntern(int offset = OffsetColumn) {
         # make sure files that don't match the mask are not polled
         TmpFile ignore_file("test-", ".ignore", sftp_tmpdir.path);
 
-        # start test workflow
-        qrest.put("workflows/" + WorkflowName + "/setAutostart", {"autostart": 1});
-        on_exit {
-            qrest.put("workflows/" + WorkflowName + "/setAutostart", {"autostart": 0});
-        }
-
         RunJobResult job(OMQ::StatComplete);
         exec(job);
 
         int jiid = job.getJobResult().job_instanceid;
         hash<auto> results = qrest.get("jobresults/" + jiid).info[0];
+        assertEq("DELETED", results.remote_status);
         assertEq(OMQ::StatBlocked, results.order_status);
         int wfiid = results.workflow_instanceid;
         # wait for workflow order to be COMPLETE
@@ -294,6 +369,13 @@ private usageIntern(int offset = OffsetColumn) {
         int wfiid2 = results.workflow_instanceid;
         assertEq(wfiid, wfiid2);
         assertTrue(results.duplicate);
+        assertEq("DELETED", results.remote_status);
         assertEq(OMQ::StatComplete, results.order_status);
+
+        # run the job again to ensure that no file is polled
+        exec(job);
+        jiid = job.getJobResult().job_instanceid;
+        results = qrest.get("jobresults/" + jiid);
+        assertEq((), results.info);
     }
 }
