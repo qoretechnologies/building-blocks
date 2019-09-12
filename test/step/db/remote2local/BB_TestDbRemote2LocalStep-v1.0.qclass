@@ -13,25 +13,30 @@ class BB_TestDbRemote2LocalStep inherits BB_RemoteDb2LocalDbImportStep {
     private {
         #! default values for config items in this step
         const DefaultConfigItemValues = {
-            "remote2local-db-mapper-name": "bb-test-db-step",
-            "remote2local-db-remote-datasource": "omquser",
-            "remote2local-db-remote-table": "bb_remote",
-            "remote2local-db-remote-select-column": "batch_id",
-            "remote2local-db-remote-select-value-template": "$static:batch_id",
+            "test-remote2local-db-mapper-name": "bb-test-db-step",
+            "test-remote2local-db-remote-datasource": "omquser",
+            "test-remote2local-db-remote-table": "bb_remote",
+            "test-remote2local-db-remote-select-column": "batch_id",
+            "test-remote2local-db-remote-select-value-template": "$static:batch_id",
 
             # recovery items
-            "remote2local-db-recovery-column": "qorus_wfiid",
-            "remote2local-db-recovery-value-template": "$local:workflow_instanceid",
+            "test-remote2local-db-recovery-column": "qorus_wfiid",
+            "test-remote2local-db-recovery-value-template": "$local:workflow_instanceid",
         };
     }
 
+    constructor() : BB_RemoteDb2LocalDbImportStep("test") {
+    }
+
     #! config items for this step
-    /** - rest-connection-name: the name of the billing system REST connection
-    */
     private *hash<string, hash<ConfigItemInfo>> getConfigItemsImpl() {
-        hash<string, hash<ConfigItemInfo>> rv = BB_RemoteDb2LocalDbImportStep::getConfigItemsImpl();
-        map rv{$1.key}.default_value = $1.value, DefaultConfigItemValues.pairIterator();
-        return rv;
+        return map {
+            $1.key: cast<hash<ConfigItemInfo>>($1.value + (
+                DefaultConfigItemValues{$1.key} ?
+                    {"default_value": DefaultConfigItemValues{$1.key}}
+                    : NOTHING
+                )),
+        }, BB_RemoteDb2LocalDbImportStep::getConfigItemsImpl().pairIterator();
     }
 }
 # END

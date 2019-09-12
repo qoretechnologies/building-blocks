@@ -61,7 +61,7 @@ class BB_SftpPollerBase {
         string mask = UserApi::getConfigItemValue("sftp-polling-mask");
         if (UserApi::getConfigItemValue("sftp-polling-mask-regex")) {
             poller_opts.regex_mask = mask;
-            poller_opts.reopts = QRE_MAP{UserApi::getConfigItemValue("sftp-polling-regex-opts")};
+            poller_opts.reopts = QRE::MAP{UserApi::getConfigItemValue("sftp-polling-regex-opts")};
         } else {
             poller_opts.mask = mask;
         }
@@ -252,8 +252,8 @@ class BB_SftpPollerBase {
             },
             "sftp-polling-regex-options": <ConfigItemInfo>{
                 "type": "string",
-                "default_value": QRE_NONE,
-                "allowed_values": keys QRE_MAP,
+                "default_value": QRE::NONE,
+                "allowed_values": keys QRE::MAP,
                 "description": "regular expression options for SFTP polling; only used if "
                     "\"sftp-polling-mask-regex\" is true",
                 "strictly_local": True,

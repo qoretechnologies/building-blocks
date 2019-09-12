@@ -1,21 +1,25 @@
 # name: BB_RegularExpressions
 # version: 1.0
-# desc: generic class for polling for files from an SFTP server
+# desc: generic object defining constants for regular expression configuration item handling
 # author: Qore Technologies, s.r.o.
 %new-style
 %require-types
 %strict-args
 %enable-all-warnings
 
-const QRE_NONE = "NONE";
-const QRE_IGNORE_CASE = "IGNORE-CASE";
-const QRE_MULTILINE = "MULTILINE";
-const QRE_IGNORE_CASE_MULTILINE = "IGNORE-CASE and MULTILINE";
+class QRE {
+    public {
+        const NONE = "NONE";
+        const IGNORE_CASE = "IGNORE-CASE";
+        const MULTILINE = "MULTILINE";
+        const IGNORE_CASE_MULTILINE = "IGNORE-CASE and MULTILINE";
 
-const QRE_MAP = {
-    QRE_NONE: 0,
-    QRE_IGNORE_CASE: RE_Caseless,
-    QRE_MULTILINE: RE_MultiLine,
-    QRE_IGNORE_CASE_MULTILINE: RE_Caseless | RE_MultiLine,
-};
+        const MAP = {
+            NONE: 0,
+            IGNORE_CASE: RE_Caseless,
+            MULTILINE: RE_MultiLine,
+            IGNORE_CASE_MULTILINE: RE_Caseless | RE_MultiLine,
+        };
+    }
+}
 # END

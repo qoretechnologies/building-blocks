@@ -10,6 +10,9 @@
 
 #! transfers data from a remote DB to a local DB
 class BB_RemoteDb2LocalDbImportStep inherits QorusNormalStep, BB_RemoteDb2LocalDbImportWithRecovery {
+    constructor(*string label) : BB_RemoteDb2LocalDbImportWithRecovery(label) {
+    }
+
     primary() {
         import();
     }

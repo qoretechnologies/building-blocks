@@ -19,6 +19,8 @@ hashdecl CreateOrderOptionInfo {
     string workflow = UserApi::getConfigItemValue("create-workflow-name");
     #! the optional workflow version
     *string version = UserApi::getConfigItemValue("create-workflow-version");
+    #! mapper options
+    *hash<auto> mapper_opts;
 }
 
 #! creates a workflow order from the input data according to the configuration
@@ -46,6 +48,47 @@ class BB_CreateOrder {
 
         #! value indicating that duplicate orders should have a \c DUPLICATE-ORDER-KEY exception thrown
         const RE_DUPLICATE = "DUPLICATE";
+
+        #! output data structure description for workflow order mappers
+        const WorkflowMapperOutput = {
+            "staticdata": {
+                "type": "hash",
+                "desc": "the initial static data for the order",
+                "mand": True,
+            },
+            "dynamicdata": {
+                "type": "hash",
+                "desc": "the initial dynamic data for the order",
+            },
+            "global_unique_key": {
+                "type": "hash",
+                "desc": "a hash giving one or more unique order keys for the order (across all workflows regardless of "
+                    "workflowid, name, or version); keys are order key names and values are the string key values; if this "
+                    "key already exists for any order in the system, then the order creation will fail with a "
+                    "DUPLICATE-ORDER-KEY error; the hash key must be a valid order key, and the value is the unique key "
+                    "value; this value will also be created as an order key",
+            },
+            "workflow_specific_unique_key": {
+                "type": "hash",
+                "desc": "a hash giving one or more unique order keys for the particular workflowid (which matches a "
+                    "unique name and workflow version); keys are order key names and values are the string key values; if "
+                    "any of the keys given already exists for an order with the target workflowid, then the order "
+                    "creation will fail with a DUPLICATE-ORDER-KEY error; the hash key must be a valid order key, and the "
+                    "value is the unique key value; this value will also be created as an order key",
+            },
+            "workflow_unique_key": {
+                "type": "hash",
+                "desc": "a hash giving one or more unique order keys for the particular workflow by name only (across all "
+                    "workflows with the same name regardless of version); keys are order key names and values are the string "
+                    "key values; if this key already exists for a workflow order with the same name, then the order creation "
+                    "will fail with a DUPLICATE-ORDER-KEY error; the hash key must be a valid order key, and the value is the "
+                    "unique key value; this value will also be created as an order key",
+            },
+            "orderkeys": {
+                "type": "hash",
+                "desc": "a hash of order keys for the order",
+            },
+        };
     }
 
     #! creates the order with the input data, returns the workflow_instanceid of the order created
@@ -65,7 +108,7 @@ class BB_CreateOrder {
     */
     static int createWorkflowOrder(hash<auto> order_context_data = {}, hash<CreateOrderOptionInfo> opts = <CreateOrderOptionInfo>{}, *reference<bool> dup) {
         # create the workflow order with the mapper
-        Mapper mapper = UserApi::getMapper(opts.mapper);
+        Mapper mapper = UserApi::getMapper(opts.mapper, opts.mapper_opts);
         hash<auto> order_data = mapper.mapData(order_context_data);
         UserApi::logInfo("mapper %y mapped order data: %y", opts.mapper, order_data);
 
