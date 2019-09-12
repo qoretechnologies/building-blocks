@@ -28,7 +28,7 @@ class Test inherits QorusWorkflowTest {
         );
 
         const StepConfig = {
-            "remote2local-db-remote-instance": ConnectionName,
+            "test-remote2local-db-remote-instance": ConnectionName,
         };
     }
 

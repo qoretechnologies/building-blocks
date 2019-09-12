@@ -10,6 +10,9 @@
 
 #! transfers data from a remote DB to a local DB
 class BB_RemoteDb2LocalDbImportWithRecovery inherits BB_RemoteDb2LocalDbImportBase {
+    constructor(*string label) : BB_RemoteDb2LocalDbImportBase(label) {
+    }
+
     #! returns True if local data is present, False if not
     bool checkLocal() {
         # get mapper name
@@ -34,16 +37,25 @@ class BB_RemoteDb2LocalDbImportWithRecovery inherits BB_RemoteDb2LocalDbImportBa
         return False;
     }
 
-    static private *hash<string, hash<ConfigItemInfo>> getConfigItems() {
+    private *hash<string, hash<ConfigItemInfo>> getConfigItems() {
+        *string item_pfx_str;
+        *string desc_pfx_str;
+        if (item_pfx) {
+            item_pfx_str = item_pfx + "-";
+            desc_pfx_str = item_pfx[0].upr() + item_pfx[1..] + ": ";
+        }
+
         return BB_RemoteDb2LocalDbImportBase::getConfigItems() + {
             # recovery items
-            "remote2local-db-recovery-column": <ConfigItemInfo>{
+            item_pfx_str + "remote2local-db-recovery-column": <ConfigItemInfo>{
                 "description": "the name of the column for recovery",
-                "config_group": "Remote DB Import Recovery",
+                "strictly_local": True,
+                "config_group": desc_pfx_str + "Remote DB Import Recovery",
             },
-            "remote2local-db-recovery-value-template": <ConfigItemInfo>{
+            item_pfx_str + "remote2local-db-recovery-value-template": <ConfigItemInfo>{
                 "description": "value for recovery",
-                "config_group": "Remote DB Import Recovery",
+                "strictly_local": True,
+                "config_group": desc_pfx_str + "Remote DB Import Recovery",
             },
         };
     }
