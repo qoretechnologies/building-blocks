@@ -39,7 +39,7 @@ hashdecl CreateOrderOptionInfo {
       workflow_instanceid matches, set to \c "DUPLICATE" to throw a \c DUPLICATE-ORDER-KEY exception in all cases if
       duplicates are found
 
-      @note No comparison of the order data is made in case of duplicated; it is assumed that the data is identical
+      @note No comparison of the order data is made in case of duplications; it is assumed that the data is identical
 */
 class BB_CreateOrder {
     public {
