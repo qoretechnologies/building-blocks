@@ -13,16 +13,16 @@
 
 class BB_HttpHandlerBase inherits AbstractServiceHttpHandler {
     constructor(AbstractAuthenticator auth = new QorusParametrizedAuthenticator(ServiceApi::getConfigItemValue("http-auth-name")))
-        : AbstractServiceRestHandler(
+        : AbstractServiceHttpHandler(
         ServiceApi::getConfigItemValue("http-root-uri"),
         ServiceApi::getConfigItemValue("http-match-content-types"),
         ServiceApi::getConfigItemValue("http-match-headers"),
-        auth),
+        auth,
         ServiceApi::getConfigItemValue("http-root-uri-is-regex")) {
     }
 }
 
-class BB_RestServiceBase inherits BB_HttpServiceGenericBase {
+class BB_HttpServiceBase inherits BB_HttpServiceGenericBase {
     private *hash<string, hash<ConfigItemInfo>> getConfigItemsImpl() {
         return BB_HttpServiceGenericBase::getConfigItemsImpl() + {
             "http-root-uri": <ConfigItemInfo>{
