@@ -9,11 +9,13 @@ VERSION=1.0-$(DATE)
 
 BB_SUBDIRS=generic job service step
 
-BB_FILES=$(shell find ${BB_SUBDIRS} -name \*.q\* | sort)
+BB_FILES=$(shell find ${BB_SUBDIRS} -name \*.q* -o -name \*.yaml | sort)
 
 BB_JAVA=$(shell find ${BB_SUBDIRS} -name \*.jar -type f | sort)
 
-TEST_FILES=$(shell find test -name \*.q\* | sort)
+BB_MODULES=$(shell find modules -name \*.qm -type f | sort)
+
+TEST_FILES=$(shell find test -name \*.q\* -o -name \*.yaml | sort)
 
 TESTS=$(shell find test -name \*.qtest | sort)
 
@@ -27,9 +29,11 @@ all:
 
 dummy:
 
-release: ${BB_FILES} ${BB_JAVA}
-	make-release -U. -Puser/building-blocks building-blocks-$(VERSION) $^
+release: ${BB_FILES} ${BB_JAVA} ${BB_MODULES}
+	make-release -m -U. -Puser/building-blocks building-blocks-$(VERSION) $^
 load-all: load-building-blocks load-tests
+
+load-bb: load-building-blocks
 
 load-building-blocks: ${BB_FILES}
 	# copy jar files to the target dir
@@ -42,10 +46,15 @@ load-building-blocks: ${BB_FILES}
 		fi; \
 		cp "$$jar" "$$target_dir"; \
 	done
+	# copy modules to $OMQ_DIR/user/modules
+	mkdir -p ${OMQ_DIR}/user/modules
+	for mod in ${BB_MODULES}; do \
+		cp $$mod ${OMQ_DIR}/user/modules; \
+	done
 	# make a temporary load file
 	make-release -l/tmp/building-blocks.qrf -U. $^
 	# load the release
-	oload /tmp/building-blocks.qrf -lvR
+	oload /tmp/building-blocks.qrf -lvRA
 	# delete the temporary load file
 	rm /tmp/building-blocks.qrf
 
@@ -53,7 +62,7 @@ load-tests: ${TEST_FILES}
 	# make a temporary load file
 	make-release -l/tmp/building-blocks-tests.qrf -U. $^
 	# load the release
-	oload /tmp/building-blocks-tests.qrf -lvR
+	oload /tmp/building-blocks-tests.qrf -lvRA
 	# delete the temporary load file
 	rm /tmp/building-blocks-tests.qrf
 

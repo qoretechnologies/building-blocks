@@ -1,0 +1,54 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_DataProviderSearch inherits BBM_DataProviderSearchBase {
+    public {
+        const ProviderPathItem = "dataprovider-search-provider-path";
+        const SearchCriteriaItem = "dataprovider-search-criteria";
+        const SearchOptionsItem = "dataprovider-search-options";
+        const RequiresResultItem = "dataprovider-search-requires-result";
+        const OutputItem = "dataprovider-search-output-data";
+    }
+
+    #! The primary search action logic: perform the search and returns any records
+    /** @return the record data as provided by the data provider
+    */
+    *list<hash<auto>> doSearch() {
+        return doSearchWithItems(ProviderPathItem, SearchCriteriaItem, SearchOptionsItem, RequiresResultItem,
+            OutputItem);
+    }
+
+    #! Connector for the data provider search building block
+    /** @param the input search data; must be of type: \c qoretechnologies/building-blocks/data-provider-search/input
+
+        @return any records matched; generic type: \c qoretechnologies/building-blocks/generic/record-list
+
+        @note the actual type of records returned depends on the data provider
+    */
+    *list<hash<auto>> doSearchConnector(*hash<auto> opts) {
+        return doSearchWithItemsIntern(opts.search_criteria ?? UserApi::getConfigItemValue(SearchCriteriaItem),
+            opts.search_options ?? UserApi::getConfigItemValue(SearchOptionsItem),
+            ProviderPathItem, RequiresResultItem, OutputItem);
+    }
+
+    #! Connector for the data provider search building block for a single record
+    /** @param the input search data; must be of type: \c qoretechnologies/building-blocks/data-provider-search/input
+
+        @return any record matched; generic type: \c qore/hash
+
+        @note the actual type of the record returned depends on the data provider
+    */
+    *hash<auto> doSingleRecordSearchConnector(*hash<auto> opts) {
+        *list<hash<auto>> records = doSearchWithItemsIntern(
+            opts.search_criteria ?? UserApi::getConfigItemValue(SearchCriteriaItem),
+            opts.search_options ?? UserApi::getConfigItemValue(SearchOptionsItem),
+            ProviderPathItem, RequiresResultItem, OutputItem);
+        if (records.size() > 1) {
+            throw "SINGLE-RECORD-SEARCH-ERROR", sprintf("search returned %d records; a single record search must "
+                "return no more than 1 record", records.size());
+        }
+        return records[0];
+    }
+}

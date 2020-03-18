@@ -6,14 +6,14 @@
 %new-style
 %enable-all-warnings
 
-%exec-class BB_TestSftpJob
+%exec-class BBM_TestSftpJob
 
 %requires QorusInterfaceTest
 %requires Util
 %requires FsUtil
 %requires ssh2
 
-class BB_TestSftpJob inherits QorusJobTest {
+class BBM_TestSftpJob inherits QorusJobTest {
     private {
         #! for local files
         TmpDir local_tmpdir();
@@ -47,7 +47,7 @@ class BB_TestSftpJob inherits QorusJobTest {
         set_return_value(main());
     }
 
-private usageIntern(int offset = OffsetColumn) {
+    private usageIntern(int offset = OffsetColumn) {
         TestReporter::usageIntern(OffsetColumn);
         printOption("-k,--privkey", "the private key to use for the local SFTP connection", offset);
     }
@@ -321,6 +321,10 @@ private usageIntern(int offset = OffsetColumn) {
         if (!file_path) {
             hash<TmpFileHash> tmp_file = make_tmp_file("test-", ".txt", sftp_tmpdir.path);
             tmp_file.file.write(TestData);
+            tmp_file.file.close();
+            if (m_options.verbose > 2) {
+                printf("wrote %d bytes of %y to %y\n", TestData.size(), file_path, tmp_file.path);
+            }
             return tmp_file.path;
         }
         File f();

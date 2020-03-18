@@ -1,0 +1,45 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+#! @file BB_Generic.qm generic building block types
+
+/*  BB_Generic.qm Copyright 2019 - 2020 Qore Technologies s.r.o.
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+*/
+
+# minimum qore version
+%requires qore >= 0.9.4
+
+%new-style
+%strict-args
+%enable-all-warnings
+%require-types
+
+%requires DataProvider
+
+module BB_Generic {
+    version = "1.0";
+    desc = "Registers generic data types provided by building blocks";
+    author = "Qore Technologies, s.r.o.";
+    url = "https://qoretechnologies.com";
+    license = "MIT";
+    init = sub () {
+        DataProvider::registerType("qoretechnologies/building-blocks/generic/string", AbstractDataProviderType::get(StringType));
+        DataProvider::registerType("qoretechnologies/building-blocks/generic/record-list", new ListDataType(AutoHashType));
+    };
+}

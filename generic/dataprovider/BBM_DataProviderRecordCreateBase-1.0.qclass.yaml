@@ -1,0 +1,8 @@
+# This is a generated file, don't edit!
+type: class
+class-name: BBM_DataProviderRecordCreateBase
+desc: "building block for record-based data providers"
+lang: qore
+name: BBM_DataProviderRecordCreateBase
+version: "1.0"
+code: BBM_DataProviderRecordCreateBase-1.0.qclass

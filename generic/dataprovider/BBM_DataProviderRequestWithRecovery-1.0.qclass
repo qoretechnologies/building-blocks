@@ -1,0 +1,36 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! Makes a request with a data provider using the request/response API
+class BBM_DataProviderRequestWithRecovery inherits BBM_DataProviderRequest {
+    public {
+        const ProviderPathItem = "dataprovider-request-recovery-provider-path";
+        const RemoveNullsItem = "dataprovider-request-recovery-body-remove-nulls";
+        const RequestOptionsItem = "dataprovider-request-recovery-options";
+        const InputItem = "dataprovider-request-recovery-input";
+        const MapperItem = "dataprovider-request-recovery-mapper";
+        const LogItem = "dataprovider-request-recovery-id-log-msg";
+        const IdLocItem = "dataprovider-request-recovery-id-location";
+        const OutputItem = "dataprovider-request-recovery-output-data";
+    }
+
+    #! request action method suitable for use a validation connector
+    /** @param input_data any input data from a previous connector, if applicable
+
+        @return a status code:
+        - @ref OMQ::StatRetry: the REST request should be retried; the original request has not been processed
+        - @ref OMQ::StatComplete: the REST request should not be repeated; the original request was successfully
+          processed
+    */
+    string makeDataProviderRequestValidationConnector(*hash<auto> input_data) {
+        return checkRequest(input_data) ? OMQ::StatComplete : OMQ::StatRetry;
+    }
+
+    #! returns True if output data is present, False if not
+    private bool checkRequest(auto request) {
+        return checkRequestIntern(request, ProviderPathItem, RemoveNullsItem, RequestOptionsItem, InputItem,
+            MapperItem, LogItem, IdLocItem, OutputItem);
+    }
+}

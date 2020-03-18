@@ -1,0 +1,67 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_FsEventBase
+desc: "generic class for event-driven file actions on the local filesystem"
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: event
+    method: fileEvent
+    output-provider:
+        can_manage_fields: false
+        name: qore
+        path: /fsevents/event
+        type: type
+    type: event
+  - name: stop
+    method: stop
+    type: output
+class-name: BBM_FsEventBase
+lang: qore
+requires:
+  - BBM_RegularExpressions
+version: "1.0"
+code: BBM_FsEventBase-1.0.qclass
+config-items:
+  - name: fsevent-root-path
+    config_group: FsEvent Main
+    description: "The path to the root directory for filesystem events"
+    strictly_local: true
+  - name: fsevent-mask-type
+    default_value:
+        "GLOB"
+    allowed_values:
+      - "GLOB"
+      - "REGEX"
+    config_group: FsEvent Main
+    description: "determines how `fsevent-mask` is interpretedeither:\n- `GLOB`: `fsevent-mask` is a standard glob (ex: `*.txt`)\n- `REGEX`: `fsevent-mask` is a regular expression pattern (ex: `^inventory-[A-J].*\\.txt$`)"
+    strictly_local: true
+  - name: fsevent-mask
+    config_group: FsEvent Main
+    description: "The file mask value; `fsevent-mask-type` determines how this mask is interpreted"
+    strictly_local: true
+  - name: fsevent-min-age-secs
+    default_value:
+        0
+    config_group: FsEvent Main
+    description: "The number of seconds to wait after the file's last modified date changes before raising the event for the new file; must be a non-negative integer."
+    strictly_local: true
+    type: int
+  - name: fsevent-regex-opts
+    default_value:
+        "NONE"
+    allowed_values:
+      - "NONE"
+      - "IGNORE-CASE"
+      - "MULTILINE"
+      - "IGNORE-CASE and MULTILINE"
+    config_group: FsEvent Main
+    description: "regular expression options for a regular expression mask; only used if `fsevent-mask-type` is `REGEX`"
+    strictly_local: true
+  - name: fsevent-recursive
+    default_value:
+        false
+    config_group: FsEvent Main
+    description: "Set to `true` to raise events for files in subdirectories of the root path; `false` means only raise events for files directly in the root directory."
+    strictly_local: true
+    type: bool

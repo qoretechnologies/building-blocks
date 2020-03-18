@@ -1,0 +1,136 @@
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+%requires SftpPoller
+
+#! this base building block polls an SFTP server for files
+/**
+*/
+class BBM_SftpPollerCreateOrder inherits BBM_SftpPollerBase, BBM_CreateOrder {
+    #! called for each matching file individually whenever matching files are polled with the list of matching file names; if any error occurs here, the error is logged and the polling operation is retried
+    /** @param event a hash of file data and information with the following keys:
+        - \c name: the name of the file, link, or directory
+        - \c size: the size of the file in bytes
+        - \c uid: the UID of the owner of the file
+        - \c gid: the GID of the owner of the file
+        - \c mode: the permissions / mode of the file
+        - \c atime: the last accessed date/time of the file
+        - \c mtime: the last modified date/time of the file
+        - \c type: the type of file; one of: \c "REGULAR", \c "DIRECTORY", \c "SYMBOLIC-LINK", \c "BLOCK-DEVICE",
+          \c "CHARACTER-DEVICE", \c "FIFO", \c "SYMBOLIC-LINK", \c "SOCKET", or \c "UNKNOWN"
+        - \c perm: a string giving UNIX-style permissions for the file (ex: "-rwxr-xr-x")
+        - \c data: this key is only present if \c sftp-polling-file-connection not set; in this case the remote file
+          data is retrieved in memory and stored in this key as binary data
+        - \c filepath: the remote filepath relative to SFTP root directory
+        - \c order_status: the status of the new order; if present, must be either \c READY or \c BLOCKED (the default
+          if not present)
+        .
+        the following additional keys are set if \c sftp-polling-file-connection is set:
+        - \c local_path: the target path for the file where the file will be moved to in the post event action
+        - \c tmp_filename: the temporary filename used to store the file until the post action
+        - \c tmp_path: the current temporary path on the filesystem of the file
+        - \c transfer_time: a relative date/time value giving the time it took to transfer the file
+
+        @return the event with the following additional keys:
+        - \c order_status: the status of the new order created
+        - \c workflow_instanceid: the workflow instance ID of the new order created
+    */
+    hash<auto> singleFileEventImpl(hash<auto> event) {
+        hash<CreateOrderOptionInfo> create_opts();
+        bool dup = False;
+        if (!create_opts.status) {
+            create_opts.status = event.order_status ?? OMQ::StatBlocked;
+        }
+        int wfiid = createWorkflowOrder(event, create_opts, \dup);
+        event += {
+            "workflow_instanceid": wfiid,
+            "order_status": create_opts.status,
+            "duplicate": dup,
+        };
+        if (dup) {
+            # get real order status
+            hash<auto> info = UserApi::callRestApi("GET", "orders/" + wfiid);
+            event.order_status = info.workflowstatus;
+
+            # if the order has step info, then the file is a duplicate file
+            if (info.StepInstances) {
+                # check for duplicate file processing if there is a local file
+                if (event.local_path) {
+                    *string dup_target = UserApi::getConfigItemValue("sftp-polling-duplicate-file-connection", event);
+                    if (dup_target) {
+                        dup_target = normalize_dir(UserApi::getUserConnection(dup_target).path() + DirSep +
+                            UserApi::getConfigItemValue("sftp-polling-duplicate-name-template", event));
+
+                        UserApi::logInfo("DUPLICATE FILE %y found: workflow_instanceid %d has status %y (%d step%s); "
+                            "moving %y -> %y", event.name, wfiid, event.order_status, info.StepInstances.size(),
+                            info.StepInstances.size() == 1 ? "" : "s", event.tmp_path, dup_target);
+
+                        # move file to duplicate target location
+                        rename(event.tmp_path, dup_target);
+
+                        # set local path to the new location of the file
+                        event += {
+                            "local_path": dup_target,
+                            "new_name": basename(dup_target),
+                        };
+                        # remove tmp_path so the base class will not try to move a file that's already been moved
+                        remove event.tmp_path;
+                    }
+
+                    if ((*string dup_workflow = UserApi::getConfigItemValue("sftp-polling-duplicate-workflow-name"))
+                        && (*string dup_mapper = UserApi::getConfigItemValue("sftp-polling-duplicate-order-mapper"))) {
+                        wfiid = createWorkflowOrder(event, <CreateOrderOptionInfo>{
+                            "workflow": dup_workflow,
+                            "version": UserApi::getConfigItemValue("sftp-polling-duplicate-workflow-version"),
+                            "status": OMQ::StatReady,
+                            "mapper": dup_mapper,
+                        });
+                        UserApi::logInfo("created %s order workflow_instanceid %d", dup_workflow, wfiid);
+                        event.duplicate_workflow_instanceid = wfiid;
+                    }
+                } else {
+                    UserApi::logInfo("DUPLICATE FILE %y found: workflow_instanceid %d has status %y (%d step%s); "
+                        "no local file to handle",
+                        event.name, wfiid, event.order_status, info.StepInstances.size(),
+                        info.StepInstances.size() == 1 ? "" : "s");
+                }
+            }
+        }
+        return event;
+    }
+
+    #! called for each matching file individually whenever matching files are polled with the list of matching file names; if any error occurs here, the error is logged and the polling operation is retried
+    /** @param fih a hash of file data and information with the following keys:
+        - \c name: the name of the file, link, or directory
+        - \c size: the size of the file in bytes
+        - \c uid: the UID of the owner of the file
+        - \c gid: the GID of the owner of the file
+        - \c mode: the permissions / mode of the file
+        - \c atime: the last accessed date/time of the file
+        - \c mtime: the last modified date/time of the file
+        - \c type: the type of file; one of: \c "REGULAR", \c "DIRECTORY", \c "SYMBOLIC-LINK", \c "BLOCK-DEVICE",
+          \c "CHARACTER-DEVICE", \c "FIFO", \c "SYMBOLIC-LINK", \c "SOCKET", or \c "UNKNOWN"
+        - \c perm: a string giving UNIX-style permissions for the file (ex: "-rwxr-xr-x")
+        - \c data: this key is only present if \c sftp-polling-file-connection not set; in this case the remote file
+          data is retrieved in memory and stored in this key as binary data
+        - \c filepath: the remote filepath relative to SFTP root directory
+        - \c local_path: this key is set to a string giving the local path where the file's data is stored if
+          config item \c sftp-polling-file-connection is set
+
+        If config item \c sftp-polling-delete-file is true, then the remote file is deleted here.
+
+        Otherwise, if \c sftp-polling-move-target is true, then the remove file is moved to the target location on the
+        remove server here.
+    */
+    hash<auto> postSingleFileEvent(hash<auto> event) {
+        event = BBM_SftpPollerBase::postSingleFileEvent(event);
+        # now unblock the order if necessary
+        if (event.order_status == OMQ::StatBlocked) {
+            UserApi::unblockOrder(event.workflow_instanceid);
+            UserApi::logInfo("unblocked order %d for further processing", event.workflow_instanceid);
+        }
+        return event;
+    }
+}

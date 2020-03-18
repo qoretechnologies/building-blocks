@@ -1,0 +1,95 @@
+# This is a generated file, don't edit!
+type: class
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: BBM_HttpServiceGenericBase
+class-name: BBM_HttpServiceBase
+desc: "base class for HTTP handler services"
+lang: qore
+name: BBM_HttpServiceBase
+requires:
+  - BBM_HttpServiceGenericBase
+  - BBM_HttpAuthenticatorBase
+version: "1.0"
+code: BBM_HttpServiceBase-v1.0.qclass
+config-items:
+  - name: http-listener-bind-address
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceGenericBase
+        interface-version: "1.0"
+  - name: http-listener-cert-location
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceGenericBase
+        interface-version: "1.0"
+  - name: http-listener-cert-format
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceGenericBase
+        interface-version: "1.0"
+  - name: http-listener-key-location
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceGenericBase
+        interface-version: "1.0"
+  - name: http-listener-key-format
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceGenericBase
+        interface-version: "1.0"
+  - name: http-listener-key-password
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceGenericBase
+        interface-version: "1.0"
+  - name: http-listener-ssl-mode
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceGenericBase
+        interface-version: "1.0"
+  - name: http-listener-accept-all-certs
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceGenericBase
+        interface-version: "1.0"
+  - name: http-listener-capture-client-certs
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceGenericBase
+        interface-version: "1.0"
+  - name: http-root-uri
+    description: "The root URI path for the HTTP service"
+    strictly_local: true
+    config_group: HTTP Handler
+  - name: http-root-uri-is-regex
+    default_value:
+        false
+    type: bool
+    description: "set to true if 'root-uri' is a regular expression pattern"
+    config_group: HTTP Handler
+  - name: http-auth-name
+    default_value:
+        "default"
+    allowed_values:
+      - "permissive"
+      - "default"
+      - "default-basic"
+    config_group: HTTP Handler
+    description: "A string identifying the authenticator; the following values are allowed:\n
+      - **`default`**: the default Qorus authenticator; new connections must have valid credentials for Qorus\n
+      - **`default-basic`**: the same as **`default`** except in case of an unauthorized request, a `WWW-Authenticate` header is returned indicating that HTTP basic authentication is required\n
+      - **`permissive`**: no authentication is required; all requests are automatically accepted"
+    strictly_local: true
+  - name: http-match-content-types
+    default_value:
+      null
+    type: "*list"
+    description: "an optional list of string content types that will cause external requests to match this handler"
+    config_group: HTTP Handler
+  - name: http-match-headers
+    default_value:
+      null
+    type: "*list"
+    description: "an optional list of string header names (in lower case) that will cause external requests with those headers to match this handler"
+    config_group: HTTP Handler

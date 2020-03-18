@@ -1,0 +1,70 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! Base class for creating a record with a data provider using the record API
+class BBM_DataProviderRecordCreateBase {
+    #! the primary record action logic: create the record
+    /** @return the record written to the data provider
+
+        @throw INVALID-OPERATION the data provider does not support record creation
+    */
+    auto makeRecordIntern(
+        string provider_path_item,
+        string create_options_item,
+        string input_item,
+        string mapper_name_item,
+        string output_item,
+    ) {
+        # the message body for the record
+        *hash<auto> record = UserApi::getConfigItemValue(input_item);
+        return doRecordIntern(record, provider_path_item, create_options_item, mapper_name_item, output_item);
+    }
+
+    #! the primary record action logic: make the record
+    /** @return the record written to the data provider
+
+        @throw INVALID-OPERATION the data provider does not support record creation
+    */
+    hash<auto> doRecordIntern(
+        *hash<auto> input_record,
+        string provider_path_item,
+        string create_options_item,
+        string mapper_name_item,
+        string output_item,
+    ) {
+        string provider_path = UserApi::getConfigItemValue(provider_path_item);
+        UserApi::logDebug("provider: %y input record data: %y", provider_path, input_record);
+
+        # get the data provider
+        AbstractDataProvider provider = UserApi::getDataProvider(provider_path);
+        # ensure that it supports the record creation API
+        provider.checkCreate();
+
+        hash<auto> record;
+
+        # get mapper name
+        *string mapper_name = UserApi::getConfigItemValue(mapper_name_item);
+        if (mapper_name) {
+            Mapper mapper = UserApi::getMapper(mapper_name);
+            record = mapper.mapData(input_record ?? {});
+        } else {
+            record = input_record ?? {};
+        }
+
+        *hash<auto> create_options = UserApi::getConfigItemValue(create_options_item);
+
+        UserApi::logDebug("provider %y: RECORD: %y options: %y", provider.getName(), record, create_options);
+        *hash<auto> output_record = provider.createRecord(record, create_options);
+        UserApi::logDebug("OUTPUT RECORD: %N", output_record);
+
+        # save output data
+        *hash<auto> output_data = UserApi::getConfigItemValue(output_item, NOTHING, False);
+        if (output_data) {
+            UserApi::updateOutputData(output_record, output_data);
+        }
+
+        return output_record;
+    }
+}

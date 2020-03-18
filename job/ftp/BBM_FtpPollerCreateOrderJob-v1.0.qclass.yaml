@@ -1,0 +1,124 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_FtpPollerCreateOrderJob
+desc: "base class for FTP polling jobs that create workflow orders for files received"
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusJob
+class-name: BBM_FtpPollerCreateOrderJob
+lang: qore
+requires:
+  - BBM_FtpPollerCreateOrder
+version: "1.0"
+code: BBM_FtpPollerCreateOrderJob-v1.0.qclass
+config-items:
+  - name: create-workflow-order-mapper
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-name
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-version
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-order-status
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-duplicate-handling
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: ftp-polling-connection-name
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: ftp-polling-mask
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: ftp-polling-mask-regex
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: ftp-polling-regex-options
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: ftp-polling-file-connection
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: ftp-polling-file-name
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: ftp-polling-file-temp-template
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: ftp-polling-minage
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: ftp-polling-encoding
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: ftp-polling-delete-file
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: ftp-polling-move-target
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: ftp-polling-duplicate-file-connection
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: ftp-polling-duplicate-name-template
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: ftp-polling-duplicate-workflow-name
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: ftp-polling-duplicate-workflow-version
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: ftp-polling-duplicate-order-mapper
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-output-data
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerCreateOrder
+        interface-version: "1.0"

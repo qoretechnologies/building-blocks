@@ -1,0 +1,92 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_RestAction
+desc: "generic class for making a REST request"
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: restAction
+    input-provider:
+        name: qoretechnologies
+        path: /building-blocks/rest-action/request
+        type: type
+    method: makeRestRequestConnector
+    output-provider:
+        name: qoretechnologies
+        path: /building-blocks/rest-action/response
+        type: type
+    type: input-output
+class-name: BBM_RestAction
+lang: qore
+version: "1.0"
+code: BBM_RestAction-v1.0.qclass
+config-items:
+  - name: rest-connection-name
+    description: "the name of the REST connection"
+    strictly_local: true
+    config_group: Rest Action
+  - name: rest-method
+    default_value:
+        "POST"
+    description: "the REST method to use"
+    strictly_local: true
+    config_group: Rest Action
+  - name: rest-api-mapper-name
+    default_value:
+        null
+    type: "*string"
+    description: "the name of the mapper for the REST call; if no value is set, then no payload will be included; do not set with a GET request"
+    strictly_local: true
+    config_group: Rest Action
+  - name: rest-uri-path
+    description: "the URI path for creating the request(s) in the REST server"
+    strictly_local: true
+    config_group: Rest Action
+  - name: rest-id-location
+    default_value:
+        null
+    type: "*string"
+    description: "location in the response for the unique ID; if this config item is set and no value is found in the response at the location given here, then an exception is thrown\n"
+    strictly_local: true
+    config_group: Rest Action
+  - name: rest-headers
+    default_value:
+        {}
+    type: hash
+    description: "additional headers to send with each REST request"
+    strictly_local: true
+    config_group: Rest Action
+  - name: rest-swagger-schema-location
+    default_value:
+        null
+    type: "*string"
+    description: "the location of the Swagger schema for the REST connection; this will be resolved by calling `UserApi::getTextFileFromLocation()`\n"
+    strictly_local: true
+    config_group: Rest Action
+  - name: rest-body-remove-nulls
+    default_value:
+        false
+    type: bool
+    description: "if true then any empty key values returned by the mapper will be removed before sending the request to the server\n"
+    strictly_local: true
+    config_group: Rest Action
+  - name: output_data
+    default_value:
+        null
+    type: "*hash"
+    description: "the configuration of output data; the REST response hash is passed as input to the `UserApi::updateOutputData()` method; the deserialized REST response body is located in the `body` key of this hash; if *rest-id-location* is configured, then the value retrieved can be referenced with key `rest-id` in the output data hash\n"
+    strictly_local: true
+    config_group: Rest Action Post Processing
+  - name: rest-id-log-msg
+    default_value:
+        "REST response retrieved ID: $local:{rest-id}"
+    description: "a string giving a log message for successful retrieval of the ID identified by *rest-id-location*; this ID can be referred to as `$local:{rest-id}` in the template string\n"
+    strictly_local: true
+    config_group: Rest Action Cosmetic
+  - name: rest-body
+    default_value:
+        null
+    config_group: Rest Action
+    description: "The message body for the request; if a mapper is also set, this will be used as the input for the mapper."
+    strictly_local: true
+    type: "*hash"

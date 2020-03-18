@@ -1,0 +1,28 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! Base salesforce event streaming class
+class BBM_SalesforceStreamBase inherits AbstractSalesforceEventStreamer, Observable {
+    #! Creates the object and starts event streaming
+    constructor() : AbstractSalesforceEventStreamer(ServiceApi::getConfigItemValue("sf-stream-options")) {
+        setConnectionAndChannels(ServiceApi::getConfigItemValue("sf-stream-connection-name"),
+                                ServiceApi::getConfigItemValue("sf-stream-channel-names"));
+        initImpl();
+        start();
+    }
+
+    #! Override in child classes for custom initialization code
+    initImpl() {
+        # this method intentionally left empty
+    }
+
+    #! Notify observer of event
+    messageCallbackImpl(hash<auto> data_) {
+        UserApi::logDebug("salesforce event: %y", data_);
+        notifyObservers("BBM_SalesforceStreamBase::messageCallbackImpl", data_);
+    }
+}

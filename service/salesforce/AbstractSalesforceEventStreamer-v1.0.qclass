@@ -1,16 +1,11 @@
 # -*- mode: qore; indent-tabs-mode: nil -*-
 
-# name: AbstractSalesforceEventStreamer
-# version: 1.0
-# desc: Event streaming support for Salesforce.com using the streaming API
-# author: Qore Technologies, s.r.o.
-
 %new-style
 %strict-args
 %require-types
 %enable-all-warnings
 
-%requires qore >= 0.8.13
+%requires qore >= 0.9.3
 
 # we do the login and get a session ID with the SalesforceRestClient class
 %requires SalesforceRestClient
@@ -19,8 +14,7 @@
 %requires jni
 
 # the following jar files must be in $OMQ_DIR/user/jar
-%module-cmd(jni) add-classpath $OMQ_DIR/user/jar/emp-connector-0.0.1-SNAPSHOT-phat.jar
-%module-cmd(jni) add-classpath $OMQ_DIR/user/jar/
+%module-cmd(jni) add-classpath $OMQ_DIR/user/building-blocks/service/salesforce/jar/emp-connector-0.0.1-SNAPSHOT-phat.jar
 
 %module-cmd(jni) import com.salesforce.emp.connector.BayeuxParameters
 %module-cmd(jni) import com.salesforce.emp.connector.EmpConnector
@@ -36,6 +30,7 @@
 
 class AbstractSalesforceEventStreamer {
     public {
+        #! The API version to use
         const StreamingApi = "43.0";
 
         # The long poll duration.
@@ -73,7 +68,7 @@ class AbstractSalesforceEventStreamer {
         - \c replay_from: a hash of optional replay IDs for the first event keyed by channel name; default: send only new events; special values:
           - \c EmpConnector::REPLAY_FROM_EARLIEST "EmpConnector::REPLAY_FROM_EARLIEST": start from the first available event
           - \c EmpConnector::REPLAY_FROM_TIP "EmpConnector::REPLAY_FROM_TIP": send only new events
-        - \c streaming_api: the API to use in string format for the streaming API endpoint; default: \c "43.0"
+        - \c streaming_api: the API to use in string format for the streaming API endpoint; default: @ref StreamingApi
      */
     constructor(*hash<auto> opts) {
         self.opts = opts;
@@ -86,7 +81,7 @@ class AbstractSalesforceEventStreamer {
         - \c replay_from: a hash of optional replay IDs for the first event keyed by channel name; default: send only new events; special values:
           - \c EmpConnector::REPLAY_FROM_EARLIEST "EmpConnector::REPLAY_FROM_EARLIEST": start from the first available event
           - \c EmpConnector::REPLAY_FROM_TIP "EmpConnector::REPLAY_FROM_TIP": send only new events
-        - \c streaming_api: the API to use in string format for the streaming API endpoint; default: \c "43.0"
+        - \c streaming_api: the API to use in string format for the streaming API endpoint; default: @ref StreamingApi
      */
     constructor(string conn, softlist<string> channels, *hash<auto> opts) {
         self.conn = conn;
@@ -148,9 +143,9 @@ messageCallbackImpl(hash<auto> mh) {
 
         # get oauth token for streaming login
         {
-            SalesforceRestClient src = get_user_connection(conn);
+            SalesforceRestClient src = UserApi::getUserConnection(conn);
 
-            log(LL_INFO, "connecting to %y for oauth token", src.getURL());
+            UserApi::logInfo("connecting to %y for oauth token", src.getURL());
 
             # login
             src.login();
@@ -162,7 +157,7 @@ messageCallbackImpl(hash<auto> mh) {
             streaming_url =~ s/services\/data\/.*$//;
             streaming_url += (opts.streaming_api ?? "cometd/" + StreamingApi);
         }
-        log(LL_DEBUG_1, "ouath token: %y", token);
+        UserApi::logDebug("ouath token: %y", token);
 
         SalesforceLoginParameters tokenProvider(token, streaming_url);
 
@@ -178,17 +173,17 @@ messageCallbackImpl(hash<auto> mh) {
                 *Message message = args[1];
                 if (!message)
                     return;
-                log(LL_DEBUG_1, "%s: %s", event, message.toString());
+                UserApi::logDebug("%s: %s", event, message.toString());
 
                 bool success = message.isSuccessful();
                 if (!success) {
                     *string error = message.get("error");
                     if (error)
-                        log(LL_IMPORTANT, "Error during %y event: %y", event, error);
+                        UserApi::logInfo("Error during %y event: %y", event, error);
 
                     *Exception exception = message.get("exception");
                     if (exception)
-                        log(LL_IMPORTANT, "Exception during %s", exception.toString());
+                        UserApi::logInfo("Exception during %s", exception.toString());
                 }
             };
         };
@@ -206,9 +201,8 @@ messageCallbackImpl(hash<auto> mh) {
 
         consumer = cast<Consumer>(implement_interface(new QoreInvocationHandler(\messageCallback()), lang::Class::forName("java.util.function.Consumer")));
 
-        foreach string channel in (keys channel_map) {
-            subscribeToChannelIntern(channel);
-        }
+        # subscribe to all channels
+        map subscribeToChannelIntern($1), keys channel_map;
     }
 
     #! stops streaming and deletes the internal BayeuxClient object
@@ -223,7 +217,7 @@ messageCallbackImpl(hash<auto> mh) {
             remove channel_map;
 
             connector.stop();
-            log(LL_DEBUG_1, "stop: connected: %y", connector.isConnected());
+            UserApi::logDebug("stop: connected: %y", connector.isConnected());
             delete connector;
         }
     }
@@ -315,7 +309,7 @@ bool active = stream.active();
     #! makes the internal channel subscription
     private subscribeToChannelIntern(string channel) {
         int replayFrom = (remove opts.replay_from{channel}) ?? EmpConnector::REPLAY_FROM_TIP;
-        log(LL_INFO, "subscribing to channel: %y (replay from %y)", channel, replayFrom);
+        UserApi::logInfo("subscribing to channel: %y (replay from %y)", channel, replayFrom);
         subscription_map{channel} = connector.subscribe(channel, replayFrom, consumer).get(5, TimeUnit::SECONDS);
     }
 
@@ -348,8 +342,14 @@ bool active = stream.active();
         }
 
         hash<auto> mh = getValue(args[0]);
-        log(LL_DEBUG_2, "got message: %y", mh);
-        messageCallbackImpl(mh);
+        UserApi::logDebug("salesforce stream message: %y", mh);
+        # this is called in a background thread; make sure that any errors get logged
+        try {
+            messageCallbackImpl(mh);
+        } catch (hash<ExceptionInfo> ex) {
+            UserApi::logError(get_exception_string(ex));
+            rethrow;
+        }
     }
 
     #! internal utility method
@@ -362,4 +362,3 @@ bool active = stream.active();
         return msg ? map {$1: AbstractSalesforceEventStreamer::getValue(msg.get($1))}, msg.keySet().toArray() ?? {} : {};
     }
 }
-# END

@@ -1,0 +1,66 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! Base class for make a search action with a data provider
+class BBM_DataProviderSearchBase {
+    #! the primary search action logic: perform the search
+    /** @return the record data as provided by the data provider
+    */
+    auto doSearchWithItems(
+        string provider_path_item,
+        string search_criteria_item,
+        string search_options_item,
+        string requires_result_item,
+        string output_item,
+    ) {
+        *hash<auto> search_criteria = UserApi::getConfigItemValue(search_criteria_item);
+        *hash<auto> search_options = UserApi::getConfigItemValue(search_options_item);
+        return doSearchWithItemsIntern(search_criteria, search_options, provider_path_item, requires_result_item,
+            output_item);
+    }
+
+    #! the primary search action logic: perform the search
+    /** @return the record data as provided by the data provider
+    */
+    *list<hash<auto>> doSearchWithItemsIntern(
+        *hash<auto> search_criteria,
+        *hash<auto> search_options,
+        string provider_path_item,
+        string requires_result_item,
+        string output_item,
+    ) {
+        string provider_path = UserApi::getConfigItemValue(provider_path_item);
+        UserApi::logInfo("provider: %y search criteria: %y options: %y", provider_path, search_criteria, search_options);
+
+        # get the data provider
+        AbstractDataProvider provider = UserApi::getDataProvider(provider_path);
+        # ensure that it supports the search API
+        provider.checkRead();
+
+        # get all records from search
+        *list<hash<auto>> records = map $1, provider.searchRecords(search_criteria, search_options);
+        UserApi::logInfo("records retrieved: %d", records.size());
+        UserApi::logDebug("RECORDS: %N", records);
+
+        if (!records && UserApi::getConfigItemValue(requires_result_item)) {
+            throw "SEARCH-ERROR", sprintf("config item %y indicates that a search result is required, but none was "
+                "returned", requires_result_item);
+        }
+
+        # save output data
+        if (records) {
+            *hash<auto> output_data = UserApi::getConfigItemValue(output_item, NOTHING, False);
+            if (output_data) {
+                if (records.size() > 1) {
+                    throw "CONFIG-ERROR", sprintf("cannot save output data; result has %d records; need exactly one "
+                        "record to save output data", records.size());
+                }
+                UserApi::updateOutputData(records[0], output_data);
+            }
+        }
+
+        return records;
+    }
+}

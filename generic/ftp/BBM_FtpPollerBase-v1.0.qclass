@@ -1,0 +1,253 @@
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+%requires FtpPoller
+
+#! this base building block polls an FTP server for files
+/**
+*/
+class BBM_FtpPollerBase inherits BBM_RegularExpressions {
+    private {
+        FtpClient ftpClient;
+        BBM_FtpPollerPriv poller;
+
+        #! options that are passed 1:1 from config items to FtpPoller options
+        const OneToOneOpts = (
+            "minage",
+            "encoding",
+        );
+
+        #! remote status: deleted
+        const RS_DELETED = "DELETED";
+
+        #! remote status: moved
+        const RS_MOVED = "MOVED";
+    }
+
+    #! the primary FTP polling action logic: poll the FTP server for files
+    /** @return True if files were found
+    */
+    bool runOnce() {
+        setup();
+        on_exit teardown();
+        return poller.runOnce();
+    }
+
+    #! destroys the external objects
+    private teardown() {
+        delete poller;
+        delete ftpClient;
+        UserApi::logDebug("deleted connection objects");
+    }
+
+    #! creates the FtpClient and FtpPoller objects
+    private setup() {
+        ftpClient = UserApi::getUserConnection(UserApi::getConfigItemValue("ftp-polling-connection-name"));
+
+        hash<auto> poller_opts = getPollerOptions();
+        poller = new BBM_FtpPollerPriv(self, ftpClient, poller_opts);
+    }
+
+    #! returns FtpPoller options
+    private hash<auto> getPollerOptions() {
+        hash<auto> poller_opts;
+        string mask = UserApi::getConfigItemValue("ftp-polling-mask");
+        if (UserApi::getConfigItemValue("ftp-polling-mask-regex")) {
+            poller_opts.regex_mask = mask;
+            poller_opts.reopts = MAP{UserApi::getConfigItemValue("ftp-polling-regex-opts")};
+        } else {
+            poller_opts.mask = mask;
+        }
+
+        # add 1:1 opts
+        poller_opts += map {$1: UserApi::getConfigItemValue("ftp-polling-" + $1)}, OneToOneOpts;
+
+        # add logging options
+        poller_opts += {
+            "log_info": \UserApi::logInfo(),
+            "log_detail": \UserApi::logInfo(),
+            "log_debug": \UserApi::logDebug(),
+            # we use only the runOnce() method, no threads or sleeping implemented
+            "start_thread": sub () { throw "NOT-IMPLEMENTED"; },
+            "sleep": sub (int i) { throw "NOT-IMPLEMENTED"; },
+            # we retrieve data ourselves in a controlled fashion in this class
+            "skip_file_content_retrieval": True,
+        };
+        return poller_opts;
+    }
+
+    #! called for each matching file individually whenever matching files are polled with the list of matching file names; if any error occurs here, the error is logged and the polling operation is retried
+    /** @param event a hash of file data and information with the following keys:
+        - \c name: the name of the file, link, or directory
+        - \c size: the size of the file in bytes
+        - \c uid: the UID of the owner of the file
+        - \c gid: the GID of the owner of the file
+        - \c mode: the permissions / mode of the file
+        - \c atime: the last accessed date/time of the file
+        - \c mtime: the last modified date/time of the file
+        - \c type: the type of file; one of: \c "REGULAR", \c "DIRECTORY", \c "SYMBOLIC-LINK", \c "BLOCK-DEVICE",
+          \c "CHARACTER-DEVICE", \c "FIFO", \c "SYMBOLIC-LINK", \c "SOCKET", or \c "UNKNOWN"
+        - \c perm: a string giving UNIX-style permissions for the file (ex: "-rwxr-xr-x")
+        - \c data: this key is only present if \c ftp-polling-file-connection not set; in this case the remote file
+          data is retrieved in memory and stored in this key as binary data
+        - \c filepath: the remote filepath relative to FTP root directory
+
+        if the \c ftp-polling-file-connection configuration item is set, then files are stored on the local filesystem by
+        this method.
+
+        This method then calls singleFileEventImpl() for further processing; the event argument to this method has
+        the following additional keys if \c ftp-polling-file-connection is set:
+        - \c transfer_time: a relative date/time value giving the time it took to transfer the file
+        - \c tmp_filename: the temporary filename used to store the file until the post action
+        - \c tmp_path: the current temporary path on the filesystem of the file
+        - \c local_path: the target path for the file where the file will be moved to in the post event action
+    */
+    hash<auto> singleFileEvent(hash<auto> orig_event) {
+        hash<auto> event = {} + orig_event;
+        UserApi::logDebug("FTP file: %y (%d bytes) found", event.name, event.size);
+        *string file_conn = UserApi::getConfigItemValue("ftp-polling-file-connection");
+        if (file_conn) {
+            Dir dir = UserApi::getUserConnection(file_conn);
+            *string target_dir = dir.path();
+            # add filename
+            string tmp_filename = UserApi::getConfigItemValue("ftp-polling-file-temp-template", event);
+            string tmp_path = normalize_dir(target_dir + DirSep + tmp_filename);
+            string local_path = normalize_dir(target_dir + DirSep
+                + (UserApi::getConfigItemValue("ftp-polling-file-name", event) ?? event.name));
+
+            UserApi::logInfo("using local connection %y to stream %y -> %y (%d bytes)", file_conn, event.filepath,
+                tmp_path, event.size);
+            date start = now_us();
+            # stream remote file to local file
+            ftpClient.get(event.filepath, tmp_path);
+            event += {
+                "transfer_time": now_us() - start,
+                "tmp_filename": tmp_filename,
+                "tmp_path": tmp_path,
+                "local_path": local_path,
+            };
+            UserApi::logInfo("retrieved %y in %y (temp path %y)", event.name, event.transfer_time, tmp_path);
+        } else {
+            # if we have no local filesystem connection, then by default we retrieve the remote file and place the
+            # data in the "data" key in the event hash
+            event = getRemoteFileData(event);
+        }
+
+        return singleFileEventImpl(event);
+    }
+
+    #! called for each matching file individually whenever matching files are polled with the list of matching file names; if any error occurs here, the error is logged and the polling operation is retried
+    /** @param event a hash of file data and information with the following keys:
+        - \c name: the name of the file, link, or directory
+        - \c size: the size of the file in bytes
+        - \c mtime: the last modified date/time of the file
+        - \c data: this key is only present if \c ftp-polling-file-connection not set; in this case the remote file
+          data is retrieved in memory and stored in this key as binary data
+        - \c filepath: the remote filepath relative to FTP root directory
+        .
+        The following keys are included if config item \c ftp-polling-file-connection is set:
+        - \c transfer_time: a relative date/time value giving the time it took to transfer the file
+        - \c tmp_filename: the temporary filename used to store the file until the post action
+        - \c tmp_path: the current temporary path on the filesystem of the file
+        - \c local_path: this key is set to a string giving the local path where the file's data is stored
+
+        @return the event hash plus the following keys:
+        - \c remote_status: either \c "MOVED" or \c "DELETED" depending on the action taken, if
+          \c ftp-polling-delete-file if false, then \c ftp-polling-move-target must be set, in which case also the
+          \c remote_move_target key is set to the path the remote file is moved to
+
+        If config item \c ftp-polling-delete-file is true, then the remote file is deleted here.
+
+        Otherwise, if \c ftp-polling-move-target is true, then the remote file is moved to the target location on the
+        remote server here.
+    */
+    hash<auto> postSingleFileEvent(hash<auto> event) {
+        # move to target filename
+        if (event.tmp_path && event.tmp_path != event.local_path) {
+            # NOTE: uses a simple rename() which may cause problems on some OSes if moving between filesystems
+            rename(event.tmp_path, event.local_path);
+            UserApi::logInfo("renamed %y -> %y", event.tmp_path, event.local_path);
+        }
+
+        if (UserApi::getConfigItemValue("ftp-polling-delete-file")) {
+            deleteFile(event);
+            event.remote_status = RS_DELETED;
+            return event;
+        }
+        *string move_target = UserApi::getConfigItemValue("ftp-polling-move-target", event);
+        if (!exists move_target) {
+            throw "CONFIG-ERROR", sprintf("\"ftp-polling-delete-file\" is false but \"ftp-polling-move-target\" "
+                "is not set; no post-processing of the FTP files is possible; fix the configuration and try again");
+        }
+        moveFile(event, move_target);
+        event.remote_status = RS_MOVED;
+        event.remote_move_target = move_target;
+        return event;
+    }
+
+    #! retrieves the remote file and puts the file data in the "data" key as binary data
+    hash<auto> getRemoteFileData(hash<auto> event) {
+        # get file to binary stream
+        BinaryOutputStream binstream();
+
+        UserApi::logInfo("retrieving %y (%d bytes) to memory", event.filepath, event.size);
+        date start = now_us();
+        ftpClient.get(event.filepath, binstream);
+        event.transfer_time = now_us() - start;
+        UserApi::logInfo("retrieved %y in %y", event.filepath, event.transfer_time);
+
+        # write binary data to event hash
+        event += {
+            "data": binstream.getData(),
+        };
+
+        return event;
+    }
+
+    private deleteFile(hash<auto> event) {
+        UserApi::logInfo("polling action complete; deleting file %y", event.name);
+        poller.removeFile(event.name);
+    }
+
+    private moveFile(hash<auto> event, string move_target) {
+        UserApi::logInfo("polling action complete; moving/renaming file %y -> %y", event.name, move_target);
+        poller.rename(event.name, move_target);
+    }
+
+    #! called for each matching file individually whenever matching files are polled with the list of matching file names; if any error occurs here, the error is logged and the polling operation is retried
+    /** @param event a hash of file data and information with the following keys:
+        - \c name: the name of the file, link, or directory
+        - \c size: the size of the file in bytes
+        - \c mtime: the last modified date/time of the file
+        - \c data: this key is only present if \c ftp-polling-file-connection not set; in this case the remote file
+          data is retrieved in memory and stored in this key as binary data
+        - \c filepath: the remote filepath relative to FTP root directory
+    */
+    abstract hash<auto> singleFileEventImpl(hash<auto> event);
+}
+
+class BBM_FtpPollerPriv inherits FtpPoller {
+    private {
+        BBM_FtpPollerBase base;
+    }
+
+    constructor(BBM_FtpPollerBase base, FtpClient ftp, hash<auto> opts) : FtpPoller(ftp, opts) {
+        self.base = base;
+    }
+
+    singleFileEvent(hash<auto> orig_event) {
+        hash<auto> event = base.singleFileEvent(orig_event);
+        try {
+            base.postSingleFileEvent(event);
+        } catch (hash<ExceptionInfo> ex) {
+            fatal = True;
+            rethrow;
+        }
+    }
+
+    postSingleFileEvent(hash<auto> event) {
+        # this method has no body as it's not used
+    }
+}

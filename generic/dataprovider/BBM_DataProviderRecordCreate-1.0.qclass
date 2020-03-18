@@ -1,0 +1,69 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! Base class for creating a record with a data provider using the record API
+class BBM_DataProviderRecordCreateBase {
+    public {
+        const ProviderPathItem = "dataprovider-create-provider-path";
+        const CreateOptionsItem = "dataprovider-create-options";
+        const InputItem = "dataprovider-create-input";
+        const MapperItem = "dataprovider-create-mapper";
+        const OutputItem = "dataprovider-create-output-data";
+    }
+
+    #! the primary record action logic: create the record
+    /** @return the record written to the data provider
+
+        @throw INVALID-OPERATION the data provider does not support record creation
+    */
+    auto makeRecord() {
+        return makeRecordIntern(ProviderPathItem, CreateOptionsItem, InputItem, MapperItem, OutputItem);
+    }
+
+    #! REST action method suitable for use as an input/output connector
+    /** @param input_record the input record; if not present then the <tt>dataprovider-create-input</tt> config item
+        is used; this is the data to be used to create the record or the input to the mapper, if the
+        <tt>dataprovider-create-mapper</tt> config item is set
+
+        @return the record written to the data provider
+
+        @throw INVALID-OPERATION the data provider does not support record creation
+    */
+    auto makeDataProviderRecord(*hash<auto> input_record) {
+        if (!exists input_record) {
+            # the message body for the request
+            input_record = UserApi::getConfigItemValue(InputItem);
+        }
+
+        return doRecordIntern(input_record, ProviderPathItem, CreateOptionsItem, MapperItem, OutputItem);
+    }
+
+    #! make recovery record
+    /** @return True if the data exists, False if not
+    */
+    bool checkRecordIntern(
+        *hash<auto> record,
+        string provider_path_item,
+        string create_options_item,
+        string input_item,
+        string mapper_name_item,
+        string output_item,
+    ) {
+        try {
+            if (!exists record) {
+                # the message body for the record
+                record = UserApi::getConfigItemValue(input_item);
+            }
+            return exists doRecordIntern(record, provider_path_item, create_options_item, mapper_name_item,
+                output_item);
+        } catch (hash<ExceptionInfo> ex) {
+            if (ex.err == "DATA-PROVIDER-RESPONSE-MISSING") {
+                UserApi::logInfo("%s: %s: no data present", ex.err, ex.desc);
+                return False;
+            }
+            rethrow;
+        }
+    }
+}

@@ -1,0 +1,93 @@
+# This is a generated file, don't edit!
+type: type
+path: qoretechnologies/building-blocks/rest-action/request
+typeinfo:
+    base_type: hash<auto>
+    can_manage_fields: true
+    fields:
+        body:
+            canBeNull: false
+            desc: the request body for the REST call
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: body
+            type:
+                base_type: auto
+                can_manage_fields: true
+                fields: {}
+                mandatory: false
+                name: auto
+                options: null
+                supported_options: null
+                typename: any
+                types_accepted:
+                    - any
+                types_returned:
+                    - any
+        hdr:
+            canBeNull: true
+            desc: any HTTP headers to add to the request
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: hdr
+            type:
+                base_type: hash<auto>
+                can_manage_fields: true
+                fields: {}
+                mandatory: false
+                name: '*hash<auto>'
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: '*hash'
+                types_accepted:
+                    - hash<auto>
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - hash<auto>
+                    - nothing
+        uri_path:
+            canBeNull: true
+            desc: >-
+                any string to add to the URI path configured for the REST action
+                building block
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: uri_path
+            type:
+                base_type: string
+                can_manage_fields: false
+                fields: {}
+                mandatory: false
+                name: '*string'
+                options: null
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                    string.empty_to_nothing:
+                        desc: if an empty string should be converted to no value
+                        type: bool
+                    string.encoding:
+                        desc: the output encoding when writing to the type
+                        type: string
+                    string.max_size_chars:
+                        desc: the maximum length of the string in characters
+                        type: integer
+                typename: '*string'
+                types_accepted:
+                    - string
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - string
+                    - nothing
+    name: hash<auto>

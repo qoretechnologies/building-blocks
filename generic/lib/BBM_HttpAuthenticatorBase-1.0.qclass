@@ -1,0 +1,35 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! Provides functionality to return HTTP authenticators based on a config item
+class BBM_HttpAuthenticatorBase {
+    public {
+        #! Known authenticators
+        const KnownAuthenticators = (
+            AUTH_PERMISSIVE,
+            AUTH_DEFAULT,
+            AUTH_DEFAULT_BASIC,
+        );
+    }
+
+    #! Returns an authenticator from the config item value identified by the \a config_item_name argument
+    /** @param config_item_name the name of the config item identifying the authenticator to use; must be one of the
+        values in KnownAuthenticators
+        @return the authenticator corresponding to the config item value
+
+        @throw UNKNOWN-AUTHENTICATOR the given authenticator is unknown
+    */
+    static AbstractAuthenticator getAuthenticator(string config_item_name) {
+        string auth = ServiceApi::getConfigItemValue(config_item_name);
+        switch (auth) {
+            case AUTH_PERMISSIVE: return new PermissiveAuthenticator();
+            case AUTH_DEFAULT: return new DefaultQorusRBACAuthenticator();
+            case AUTH_DEFAULT_BASIC: return new DefaultQorusRBACBasicAuthenticator();
+        }
+
+        throw "UNKNOWN-AUTHENTICATOR", sprintf("authenticator %y is unknown; expecting one of %y", auth,
+            KnownAuthenticators);
+    }
+}

@@ -1,0 +1,32 @@
+type: mapper
+name: bb-test-ftp-job
+version: "1.0"
+desc: maps FTP file events to workflow order data
+mappertype: Mapper
+author:
+  - Qore Technologies, s.r.o.
+parse-options:
+  - PO_NEW_STYLE
+groups:
+  - test
+  - bb-test
+mapper-code:
+  - bb-test-ftp-job
+options:
+  mapper-input:
+    type: type
+    name: qoretechnologies
+    path: /building-blocks/ftp/event
+    custom-fields: {}
+  mapper-output:
+    type: type
+    name: qoretechnologies
+    path: /building-blocks/create-order/request
+    custom-fields: {}
+fields:
+  staticdata:
+    name: local_path
+    code: getRecord
+  workflow_unique_key:
+    name: name
+    code: getFilenameHash

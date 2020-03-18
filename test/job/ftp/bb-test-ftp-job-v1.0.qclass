@@ -1,0 +1,12 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+hash<auto> sub getRecord(*string local_path, hash<auto> record) {
+    return record;
+}
+
+hash<auto> sub getFilenameHash(*string name, hash<auto> ignored) {
+    return {"filename": name};
+}

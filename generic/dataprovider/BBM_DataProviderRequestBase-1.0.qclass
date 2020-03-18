@@ -1,0 +1,147 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! Base class for making a request with a data provider using the request/response API
+class BBM_DataProviderRequestBase {
+    #! the primary request action logic: make the request
+    /** @return the response data as provided by the data provider
+
+        @throw DATA-PROVIDER-RESPONSE-ERROR cannot retrieve location as response is not a hash
+        @throw DATA-PROVIDER-RESPONSE-MISSING no value found in response at the location provided
+    */
+    auto makeRequestIntern(
+        string provider_path_item,
+        string remove_nulls_item,
+        string request_options_item,
+        string input_item,
+        string mapper_name_item,
+        string log_item,
+        string id_loc_item,
+        string output_item,
+    ) {
+        # the message body for the request
+        auto request = UserApi::getConfigItemValue(input_item);
+        return doRequestIntern(request, provider_path_item, remove_nulls_item, request_options_item, mapper_name_item,
+            log_item, id_loc_item, output_item);
+    }
+
+    #! the primary request action logic: make the request
+    /** @return the response data as provided by the data provider
+
+        @throw DATA-PROVIDER-RESPONSE-ERROR cannot retrieve location as response is not a hash
+        @throw DATA-PROVIDER-RESPONSE-MISSING no value found in response at the location provided
+    */
+    auto doRequestIntern(
+        auto request,
+        string provider_path_item,
+        string remove_nulls_item,
+        string request_options_item,
+        string mapper_name_item,
+        string log_item,
+        string id_loc_item,
+        string output_item,
+    ) {
+        string provider_path = UserApi::getConfigItemValue(provider_path_item);
+        UserApi::logDebug("provider: %y request data: %y", provider_path, request);
+
+        # get the data provider
+        AbstractDataProvider provider =
+            UserApi::getDataProvider(provider_path);
+        # ensure that it supports the request API
+        provider.checkRequest();
+
+        # should null values be removed from the output?
+        bool remove_nulls = UserApi::getConfigItemValue(remove_nulls_item);
+
+        # get mapper name
+        *string mapper_name = UserApi::getConfigItemValue(mapper_name_item);
+        if (mapper_name) {
+            if (exists request && request.typeCode() != NT_HASH) {
+                throw "DATA-PROVIDER-REQUEST-MAPPER-ERROR", sprintf("cannot use input data with type %y as input to "
+                    "mapper %y; must be a hash", request.type(), mapper_name);
+            }
+            Mapper mapper = UserApi::getMapper(mapper_name);
+            # if nulls should be removed, set all output fields as nullable
+            if (remove_nulls) {
+                mapper.setNullableOutput();
+            }
+            request = mapper.mapData(request ?? {});
+        }
+
+        # remove null args from the request body if applicable
+        if (remove_nulls && request.typeCode() == NT_HASH) {
+            request -= (map $1.key, request.pairIterator(), !$1.value.val());
+        }
+
+        *hash<auto> request_options = UserApi::getConfigItemValue(request_options_item);
+
+        UserApi::logDebug("provider %y: REQUEST: %y options: %y", provider.getName(), request, request_options);
+        auto response = provider.doRequest(request, request_options);
+        UserApi::logDebug("RESPONSE: %N", response);
+
+        *string id_loc = UserApi::getConfigItemValue(id_loc_item);
+        auto val;
+        if (exists id_loc) {
+            if (id_loc == "-") {
+                val = response;
+            } else {
+                if (response.typeCode() != NT_HASH) {
+                    throw "DATA-PROVIDER-RESPONSE-ERROR", sprintf("config item %y is set to %y, but the response is "
+                        "not a hash (type: %y)", id_loc_item, id_loc, response.type());
+                }
+                val = UserApi::getHashDotValue(response, id_loc);
+            }
+            if (!exists val) {
+                throw "DATA-PROVIDER-RESPONSE-MISSING", sprintf("no value was found in the response at location %y; "
+                    "response: %y", id_loc, response);
+            }
+            UserApi::logInfo(UserApi::getConfigItemValue(log_item, {"response-id": val}));
+        }
+
+        # save output data
+        *hash<auto> output_data = UserApi::getConfigItemValue(output_item, NOTHING, False);
+        if (output_data) {
+            hash<auto> output_hash = {"response-id": val};
+            if (response.typeCode() == NT_HASH) {
+                output_hash = response + output_hash;
+            } else {
+                output_hash = {"value": val} + output_hash;
+            }
+            UserApi::updateOutputData(output_hash, output_data);
+        }
+
+        return response;
+    }
+
+    #! make recovery request
+    /** @return True if the data exists, False if not
+    */
+    bool checkRequestIntern(
+        auto request,
+        string provider_path_item,
+        string remove_nulls_item,
+        string request_options_item,
+        string input_item,
+        string mapper_name_item,
+        string log_item,
+        string id_loc_item,
+        string output_item,
+    ) {
+        try {
+            if (!exists request) {
+                # the message body for the request
+                request = UserApi::getConfigItemValue(input_item);
+            }
+            return exists doRequestIntern(request, provider_path_item, remove_nulls_item, request_options_item,
+                mapper_name_item, log_item, id_loc_item, output_item);
+        } catch (hash<ExceptionInfo> ex) {
+            if (ex.err == "DATA-PROVIDER-RESPONSE-MISSING") {
+                UserApi::logInfo("%s: %s: no data present", ex.err, ex.desc);
+                return False;
+            }
+            rethrow;
+        }
+    }
+}

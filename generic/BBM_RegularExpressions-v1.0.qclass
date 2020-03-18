@@ -1,0 +1,20 @@
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+class BBM_RegularExpressions {
+    public {
+        const NONE = "NONE";
+        const IGNORE_CASE = "IGNORE-CASE";
+        const MULTILINE = "MULTILINE";
+        const IGNORE_CASE_MULTILINE = "IGNORE-CASE and MULTILINE";
+
+        const MAP = {
+            NONE: 0,
+            IGNORE_CASE: RE_Caseless,
+            MULTILINE: RE_MultiLine,
+            IGNORE_CASE_MULTILINE: RE_Caseless | RE_MultiLine,
+        };
+    }
+}

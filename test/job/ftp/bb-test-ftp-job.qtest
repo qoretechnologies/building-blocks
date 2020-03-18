@@ -1,0 +1,369 @@
+#!/usr/bin/env qore
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%require-types
+%strict-args
+%new-style
+%enable-all-warnings
+
+%exec-class BBM_TestFtpJob
+
+%requires QorusInterfaceTest
+%requires Util
+%requires FsUtil
+%requires ssh2
+
+class BBM_TestFtpJob inherits QorusJobTest {
+    private {
+        #! for local files
+        TmpDir local_tmpdir();
+
+        #! for FTP files
+        TmpDir ftp_tmpdir();
+
+        #! FTP server port
+        int port;
+
+        string ftp_conn_name = get_random_string(20);
+
+        # set of files must be pushed to a remote FTP server
+        string ftp_url;
+
+        const JobName = "bb-test-ftp-job";
+
+        const WorkflowName = "BB-TEST-FTP-WORKFLOW";
+
+        const WorkflowOrderMapper = "bb-test-ftp-job";
+
+        const TestData = "testing - " + get_random_string();
+
+        const TestAdminUser = "ftp-test-admin";
+        const TestAdminPwd = get_random_string();
+    }
+
+    constructor() : QorusJobTest(JobName, "1.0", \ARGV, Opts) {
+        #addTestCase("empty", sub () {});
+        addTestCase("FTP job move test", \ftpJobMoveTest());
+        addTestCase("FTP job FS test", \ftpJobFsTest());
+        addTestCase("FTP job transfer test", \ftpJobTransferTest());
+        set_return_value(main());
+    }
+
+    private usageIntern(int offset = OffsetColumn) {
+        TestReporter::usageIntern(OffsetColumn);
+    }
+
+    globalSetUp() {
+        # create temporary admin user
+        try qrest.del("users/" + TestAdminUser); catch() {}
+        qrest.post("users", {
+            "user": TestAdminUser,
+            "roles": "superuser",
+            "desc": "FTP test user",
+            "pass": TestAdminPwd,
+        });
+
+        # set FTP root dir
+        {
+            string remote_path = ENV.FTP_DIR ?? ftp_tmpdir.path;
+            qrest.put("services/bb-ftp-test/config/ftp-server-root", {"value": remote_path});
+        }
+
+        # unload FTP server if it's already running
+        qrest.put("services/bb-ftp-test/unload");
+        # start FTP server and get port
+        qrest.put("services/bb-ftp-test/load");
+        port = qrest.put("services/bb-ftp-test/getPort/call");
+
+        # create FTP connection
+        {
+            # FTP connection URL
+            ftp_url = sprintf("ftp://%s:%s@", TestAdminUser, TestAdminPwd);
+
+            ftp_url += ENV.FTP_HOST ?? "localhost";
+            ftp_url += ":" + port;
+
+            printf("creating FTP connection %y with URL %y\n", ftp_conn_name, ftp_url);
+            try qrest.del("remote/user/" + ftp_conn_name); catch() {}
+            qrest.post("remote/user", {
+                "name": ftp_conn_name,
+                "desc": "test connection for FTP test job",
+                "url": ftp_url,
+                #"options": opts,
+            });
+        }
+
+        # configure job
+        hash<auto> job_config = {
+            "ftp-polling-connection-name": ftp_conn_name,
+            "ftp-polling-mask": "*.txt",
+            "create-workflow-name": WorkflowName,
+            "create-workflow-order-mapper": WorkflowOrderMapper,
+        };
+        map qrest.put("jobs/" + JobName + "/config/" + $1.key, {"value": $1.value}), job_config.pairIterator();
+
+        # ensure default configuration
+        map qrest.del("jobs/" + JobName + "/config/" + $1.name), qrest.get("jobs/bb-test-ftp-job/config"),
+            !job_config{$1.name} && ((exists $1.default_value && $1.default_value != $1.value)
+                                     || (!exists $1.default_value && exists $1.value));
+
+        # start test workflow
+        qrest.put("workflows/" + WorkflowName + "/setAutostart", {"autostart": 1});
+    }
+
+    globalTearDown() {
+        qrest.put("services/bb-ftp-test/unload");
+        try { qrest.del("remote/user/" + ftp_conn_name); } catch () {}
+        try { qrest.del("users/" + TestAdminUser); } catch () {}
+    }
+
+    ftpJobMoveTest() {
+        # setup move directory
+        makeMoveDirectory();
+        hash<auto> job_config = {
+            "ftp-polling-delete-file": False,
+            "ftp-polling-move-target": "move/$local:{name}",
+        };
+        map qrest.put("jobs/" + JobName + "/config/" + $1.key, {"value": $1.value}), job_config.pairIterator();
+        on_exit {
+            map qrest.del("jobs/" + JobName + "/config/" + $1), keys job_config;
+        }
+
+        # create example file
+        string file_path = writeFtpFile();
+        string filename = basename(file_path);
+
+        # make sure files that don't match the mask are not polled
+        TmpFile ignore_file("test-", ".ignore", ftp_tmpdir.path);
+
+        RunJobResult job(OMQ::StatComplete);
+        exec(job);
+
+        int jiid = job.getJobResult().job_instanceid;
+        hash<auto> results = qrest.get("jobresults/" + jiid).info[0];
+        assertEq("MOVED", results.remote_status);
+        assertEq(OMQ::StatBlocked, results.order_status);
+        int wfiid = results.workflow_instanceid;
+        # wait for workflow order to be COMPLETE
+        WaitForWfiid wait(wfiid, NOTHING, 5s);
+        wait.run(self);
+        hash<auto> order = qrest.get("orders/" + wfiid);
+        assertEq(filename, order.keys.filename);
+        assertEq(filename, order.staticdata.name);
+        assertEq(filename, order.staticdata.filepath);
+        assertEq(Type::Date, order.staticdata.transfer_time.type());
+        assertEq(Type::Date, order.staticdata.mtime.type());
+        assertEq(TestData, order.staticdata."data".toString());
+
+        assertTrue(is_file(ignore_file.path));
+
+        # verify that the file was moved
+        if (ftp_url) {
+            FtpClient ftp = getClient();
+            list<string> files = map $1, ftp.nlst("move").split("\r\n"), $1[0] != ".";
+            assertEq(1, files.size());
+            assertEq(filename, files[0]);
+        } else {
+            assertTrue(is_file(ftp_tmpdir.path + DirSep + "move" + DirSep + filename));
+        }
+
+        # run the job again to ensure that no file is polled
+        exec(job);
+        jiid = job.getJobResult().job_instanceid;
+        results = qrest.get("jobresults/" + jiid);
+        assertEq((), results.info);
+    }
+
+    ftpJobFsTest() {
+        string file_conn_name = get_random_string(20);
+
+        # create file connection
+        qrest.post("remote/user", {
+            "name": file_conn_name,
+            "desc": "test connection for FTP test job",
+            "url": "file://" + local_tmpdir.path,
+        });
+        on_exit {
+            # delete connection
+            qrest.del("remote/user/" + file_conn_name);
+        }
+
+        hash<auto> job_config = {
+            "ftp-polling-file-connection": file_conn_name,
+        };
+        map qrest.put("jobs/" + JobName + "/config/" + $1.key, {"value": $1.value}), job_config.pairIterator();
+        on_exit {
+            map qrest.del("jobs/" + JobName + "/config/" + $1), keys job_config;
+        }
+
+        # create example file
+        string file_path = writeFtpFile();
+        string filename = basename(file_path);
+
+        # make sure files that don't match the mask are not polled
+        TmpFile ignore_file("test-", ".ignore", ftp_tmpdir.path);
+
+        RunJobResult job(OMQ::StatComplete);
+        exec(job);
+
+        int jiid = job.getJobResult().job_instanceid;
+        hash<auto> results = qrest.get("jobresults/" + jiid).info[0];
+        assertEq("DELETED", results.remote_status);
+        assertEq(OMQ::StatBlocked, results.order_status);
+        int wfiid = results.workflow_instanceid;
+        # wait for workflow order to be COMPLETE
+        WaitForWfiid wait(wfiid, NOTHING, 5s);
+        wait.run(self);
+        hash<auto> order = qrest.get("orders/" + wfiid);
+        assertEq(filename, order.keys.filename);
+        assertEq(filename, order.staticdata.name);
+        assertEq(filename, order.staticdata.filepath);
+        assertEq(Type::Date, order.staticdata.transfer_time.type());
+        assertEq(Type::Date, order.staticdata.mtime.type());
+        assertEq(TestData, order.dynamicdata."data");
+
+        assertTrue(is_file(ignore_file.path));
+
+        # test complex duplicate handling
+        {
+            # for duplicate files
+            TmpDir dup_tmpdir();
+            string dup_file_conn_name = get_random_string(20);
+
+            # create file connection
+            qrest.post("remote/user", {
+                "name": dup_file_conn_name,
+                "desc": "test connection for FTP test job",
+                "url": "file://" + dup_tmpdir.path,
+            });
+            on_exit {
+                # delete connection
+                qrest.del("remote/user/" + dup_file_conn_name);
+            }
+
+            hash<auto> dup_config = {
+                "ftp-polling-duplicate-file-connection": dup_file_conn_name,
+                "ftp-polling-duplicate-workflow-name": "BB-TEST-FTP-WORKFLOW-DUP",
+                "ftp-polling-duplicate-order-mapper": "bb-test-ftp-job-duplicate",
+            };
+            map qrest.put("jobs/" + JobName + "/config/" + $1.key, {"value": $1.value}), dup_config.pairIterator();
+            on_exit {
+                # ensure default configuration
+                map qrest.del("jobs/" + JobName + "/config/" + $1), keys dup_config;
+            }
+
+            writeFtpFile(file_path);
+            exec(job);
+            int jiid2 = job.getJobResult().job_instanceid;
+            assertNeq(jiid, jiid2);
+            results = qrest.get("jobresults/" + jiid2).info[0];
+            int wfiid2 = results.workflow_instanceid;
+            assertEq(wfiid, wfiid2);
+            assertTrue(results.duplicate);
+            assertEq("DELETED", results.remote_status);
+            assertEq(OMQ::StatComplete, results.order_status);
+        }
+
+        # run the job again to ensure that no file is polled
+        exec(job);
+        jiid = job.getJobResult().job_instanceid;
+        results = qrest.get("jobresults/" + jiid);
+        assertEq((), results.info);
+    }
+
+    ftpJobTransferTest() {
+        # create example file
+        string file_path = writeFtpFile();
+        string filename = basename(file_path);
+
+        # make sure files that don't match the mask are not polled
+        TmpFile ignore_file("test-", ".ignore", ftp_tmpdir.path);
+
+        RunJobResult job(OMQ::StatComplete);
+        exec(job);
+
+        int jiid = job.getJobResult().job_instanceid;
+        hash<auto> results = qrest.get("jobresults/" + jiid).info[0];
+        assertEq("DELETED", results.remote_status);
+        assertEq(OMQ::StatBlocked, results.order_status);
+        int wfiid = results.workflow_instanceid;
+        # wait for workflow order to be COMPLETE
+        WaitForWfiid wait(wfiid, NOTHING, 5s);
+        wait.run(self);
+        hash<auto> order = qrest.get("orders/" + wfiid);
+        assertEq(filename, order.keys.filename);
+        assertEq(filename, order.staticdata.name);
+        assertEq(filename, order.staticdata.filepath);
+        assertEq(Type::Date, order.staticdata.transfer_time.type());
+        assertEq(Type::Date, order.staticdata.mtime.type());
+        assertEq(TestData, order.staticdata."data".toString());
+
+        assertTrue(is_file(ignore_file.path));
+
+        # test simple duplicate handling; make sure the same workflow_instanceid is returned for a file with the same name
+        writeFtpFile(file_path);
+        exec(job);
+        int jiid2 = job.getJobResult().job_instanceid;
+        assertNeq(jiid, jiid2);
+        results = qrest.get("jobresults/" + jiid2).info[0];
+        int wfiid2 = results.workflow_instanceid;
+        assertEq(wfiid, wfiid2);
+        assertTrue(results.duplicate);
+        assertEq("DELETED", results.remote_status);
+        assertEq(OMQ::StatComplete, results.order_status);
+
+        # run the job again to ensure that no file is polled
+        exec(job);
+        jiid = job.getJobResult().job_instanceid;
+        results = qrest.get("jobresults/" + jiid);
+        assertEq((), results.info);
+    }
+
+    private makeMoveDirectory() {
+        if (ftp_url) {
+            FtpClient ftp = getClient();
+            ftp.mkdir("move");
+        } else {
+            mkdir(ftp_tmpdir.path + DirSep + "move");
+        }
+    }
+
+    private FtpClient getClient() {
+        FtpClient ftp(ftp_url);
+        # change to target directory
+        hash<UrlInfo> url_info = parse_url(ftp_url);
+        #printf("%N\n", url_info);
+        if (url_info.path) {
+            ftp.cwd(url_info.path);
+        }
+        return ftp;
+    }
+
+    private string writeFtpFile(*string file_path) {
+        if (ftp_url) {
+            FtpClient ftp = getClient();
+            if (!file_path) {
+                file_path = sprintf("test-%s.txt", get_random_string());
+            }
+            ftp.putData(TestData, file_path);
+            if (m_options.verbose > 2) {
+                printf("wrote %d bytes of %y to %y\n", TestData.size(), file_path, ftp_url);
+            }
+            return file_path;
+        }
+
+        if (!file_path) {
+            hash<TmpFileHash> tmp_file = make_tmp_file("test-", ".txt", ftp_tmpdir.path);
+            tmp_file.file.write(TestData);
+            tmp_file.file.close();
+            if (m_options.verbose > 2) {
+                printf("wrote %d bytes of %y to %y\n", TestData.size(), file_path, tmp_file.path);
+            }
+            return tmp_file.path;
+        }
+        File f();
+        f.open2(file_path, O_CREAT | O_WRONLY | O_TRUNC);
+        f.write(TestData);
+        return file_path;
+    }
+}

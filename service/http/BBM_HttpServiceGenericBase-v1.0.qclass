@@ -1,0 +1,101 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+%requires HttpServerUtil
+
+class BBM_HttpServiceGenericBase inherits QorusService {
+    public {
+        const CS_REQUIRE_CLIENT_CERT = "REQUIRE-CLIENT-CERT";
+        const CS_NO_CLIENT_CERT_REQUIRED = "NO-CLIENT-CERT-REQUIRED";
+        const CS_REQUEST_CLIENT_CERT = "REQUEST-CLIENT-CERT";
+
+        const SSL_MAP = {
+            CS_REQUIRE_CLIENT_CERT: SSL_VERIFY_FAIL_IF_NO_PEER_CERT | SSL_VERIFY_PEER,
+            CS_NO_CLIENT_CERT_REQUIRED: SSL_VERIFY_NONE,
+            CS_REQUEST_CLIENT_CERT: SSL_VERIFY_PEER,
+        };
+
+        const CS_FORMAT_PEM = "PEM";
+        const CS_FORMAT_DER = "DER";
+        const CS_FORMAT_AUTO = "AUTO";
+
+        const FORMAT_MAP = {
+            CS_FORMAT_PEM: True,
+            CS_FORMAT_DER: True,
+            CS_FORMAT_AUTO: True,
+        };
+    }
+
+    init() {
+        initImpl();
+    }
+
+    private initImpl() {
+        setupHandler();
+    }
+
+    private setupHandler() {
+        AbstractServiceHttpHandler handler = getHandlerImpl();
+        setupHandlerIntern(handler);
+        bindHttp(handler);
+    }
+
+    static private data getFileData(string location, string format) {
+        switch (format) {
+            case CS_FORMAT_PEM:
+                return UserApi::getTextFileFromLocation(location);
+            case CS_FORMAT_DER:
+                return UserApi::getBinaryFileFromLocation(location);
+        }
+        # get a binary and check for non-ascii bytes instead of checking the file's extension
+        binary file_data = UserApi::getBinaryFileFromLocation(location);
+        try {
+            # this will throw an excption if there is non-ascii data in the string
+            return binary_to_string(file_data, "ASCII");
+        } catch (hash<ExceptionInfo> ex) {
+            if (ex.err == "ENCODING-CONVERSION-ERROR") {
+                return file_data;
+            }
+            rethrow;
+        }
+    }
+
+    static private setupHandlerIntern(AbstractServiceHttpHandler handler) {
+        *string bind = ServiceApi::getConfigItemValue("http-listener-bind-address");
+        if (!exists bind) {
+            ServiceApi::logInfo("no bind address; binding on global listeners");
+            return;
+        }
+        ServiceApi::logInfo("bind address: %y", bind);
+        hash<HttpListenerOptionInfo> info = http_get_listener_options_from_bind(bind);
+        if (*string location = ServiceApi::getConfigItemValue("http-listener-cert-location")) {
+            data cert_data = BBM_HttpServiceGenericBase::getFileData(location, BBM_HttpServiceGenericBase::getFileData(location,
+                ServiceApi::getConfigItemValue("http-listener-cert-format")));
+            info.cert = new SSLCertificate(cert_data);
+        }
+        if (*string location = ServiceApi::getConfigItemValue("http-listener-key-location")) {
+            data key_data = BBM_HttpServiceGenericBase::getFileData(location, BBM_HttpServiceGenericBase::getFileData(location,
+                ServiceApi::getConfigItemValue("http-listener-key-format")));
+            if (key_data.typeCode() == NT_STRING) {
+                info.key = new SSLPrivateKey(key_data, ServiceApi::getConfigItemValue("http-listener-key-password"));
+            } else {
+                info.key = new SSLPrivateKey(key_data);
+            }
+        }
+        if (ServiceApi::getConfigItemValue("http-listener-accept-all-certs")) {
+            info.ssl_accept_all_certs = True;
+        }
+        if (ServiceApi::getConfigItemValue("http-listener-capture-client-certs")) {
+            info.get_remote_certs = True;
+        }
+        info.ssl_verify_flags = SSL_MAP{ServiceApi::getConfigItemValue("http-listener-ssl-mode")};
+        ServiceApi::logDebug("bind arg: %y", info);
+        handler.addListener(info);
+    }
+
+    private abstract AbstractServiceHttpHandler getHandlerImpl();
+}

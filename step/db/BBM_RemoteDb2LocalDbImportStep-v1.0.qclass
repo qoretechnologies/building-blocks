@@ -1,0 +1,43 @@
+# name: BBM_RemoteDb2LocalDbImportStep
+# version: 1.0
+# desc: building block base step for high-performance remote DB -> local DB data transfers
+# author: Qore Technologies, s.r.o.
+# requires: BBM_RemoteDb2LocalDbImportWithRecovery
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+#! transfers data from a remote DB to a local DB
+class BBM_RemoteDb2LocalDbImportStep inherits QorusNormalStep, BBM_RemoteDb2LocalDbImportWithRecovery {
+    constructor(*string label) : BBM_RemoteDb2LocalDbImportWithRecovery(label) {
+    }
+
+    primary() {
+        import();
+    }
+
+    string validation() {
+        return checkLocal()
+            ? OMQ::StatComplete
+            : OMQ::StatRetry;
+    }
+
+    private hash<auto> getMapperConstantInput() {
+        return {
+            "context": UserApi::getUserContextInfo(),
+            "static": WorkflowApi::getStaticData(),
+            "dynamic": WorkflowApi::getDynamicData(),
+            "keys": WorkflowApi::getOrderKeys(),
+        };
+    }
+
+    private doWarning(string err, string fmt) {
+        stepWarning(err, vsprintf(fmt, argv));
+    }
+
+    private *hash<string, hash<ConfigItemInfo>> getConfigItemsImpl() {
+        return BBM_RemoteDb2LocalDbImportWithRecovery::getConfigItems();
+    }
+}
+# END

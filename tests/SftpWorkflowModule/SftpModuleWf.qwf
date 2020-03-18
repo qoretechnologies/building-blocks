@@ -6,13 +6,8 @@ workflow:
     workflow-modules: ["SftpWorkflowModule",]
     keylist: ["file_name", "parent_jiid",]
     steps:
-        - name: "SftpWorkflowModuleTest_MoveFileToProcessing:1.0"
-          classname: "SftpWorkflowModuleTest_MoveFileToProcessing"
-        - name: "SftpWorkflowModuleTest_DownloadToLocal:1.0"
-          classname: "SftpWorkflowModuleTest_DownloadToLocal"
-        - name: "SftpWorkflowModuleTest_ReadContent:1.0"
-          classname: "SftpWorkflowModuleTest_ReadContent"
-        - name: "SftpWorkflowModuleTest_UploadFile:1.0"
-          classname: "SftpWorkflowModuleTest_UploadFile"
-        - name: "SftpWorkflowModuleTest_UploadContent:1.0"
-          classname: "SftpWorkflowModuleTest_UploadContent"
+      ["class:SftpWorkflowModuleTest_MoveFileToProcessing:1.0",
+       "class:SftpWorkflowModuleTest_DownloadToLocal:1.0",
+       "class:SftpWorkflowModuleTest_ReadContent:1.0",
+       "class:SftpWorkflowModuleTest_UploadFile:1.0",
+       "class:SftpWorkflowModuleTest_UploadContent:1.0"]

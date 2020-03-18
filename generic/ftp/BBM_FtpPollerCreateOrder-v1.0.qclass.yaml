@@ -1,0 +1,134 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_FtpPollerCreateOrder
+desc: "class for polling for files from an FTP server and creating a workflow order from them"
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: BBM_FtpPollerBase
+class-name: BBM_FtpPollerCreateOrder
+lang: qore
+requires:
+  - BBM_FtpPollerBase
+  - BBM_CreateOrder
+version: "1.0"
+code: BBM_FtpPollerCreateOrder-v1.0.qclass
+config-items:
+  - name: create-workflow-order-mapper
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-name
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-version
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-order-status
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-duplicate-handling
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: "1.0"
+  - name: ftp-polling-connection-name
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerBase
+        interface-version: "1.0"
+  - name: ftp-polling-mask
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerBase
+        interface-version: "1.0"
+  - name: ftp-polling-mask-regex
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerBase
+        interface-version: "1.0"
+  - name: ftp-polling-regex-options
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerBase
+        interface-version: "1.0"
+  - name: ftp-polling-file-connection
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerBase
+        interface-version: "1.0"
+  - name: ftp-polling-file-name
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerBase
+        interface-version: "1.0"
+  - name: ftp-polling-file-temp-template
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerBase
+        interface-version: "1.0"
+  - name: ftp-polling-minage
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerBase
+        interface-version: "1.0"
+  - name: ftp-polling-encoding
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerBase
+        interface-version: "1.0"
+  - name: ftp-polling-delete-file
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerBase
+        interface-version: "1.0"
+  - name: ftp-polling-move-target
+    parent:
+        interface-type: class
+        interface-name: BBM_FtpPollerBase
+        interface-version: "1.0"
+  - name: ftp-polling-duplicate-file-connection
+    default_value:
+        null
+    type: "*string"
+    description: "\"the name of a local file connection where to save duplicate files; \"ftp-polling-duplicate-file-name\" can be set to give a subdirectory path offset from the connection\"\n"
+    strictly_local: true
+    config_group: FTP Polling Workflow Creation Duplicate File Handling
+  - name: ftp-polling-duplicate-name-template
+    default_value:
+        "$local:name-$timestamp:{YYYY-MM-DD HH:mm:SS.xx}"
+    description: "\"the filename template for the target file when moving duplicate files; only used if \"ftp-polling-file-connection\" and \"ftp-polling-duplicate-file-connection\" are set; the filesystem event info is available in the local context; this configuration item can also be used to provide a subdirectory from the file connection in which to store duplicate files\"\n"
+    strictly_local: true
+    config_group: FTP Polling Workflow Creation Duplicate File Handling
+  - name: ftp-polling-duplicate-workflow-name
+    default_value:
+        null
+    type: "*string"
+    description: "\"the name of the workflow for duplicate file handling; if not set (the default), no workflow order will be created; only used if \"ftp-polling-file-connection\" and \"ftp-polling-duplicate-order-mapper\" are also set\"\n"
+    strictly_local: true
+    config_group: FTP Polling Workflow Creation Duplicate File Handling
+  - name: ftp-polling-duplicate-workflow-version
+    default_value:
+        null
+    type: "*string"
+    description: "the version of the workflow for duplicate file handling; if not set (the default), the latest version will be used\"\n"
+    strictly_local: true
+    config_group: FTP Polling Workflow Creation Duplicate File Handling
+  - name: ftp-polling-duplicate-order-mapper
+    default_value:
+        null
+    type: "*string"
+    description: "\"the mapper for creating duplicate orders, only used if \"ftp-polling-file-connection\" and \"ftp-polling-duplicate-order-mapper\" are also set; the local file path is available as \"$local:local_path\" and if \"ftp-polling-duplicate-file-connection\" is set, then the new name is available as \"$local:new_name\"\"\n"
+    strictly_local: true
+    config_group: FTP Polling Workflow Creation Duplicate File Handling
+  - name: create-workflow-output-data
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: "1.0"
