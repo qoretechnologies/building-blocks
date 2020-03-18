@@ -1,0 +1,37 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_SalesforceStreamBase
+desc: "Base class for **Salesforce** streaming API support; reports events; can only be used in services"
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: event
+    method: messageCallbackImpl
+    output-provider:
+        name: qoretechnologies
+        path: /building-blocks/salesforce/stream-event
+        type: type
+    type: event
+class-name: BBM_SalesforceStreamBase
+lang: qore
+requires:
+  - SalesforceLoginParameters
+  - SalesforceLongPollingTransport
+  - AbstractSalesforceEventStreamer
+version: "1.0"
+code: BBM_SalesforceStreamBase-v1.0.qclass
+config-items:
+  - name: sf-stream-options
+    default_value:
+        null
+    type: "*hash"
+    description: "options for the salesforce event streamer class"
+    strictly_local: true
+    config_group: Salesforce.com Event Streaming
+  - name: sf-stream-connection-name
+    description: "the name of the Salesforce.com REST user connection"
+    config_group: Salesforce.com Event Streaming
+  - name: sf-stream-channel-names
+    type: "*list"
+    description: "the name of the Salesforce.com event channels to subscribe to on start"
+    config_group: Salesforce.com Event Streaming

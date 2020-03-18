@@ -1,0 +1,14 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_AutoMapperRecordStep inherits QorusNormalStep, BBM_AutoMapperRecord {
+    primary() {
+        runMapper();
+    }
+
+    string validation() {
+        return checkOutput() ? OMQ::StatComplete : OMQ::StatRetry;
+    }
+}

@@ -1,0 +1,62 @@
+# -*- mode: qore; indent-tabs-mode nil -*-
+
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+#! SFTP polling job that creates a workflow order for each file polled
+class BBM_SftpPollerCreateOrderJob inherits QorusJob, BBM_SftpPollerCreateOrder {
+    private {
+        #! list of files polled
+        list<hash<auto>> poll_list;
+
+        #! file event keys to save for job info
+        const EventKeys = (
+            "name",
+            "size",
+            "transfer_fime",
+            "local_path",
+            "workflow_instanceid",
+            "remote_status",
+            "order_status",
+            "duplicate",
+        );
+    }
+
+    #! implements the job action
+    run() {
+        poll_list = ();
+        on_exit saveInfo(poll_list);
+        runOnce();
+    }
+
+    #! called for each matching file individually whenever matching files are polled with the list of matching file names; if any error occurs here, the error is logged and the polling operation is retried
+    /** @param fih a hash of file data and information with the following keys:
+        - \c name: the name of the file, link, or directory
+        - \c size: the size of the file in bytes
+        - \c uid: the UID of the owner of the file
+        - \c gid: the GID of the owner of the file
+        - \c mode: the permissions / mode of the file
+        - \c atime: the last accessed date/time of the file
+        - \c mtime: the last modified date/time of the file
+        - \c type: the type of file; one of: \c "REGULAR", \c "DIRECTORY", \c "SYMBOLIC-LINK", \c "BLOCK-DEVICE",
+          \c "CHARACTER-DEVICE", \c "FIFO", \c "SYMBOLIC-LINK", \c "SOCKET", or \c "UNKNOWN"
+        - \c perm: a string giving UNIX-style permissions for the file (ex: "-rwxr-xr-x")
+        - \c data: this key is only present if \c sftp-polling-file-connection not set; in this case the remote file
+          data is retrieved in memory and stored in this key as binary data
+        - \c filepath: the remote filepath relative to SFTP root directory
+        - \c local_path: this key is set to a string giving the local path where the file's data is stored if
+          config item \c sftp-polling-file-connection is set
+
+        If config item \c sftp-polling-delete-file is true, then the remote file is deleted here.
+
+        Otherwise, if \c sftp-polling-move-target is true, then the remove file is moved to the target location on the
+        remove server here.
+    */
+    hash<auto> postSingleFileEvent(hash<auto> event) {
+        event = BBM_SftpPollerCreateOrder::postSingleFileEvent(event);
+        poll_list += event{EventKeys};
+        return event;
+    }
+}

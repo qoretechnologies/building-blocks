@@ -1,0 +1,78 @@
+type: class
+name: BBM_HttpServiceGenericBase
+class-name: BBM_HttpServiceGenericBase
+base-class-name: QorusService
+version: "1.0"
+desc: base class for HTTP handler services
+author:
+  - Qore Technologies, s.r.o.
+code: BBM_HttpServiceGenericBase-v1.0.qclass
+config-items:
+  - name: http-listener-bind-address
+    type: "*string"
+    default_value: null
+    description: optional bind address for a dedicated listener; if not set, then it will bind on all Qorus system listeners as a global handler
+    strictly_local: true
+    config_group: HTTP/S Listener
+  - name: http-listener-cert-location
+    type: "*string"
+    default_value: null
+    description: "optional X.509 certificate location name for a dedicated listener; location
+      resolved with `UserApi::getTextFileFromLocation()` or `UserApi::getBinaryFileFromLocation()`
+      depending on the value of `http-listener-cert-format` (ex: `file://$OMQ_DIR/user/certs/my-cert.pem`)"
+    strictly_local: true
+    config_group: HTTP/S Listener
+  - name: http-listener-cert-format
+    type: "string"
+    default_value: "AUTO"
+    description: "possible values giving the format of the data defined by
+      `http-listener-cert-location`:\n- **`PEM`**: PEM format (text)\n- **`DER`**: DER format (binary)\n- **`AUTO`**: try to
+      determine the format automatically"
+    allowed_values: ["PEM", "DER", "AUTO"]
+    strictly_local: true
+    config_group: HTTP/S Listener
+  - name: http-listener-key-location
+    type: "*string"
+    default_value: null
+    description: "optional private key resource name for a dedicated listener; location resolved
+      with `UserApi::getTextFileFromLocation()` or `UserApi::getBinaryFileFromLocation()`
+      depending on the value of `http-listener-key-format` (ex: `file://$OMQ_DIR/user/certs/my-key.pem`)"
+    strictly_local: true
+    config_group: HTTP/S Listener
+  - name: http-listener-key-format
+    type: "string"
+    default_value: "AUTO"
+    description: "possible values giving the format of the data defined by
+      `http-listener-key-location`:\n- **`PEM`**: PEM format (text)\n- **`DER`**: DER format (binary)\n- **`AUTO`**: try to
+      determine the format automatically"
+    allowed_values: ["PEM", "DER", "AUTO"]
+    strictly_local: true
+    config_group: HTTP/S Listener
+  - name: http-listener-key-password
+    type: "*string"
+    default_value: null
+    description: optional password to PEM private key data for a dedicated listener
+    strictly_local: true
+    config_group: HTTP/S Listener
+  - name: http-listener-ssl-mode
+    type: string
+    default_value: NO-CLIENT-CERT-REQUIRED
+    description: set the SSL mode
+    allowed_values:
+      - REQUIRE-CLIENT-CERT
+      - NO-CLIENT-CERT-REQUIRED
+      - REQUEST-CLIENT-CERT
+    strictly_local: true
+    config_group: HTTP/S Listener
+  - name: http-listener-accept-all-certs
+    type: bool
+    default_value: true
+    description: flag to accept all client certificates
+    strictly_local: true
+    config_group: HTTP/S Listener
+  - name: http-listener-capture-client-certs
+    type: bool
+    default_value: true
+    description: flag to capture client certificates
+    strictly_local: true
+    config_group: HTTP/S Listener

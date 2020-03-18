@@ -1,3 +1,4 @@
+# TODO remove or rewrite to new YAML syntax (this syntax is not supported)
 groups:
     MailerWorkflowModuleGroup:
         desc: MailerWorkflowModule group
@@ -7,8 +8,7 @@ workflow:
     version: "1.0"
     author: Qore Technologies
     desc: Mailer workflow module
-    steps:
-        - "class:MailerWorkflowModule_SendMail:1.0"
+    steps: ["class:MailerWorkflowModule_SendMail:1.0"]
     groups:
         - MailerWorkflowModuleGroup
     workflow-modules:

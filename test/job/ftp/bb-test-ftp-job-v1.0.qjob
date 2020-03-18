@@ -1,0 +1,9 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+class BBM_TestFtpJob inherits BBM_FtpPollerCreateOrderJob {
+}

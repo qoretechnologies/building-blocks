@@ -16,7 +16,7 @@ our list<auto> steps = (
     {
         "name": "bb-test-db-remote-2-local-step:1.0",
         "desc": "BB test step",
-        "classname": "BB_TestDbRemote2LocalStep:1.0",
+        "classname": "BBM_TestDbRemote2LocalStep:1.0",
     },
 );
 

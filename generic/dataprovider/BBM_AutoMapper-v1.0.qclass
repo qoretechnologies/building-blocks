@@ -1,0 +1,36 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_AutoMapper {
+    private {
+        const RuntimeOpts = {
+            "automapper-input-search": "input_provider_search",
+            "automapper-input-search-options": "input_search_options",
+            "automapper-input-request": "input_request",
+            "automapper-input-request-options": "input_request_options",
+            "automapper-output-upsert": "output_provider_upsert",
+            "automapper-output-request-options": "output_request_options",
+        };
+    }
+
+    runMapper() {
+        string mapper_name = UserApi::getConfigItemValue("automapper-mapper-name");
+        *hash<auto> rtopts = getRuntimeOptions();
+        UserApi::logInfo("retrieving mapper %y with options: %y", mapper_name, rtopts);
+        Mapper mapper = UserApi::getMapper(mapper_name, rtopts);
+        mapper.runAutonomous();
+    }
+
+    *hash<auto> getRuntimeOptions() {
+        hash<auto> rtopts;
+        foreach hash<auto> i in (RuntimeOpts.pairIterator()) {
+            auto val = UserApi::getConfigItemValue(i.key);
+            if (exists val) {
+                rtopts{i.value} = val;
+            }
+        }
+        return rtopts;
+    }
+}

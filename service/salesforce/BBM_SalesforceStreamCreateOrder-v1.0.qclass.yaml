@@ -1,0 +1,55 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_SalesforceStreamCreateOrder
+desc: "base service class for Salesforce.com streaming API support"
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: BBM_SalesforceStreamBase
+class-name: BBM_SalesforceStreamCreateOrder
+lang: qore
+requires:
+  - BBM_SalesforceStreamBase
+  - BBM_CreateOrder
+version: "1.0"
+code: BBM_SalesforceStreamCreateOrder-v1.0.qclass
+config-items:
+  - name: sf-stream-options
+    parent:
+        interface-type: class
+        interface-name: BBM_SalesforceStreamBase
+        interface-version: "1.0"
+  - name: sf-stream-connection-name
+    parent:
+        interface-type: class
+        interface-name: BBM_SalesforceStreamBase
+        interface-version: "1.0"
+  - name: sf-stream-channel-names
+    parent:
+        interface-type: class
+        interface-name: BBM_SalesforceStreamBase
+        interface-version: "1.0"
+  - name: create-workflow-order-mapper
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-name
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-version
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-order-status
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-duplicate-handling
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: "1.0"

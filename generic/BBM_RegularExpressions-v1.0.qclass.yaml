@@ -1,0 +1,8 @@
+type: class
+name: BBM_RegularExpressions
+class-name: BBM_RegularExpressions
+version: "1.0"
+desc: generic object defining constants for regular expression configuration item handling
+author:
+  - Qore Technologies, s.r.o.
+code: BBM_RegularExpressions-v1.0.qclass

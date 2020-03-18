@@ -1,0 +1,85 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_FsEventBaseTest inherits QorusService {
+    *list<hash<auto>> get() {
+        return class_connections.get();
+    }
+
+    clear() {
+        class_connections.clear();
+    }
+
+    private {
+        ####### GENERATED SECTION! DON'T EDIT! ########
+        ClassConnections_BBM_FsEventBaseTest class_connections;
+        ############ GENERATED SECTION END ############
+    }
+
+    constructor() {
+        ####### GENERATED SECTION! DON'T EDIT! ########
+        class_connections = new ClassConnections_BBM_FsEventBaseTest();
+        ############ GENERATED SECTION END ############
+    }
+
+    ####### GENERATED SECTION! DON'T EDIT! ########
+    stop() {
+        class_connections.Stop();
+    }
+    ############ GENERATED SECTION END ############
+}
+
+####### GENERATED SECTION! DON'T EDIT! ########
+class ClassConnections_BBM_FsEventBaseTest inherits Observer { # has to inherit Observer because there is an event-based connector
+    private {
+        # map of prefixed class names to class instances
+        hash<auto> class_map;
+    }
+
+    constructor() {
+        class_map = {
+            "BBM_FsEventBase": new BBM_FsEventBase(),
+            "TestHashStore": new TestHashStore(),
+        };
+
+        # register observers
+        callClassWithPrefixMethod("BBM_FsEventBase", "registerObserver", self);
+    }
+
+    auto callClassWithPrefixMethod(string prefixed_class, string method) {
+        UserApi::logDebug("ClassConnections_BBM_FsEventBaseTest: callClassWithPrefixMethod: method: %s, class: %y", method, prefixed_class);
+        return call_object_method_args(class_map{prefixed_class}, method, argv);
+    }
+
+    # @override Observer's update()
+    update(string id, hash<auto> params) {
+        if (id == "BBM_FsEventBase::fileEvent") {
+            Event(params);
+        }
+    }
+
+    auto Event(*hash<auto> params) {
+        UserApi::logDebug("Event called with data: %y", params);
+
+        UserApi::logDebug("calling store: %y", params);
+        return callClassWithPrefixMethod("TestHashStore", "store", params);
+    }
+
+    auto Stop(*hash<auto> params) {
+        UserApi::logDebug("Stop called with data: %y", params);
+
+        UserApi::logDebug("calling stop: %y", params);
+        return callClassWithPrefixMethod("BBM_FsEventBase", "stop", params);
+    }
+
+    *list<hash<auto>> get() {
+        return class_map.TestHashStore.get();
+    }
+
+    clear() {
+        class_map.TestHashStore.clear();
+    }
+}
+############ GENERATED SECTION END ############

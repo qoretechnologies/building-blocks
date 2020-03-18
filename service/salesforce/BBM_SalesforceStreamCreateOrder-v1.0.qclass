@@ -1,0 +1,24 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_SalesforceStreamCreateOrder inherits BBM_SalesforceStreamBase, private BBM_CreateOrder {
+    #! Event information from salesforce will be passed here as it occurs
+    /** @param mh message data has the following format:
+        - \c event (hash)
+            - \c createdDate (string)
+            - \c replayId (int)
+            - \c type (string; ex: \c "updated")
+        - \c sobject (hash)
+            - \c Id (string)
+            - other keys according to the event
+    */
+    private messageCallbackImpl(hash<auto> mh) {
+        UserApi::logInfo("WF INPUT MESSAGE: %N", mh);
+        createWorkflowOrder(mh);
+    }
+}
+# END

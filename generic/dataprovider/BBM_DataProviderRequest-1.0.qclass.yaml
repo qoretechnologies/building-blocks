@@ -1,0 +1,77 @@
+# This is a generated file, don't edit!
+type: class
+base-class-name: BBM_DataProviderRequestBase
+class-name: BBM_DataProviderRequest
+desc: "building block for request-based data providers; the request message body is created from a configuration item"
+lang: qore
+name: BBM_DataProviderRequest
+version: "1.0"
+requires:
+  - BBM_DataProviderRequestBase
+code: BBM_DataProviderRequest-1.0.qclass
+class-connectors:
+  - name: DataProvider Request
+    method: makeDataProviderRequestConnector
+    type: input-output
+config-items:
+  - name: dataprovider-request-provider-path
+    config_group: Data Provider Request Main
+    description: "the path to the data provider to use for the request"
+    strictly_local: true
+  - name: dataprovider-request-input
+    config_group: Data Provider Request Main
+    description: "the input value for the request; either this item or *dataprovider-request-mapper*
+      must be provided to specify the request body"
+    strictly_local: true
+    type: "any"
+    default_value: null
+  - name: dataprovider-request-mapper
+    config_group: Data Provider Request Main
+    description: "the name of the mapper; either this item or *dataprovider-request-input*
+      must be provided to specify the request body"
+    strictly_local: true
+    type: "*string"
+    default_value: null
+  - name: dataprovider-request-options
+    config_group: Data Provider Request Main
+    description: "any request options"
+    strictly_local: true
+    type: "*hash"
+    default_value: null
+  - name: dataprovider-request-id-location
+    config_group: Data Provider Request Main
+    type: "*string"
+    default_value: null
+    description: >
+      location in the response for the unique ID; `-` means the entire response is the ID;
+      if this config item is set, and no value is found in the response at the location
+      given here, an exception is thrown
+    strictly_local: true
+  - name: dataprovider-request-body-remove-nulls
+    config_group: Data Provider Request Main
+    type: bool
+    default_value: false
+    description: >
+      if true then any empty key values in the request body will be removed before
+      sending the request to the server
+    strictly_local: true
+
+  - name: dataprovider-request-output-data
+    type: "*hash"
+    default_value: null
+    description: >
+      the configuration of output data; the response hash is passed as input to the
+      `UserApi::updateOutputData()` method; if the response is not a hash itself, it
+      will be available in the `value` key of the output data passed to this method
+    strictly_local: true
+    config_group: Data Provider Post Processing
+
+  - name: dataprovider-request-id-log-msg
+    type: string
+    default_value: "response ID: $local:{response-id}"
+    description: >
+      a string giving a log message for successful retrieval of the ID identified by
+      *dataprovider-request-id-location*; this ID can be referred to as `$local:{response-id}`
+      in the template string
+    strictly_local: true
+    config_group: Data Provider Cosmetic

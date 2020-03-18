@@ -1,0 +1,77 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+#! the main REST handler class
+class AwsIotRestHandlerBase inherits BBM_RestHandlerBase {
+    # handle AWS subscription confimation messages automatically
+    hash<HttpHandlerResponseInfo> post(hash<auto> cx, *hash<auto> ah) {
+        logDebug("cx: %N ah: %N", cx, ah);
+        if (cx.body.typeCode() == NT_STRING && !ah) {
+            auto val;
+            try {
+                val = parse_json(cx.body);
+                # parse embedded message if present
+                if (val.Message) {
+                    val.Message = parse_json(val.Message);
+                }
+            } catch (hash<ExceptionInfo> ex) {
+                return RestHandler::makeResponse(400, "invalid JSON string in POST body: %s: %s (body: %y)", ex.err, ex.desc, cx.body);
+            }
+            if (val.typeCode() != NT_HASH) {
+                return RestHandler::makeResponse(400, "POST body type is %y; expecting \"hash\" (body: %y)", val.type(), val);
+            }
+
+            ah = val;
+        }
+        if (!exists ah.Type) {
+            return RestHandler::makeResponse(400, "invalid POST; missing message Type");
+        }
+
+        if (ah.Type && ah.Message) {
+            logInfo("AWS %y msg: %y", ah.Type, ah.Message);
+        }
+        try {
+            switch (ah.Type) {
+                case "SubscriptionConfirmation": {
+                    return processSubscriptionConfirmation(cx, ah);
+                }
+                case "Notification": {
+                    return processNotification(cx, ah);
+                }
+                default:
+                    logInfo("cannot process unknown message type %y (msg: %y)", ah.Type, ah);
+                    return RestHandler::makeResponse(400, "unsupported message type: %y", ah.Type);
+            }
+        } catch (hash<ExceptionInfo> ex) {
+            logError("%s", get_exception_string(ex));
+            return RestHandler::makeResponse(500, sprintf("%s: %s", ex.err, ex.desc));
+        }
+    }
+
+    private hash<HttpHandlerResponseInfo> processSubscriptionConfirmation(hash<auto> cx, hash<auto> ah) {
+        # get the subscribe URL and make a request
+        string url = ah.SubscribeURL;
+        if (ServiceApi::getConfigItemValue("aws-sns-confirm-subscription")) {
+            logInfo("%y: confirming URL %y", ah.Type, url);
+            HTTPClient hc({"url": url});
+            hc.get("");
+            return RestHandler::makeResponse(200, "OK");
+        } else {
+            logInfo("%y: not confirming URL %y due to 'aws-sns-confirm-subscription' setting", ah.Type, url);
+            return RestHandler::makeResponse(400, "aws-sns-confirm-subscription disabled");
+        }
+    }
+
+    private hash<HttpHandlerResponseInfo> processNotification(hash<auto> cx, hash<auto> ah) {
+        return processNotificationImpl(cx, ah);
+    }
+
+    abstract private hash<HttpHandlerResponseInfo> processNotificationImpl(hash<auto> cx, *hash<auto> ah);
+} # AwsIotRestHandlerBase
+
+class BBM_AwsSnsServiceBase inherits BBM_RestServiceBase {
+}

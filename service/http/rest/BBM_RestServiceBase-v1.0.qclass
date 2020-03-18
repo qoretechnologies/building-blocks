@@ -1,0 +1,116 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+# import the Swagger module for Swagger / OpenAPI 2.0 REST schema validation
+%requires Swagger
+
+#! The base CORS-handling code
+class BBM_CorsBase {
+    #! Returns a response to the OPTIONS method if CORS is enabled, otherwise returns an error
+    hash<HttpHandlerResponseInfo> options(hash<auto> cx, *hash<auto> ah) {
+        # check if CORS is enabled
+        *hash<auto> hdr = getCorsResponseHeaders(cx);
+        if (hdr) {
+            # return a CORS response
+            return RestHandler::makeResponse(200, NOTHING, hdr);
+        }
+
+        # see if alternate methods would work
+        list<string> hl = map $1.key, RestHandler::Methods.pairIterator(),
+            $1.key != "OPTIONS" && self.hasCallableMethod($1.value + cx.rest_method);
+        # if we have alternate methods, return an appropriate 405 Method Not Allowed error
+        if (hl) {
+            string desc = sprintf("HTTP method %s is unimplemented in REST class %y (%s)", cx.hdr.method, name(),
+                self.className());
+            if (cx.orig_method)
+                desc += sprintf(" REST method %y", cx.orig_method);
+            string ml = foldl $1 + "," + $2, hl;
+            desc += sprintf(", available methods: %s", ml);
+            return cast<hash<HttpHandlerResponseInfo>>(
+                HttpServer::AbstractHttpRequestHandler::makeResponse({"Allow": ml}, 405, desc)
+            );
+        }
+
+        # otherwise return a 501 Not Implemeneted response
+        return cast<hash<HttpHandlerResponseInfo>>(RestHandler::make501("REST class %y (%s) does not "
+            "implement method %y", name(), self.className(), "options"));
+    }
+
+    #! Returns CORS headers for the request if CORS is enabled, otherwise returns @ref NOTHING
+    *hash<auto> getCorsResponseHeaders(hash<auto> cx) {
+        if (UserApi::getConfigItemValue("rest-cors-enable")) {
+            # IMPLEMENTME: check origin
+            return getCorsResponseHeadersIntern(cx);
+        }
+    }
+
+    #! Returns CORS headers for the request; assumes CORS is enabled and the origin is allowed
+    hash<auto> getCorsResponseHeadersIntern(hash<auto> cx) {
+        hash<auto> hdr = {
+            "Access-Control-Allow-Methods": (foldl $1 + ", " + $2, UserApi::getConfigItemValue("rest-cors-methods")),
+            "Access-Control-Max-Age": UserApi::getConfigItemValue("rest-cors-max-age").toString(),
+            "Access-Control-Allow-Origin": cx.hdr.origin ?? "*",
+            "Vary": "Origin",
+        };
+        *list<auto> allow_headers = UserApi::getConfigItemValue("rest-cors-headers");
+        if (allow_headers) {
+            hdr."Access-Control-Allow-Headers" = (foldl $1 + ", " + $2, allow_headers);
+        }
+        if (UserApi::getConfigItemValue("rest-cors-credentials")) {
+            hdr."Access-Control-Allow-Credentials" = "true";
+        }
+        return hdr;
+    }
+
+    #! Returns the current REST URI path element name
+    abstract string name();
+}
+
+#! The base request handler class
+class BBM_RestClass inherits AbstractRestClass, BBM_CorsBase {
+}
+
+#! The base REST handler class
+class BBM_RestHandlerBase inherits AbstractServiceRestHandler, BBM_HttpAuthenticatorBase, BBM_CorsBase {
+    #! Creates the object
+    constructor(AbstractAuthenticator auth = BBM_HttpAuthenticatorBase::getAuthenticator("rest-auth-name"))
+        : AbstractServiceRestHandler(
+        ServiceApi::getConfigItemValue("rest-root-uri"),
+        False,
+        auth,
+        BBM_RestHandlerBase::getSwaggerSchema()) {
+    }
+
+    #! Returns the Swagger schema, if any
+    private static *SwaggerSchema getSwaggerSchema() {
+        *string schema = ServiceApi::getConfigItemValue("rest-swagger-schema");
+        if (!schema) {
+            return;
+        }
+        # add "resource://" prefix to string if it is not a location
+        if (schema !~ /\w+:\/\//) {
+            schema = "resource://" + schema;
+        }
+        return SwaggerLoader::fromString(UserApi::getTextFileFromLocation(schema));
+    }
+
+    hash<HttpResponseInfo> handleRequest(HttpListenerInterface listener, Socket s, hash<auto> cx, hash<auto> hdr, *data b) {
+        hash<HttpResponseInfo> rv = AbstractServiceRestHandler::handleRequest(listener, s, cx, hdr, b);
+        if ((rv."code" / 100) == 2) {
+            rv.hdr += getCorsResponseHeaders(cx);
+        }
+        return rv;
+    }
+
+    string name() {
+        return "/";
+    }
+}
+
+#! The REST service base class; includes a parametrized handler class as well
+class BBM_RestServiceBase inherits BBM_HttpServiceGenericBase {
+}

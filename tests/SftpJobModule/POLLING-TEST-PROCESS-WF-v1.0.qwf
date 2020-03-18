@@ -1,3 +1,4 @@
+# TODO remove or rewrite to new YAML syntax (this syntax is not supported)
 workflow:
     name: "POLLING-TEST-PROCESS-WF"
     author: "Qore Technologies s.r.o."
@@ -6,10 +7,6 @@ workflow:
     workflow-modules: ["SftpWorkflowModule",]
     keylist: ["file_id", "file_name", "parent_jiid",]
     steps:
-        - name: "PollingTestProcess_MoveFileToProcessing:1.0"
-          classname: "PollingTestProcess_MoveFileToProcessing"
-        - name: "PollingTestProcess_DownloadToLocal:1.0"
-          classname: "PollingTestProcess_DownloadToLocal"
-        - name: "PollingTestProcess_UploadFile:1.0"
-          classname: "PollingTestProcess_UploadFile"
+      ["class:PollingTestProcess_MoveFileToProcessing:1.0", "class:PollingTestProcess_DownloadToLocal:1.0",
+       "class:PollingTestProcess_UploadFile:1.0"]
 

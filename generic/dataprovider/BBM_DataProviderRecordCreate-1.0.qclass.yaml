@@ -1,0 +1,48 @@
+# This is a generated file, don't edit!
+type: class
+base-class-name: BBM_DataProviderRecordCreateBase
+class-name: BBM_DataProviderRecordCreate
+desc: "building block for record-based data providers"
+lang: qore
+name: BBM_DataProviderRecordCreate
+version: "1.0"
+code: BBM_DataProviderRecordCreate-1.0.qclass
+requires:
+  - BBM_DataProviderRecordCreateBase
+class-connectors:
+  - name: DataProvider Record Create
+    method: makeDataProviderRecord CreateConnector
+    type: input-output
+config-items:
+  - name: dataprovider-create-provider-path
+    config_group: Data Provider Record Create Main
+    description: "the path to the data provider to use to create the record; must identify a record-based data provider"
+    strictly_local: true
+  - name: dataprovider-create-input
+    config_group: Data Provider Record Create Main
+    description: "the value for the record; either this item or *dataprovider-create-mapper* (or both)
+      must be provided to specify the record"
+    strictly_local: true
+    type: "*hash"
+    default_value: null
+  - name: dataprovider-create-mapper
+    config_group: Data Provider Record Create Main
+    description: "the name of the mapper; either this item or *dataprovider-create-input* (or both)
+      must be provided to specify the record"
+    strictly_local: true
+    type: "*string"
+    default_value: null
+  - name: dataprovider-create-options
+    config_group: Data Provider Record Create Main
+    description: "any record creation options"
+    strictly_local: true
+    type: "*hash"
+    default_value: null
+  - name: dataprovider-create-output-data
+    type: "*hash"
+    default_value: null
+    description: >
+      the configuration of output data; the record data as input to the
+      `UserApi::updateOutputData()` method
+    strictly_local: true
+    config_group: Data Provider Record Post Processing

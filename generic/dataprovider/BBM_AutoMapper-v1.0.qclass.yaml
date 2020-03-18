@@ -1,0 +1,46 @@
+# This is a generated file, don't edit!
+type: class
+author:
+  - Qore Technologies, s.r.o.
+class-name: BBM_AutoMapper
+desc: "base class for running a mapper in autonomous mode"
+lang: qore
+name: BBM_AutoMapper
+version: "1.0"
+code: BBM_AutoMapper-v1.0.qclass
+config-items:
+  - name: automapper-mapper-name
+    description: "the name of the mapper"
+    strictly_local: true
+    config_group: Auto Mapper Config
+  - name: automapper-input-request
+    config_group: Auto Mapper Input Options
+    description: "the arguments for input providers using the request/response API"
+    default_value: null
+    type: "*hash"
+  - name: automapper-input-request-options
+    config_group: Auto Mapper Input Options
+    description: "any options to input providers using the request/response API"
+    default_value: null
+    type: "*hash"
+  - name: automapper-input-search
+    config_group: Auto Mapper Input Options
+    description: "a hash of search options for the input provider"
+    default_value: null
+    type: "*hash"
+  - name: automapper-input-search-options
+    config_group: Auto Mapper Input Options
+    default_value: null
+    description: "input provider search options"
+    type: "*hash"
+  - name: automapper-output-upsert
+    config_group: Auto Mapper Output Options
+    default_value: false
+    description: "a flag to enable upserting instead of creating records"
+    type: bool
+  - name: automapper-output-request-options
+    config_group: Auto Mapper Output Options
+    default_value: null
+    description: "any options to output providers using the request/response API"
+    type: "*hash"
+

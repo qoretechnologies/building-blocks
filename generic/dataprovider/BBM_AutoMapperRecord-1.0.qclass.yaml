@@ -1,0 +1,56 @@
+# This is a generated file, don't edit!
+type: class
+base-class-name: BBM_AutoMapper
+class-name: BBM_AutoMapperRecord
+desc: "Mapper building block in autonomous mode with record-based recovery logic"
+lang: qore
+name: BBM_AutoMapperRecord
+requires:
+  - BBM_AutoMapper
+version: "1.0"
+code: BBM_AutoMapperRecord-1.0.qclass
+config-items:
+  - name: automapper-mapper-name
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: "1.0"
+  - name: automapper-recovery-field
+    config_group: Auto Mapper Recovery
+    description: "the name of the field to check when recovering"
+    strictly_local: true
+    type: "*string"
+  - name: automapper-recovery-value-template
+    config_group: Auto Mapper Recovery
+    description: "the value to search for when recovering"
+    strictly_local: true
+  - name: automapper-input-request
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: "1.0"
+  - name: automapper-input-request-options
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: "1.0"
+  - name: automapper-input-search
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: "1.0"
+  - name: automapper-input-search-options
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: "1.0"
+  - name: automapper-output-upsert
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: "1.0"
+  - name: automapper-output-request-options
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: "1.0"

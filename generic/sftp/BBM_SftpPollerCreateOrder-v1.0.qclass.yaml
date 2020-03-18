@@ -1,0 +1,134 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_SftpPollerCreateOrder
+desc: "class for polling for files from an SFTP server and creating a workflow order from them"
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: BBM_SftpPollerBase
+class-name: BBM_SftpPollerCreateOrder
+lang: qore
+requires:
+  - BBM_SftpPollerBase
+  - BBM_CreateOrder
+version: "1.0"
+code: BBM_SftpPollerCreateOrder-v1.0.qclass
+config-items:
+  - name: create-workflow-order-mapper
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-name
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-version
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-order-status
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-duplicate-handling
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: "1.0"
+  - name: sftp-polling-connection-name
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: "1.0"
+  - name: sftp-polling-mask
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: "1.0"
+  - name: sftp-polling-mask-regex
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: "1.0"
+  - name: sftp-polling-regex-options
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: "1.0"
+  - name: sftp-polling-file-connection
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: "1.0"
+  - name: sftp-polling-file-name
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: "1.0"
+  - name: sftp-polling-file-temp-template
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: "1.0"
+  - name: sftp-polling-minage
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: "1.0"
+  - name: sftp-polling-encoding
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: "1.0"
+  - name: sftp-polling-delete-file
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: "1.0"
+  - name: sftp-polling-move-target
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: "1.0"
+  - name: sftp-polling-duplicate-file-connection
+    default_value:
+        null
+    type: "*string"
+    description: "\"the name of a local file connection where to save duplicate files; \"sftp-polling-duplicate-file-name\" can be set to give a subdirectory path offset from the connection\"\n"
+    strictly_local: true
+    config_group: SFTP Polling Workflow Creation Duplicate File Handling
+  - name: sftp-polling-duplicate-name-template
+    default_value:
+        "$local:name-$timestamp:{YYYY-MM-DD HH:mm:SS.xx}"
+    description: "\"the filename template for the target file when moving duplicate files; only used if \"sftp-polling-file-connection\" and \"sftp-polling-duplicate-file-connection\" are set; the filesystem event info is available in the local context; this configuration item can also be used to provide a subdirectory from the file connection in which to store duplicate files\"\n"
+    strictly_local: true
+    config_group: SFTP Polling Workflow Creation Duplicate File Handling
+  - name: sftp-polling-duplicate-workflow-name
+    default_value:
+        null
+    type: "*string"
+    description: "\"the name of the workflow for duplicate file handling; if not set (the default), no workflow order will be created; only used if \"sftp-polling-file-connection\" and \"sftp-polling-duplicate-order-mapper\" are also set\"\n"
+    strictly_local: true
+    config_group: SFTP Polling Workflow Creation Duplicate File Handling
+  - name: sftp-polling-duplicate-workflow-version
+    default_value:
+        null
+    type: "*string"
+    description: "the version of the workflow for duplicate file handling; if not set (the default), the latest version will be used\"\n"
+    strictly_local: true
+    config_group: SFTP Polling Workflow Creation Duplicate File Handling
+  - name: sftp-polling-duplicate-order-mapper
+    default_value:
+        null
+    type: "*string"
+    description: "\"the mapper for creating duplicate orders, only used if \"sftp-polling-file-connection\" and \"sftp-polling-duplicate-order-mapper\" are also set; the local file path is available as \"$local:local_path\" and if \"sftp-polling-duplicate-file-connection\" is set, then the new name is available as \"$local:new_name\"\"\n"
+    strictly_local: true
+    config_group: SFTP Polling Workflow Creation Duplicate File Handling
+  - name: create-workflow-output-data
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: "1.0"

@@ -1,0 +1,39 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_AutoMapperRecord inherits BBM_AutoMapper {
+    public {
+        const RecoveryFieldItemName = "automapper-recovery-field";
+    }
+
+    #! returns True if output data is present, False if not
+    bool checkOutput() {
+        *string field_name = UserApi::getConfigItemValue(RecoveryFieldItemName);
+        if (!exists field_name) {
+            UserApi::logInfo("recovery config item %y is not set; retrying", RecoveryFieldItemName);
+            return False;
+        }
+
+        # get mapper name
+        string mapper_name = UserApi::getConfigItemValue("automapper-mapper-name");
+        Mapper mapper = UserApi::getMapper(mapper_name);
+        AbstractDataProvider output_provider = mapper.getOutputProvider();
+
+        auto value = UserApi::getConfigItemValue("automapper-recovery-value-template");
+
+        hash<auto> where_hash = {
+            field_name: value,
+        };
+
+        *hash<auto> row = output_provider.searchSingleRecord(where_hash);
+        if (row) {
+            UserApi::logInfo("found data with %y = %y; transfer is already COMPLETE", field_name, value);
+            return True;
+        }
+
+        UserApi::logInfo("no data found with %y = %y; transfer will be retried", field_name, value);
+        return False;
+    }
+}

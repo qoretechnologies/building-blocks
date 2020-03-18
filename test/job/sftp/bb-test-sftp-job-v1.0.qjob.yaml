@@ -1,0 +1,137 @@
+# This is a generated file, don't edit!
+type: job
+name: bb-test-sftp-job
+desc: "class-based test job"
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: BBM_SftpPollerCreateOrderJob
+class-name: BBM_TestSftpJob
+classes:
+  - BBM_SftpPollerCreateOrderJob
+groups:
+  - test
+  - bb-test
+lang: qore
+mappers:
+  - bb-test-sftp-job:1.0
+  - bb-test-sftp-job-duplicate:1.0
+run-skipped: true
+schedule:
+    minutes: "*/10"
+    hours: "*"
+    days: "*"
+    months: "*"
+    dow: "*"
+version: "1.0"
+code: bb-test-sftp-job-v1.0.qjob
+config-items:
+  - name: create-workflow-order-mapper
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: create-workflow-name
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: create-workflow-version
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: create-workflow-order-status
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: create-workflow-duplicate-handling
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: sftp-polling-connection-name
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: sftp-polling-mask
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: sftp-polling-mask-regex
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: sftp-polling-regex-options
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: sftp-polling-file-connection
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: sftp-polling-file-name
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: sftp-polling-file-temp-template
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: sftp-polling-minage
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: sftp-polling-encoding
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: sftp-polling-delete-file
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: sftp-polling-move-target
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: sftp-polling-duplicate-file-connection
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: sftp-polling-duplicate-name-template
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: sftp-polling-duplicate-workflow-name
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: sftp-polling-duplicate-workflow-version
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: sftp-polling-duplicate-order-mapper
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"
+  - name: create-workflow-output-data
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrderJob
+        interface-version: "1.0"

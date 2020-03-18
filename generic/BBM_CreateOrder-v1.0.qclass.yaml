@@ -1,0 +1,64 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_CreateOrder
+desc: "base class for creating a workflow order from an interface building block"
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: createOrder
+    input-provider:
+        name: qoretechnologies
+        path: /building-blocks/create-order/request
+        type: type
+    method: createWorkflowOrderConnector
+    output-provider:
+        name: qoretechnologies
+        path: /qorus-api/create-order/response
+        type: type
+    type: input-output
+class-name: BBM_CreateOrder
+lang: qore
+version: "1.0"
+code: BBM_CreateOrder-v1.0.qclass
+config-items:
+  - name: create-workflow-order-mapper
+    default_value:
+        null
+    config_group: Create Workflow Order
+    description: "the name of the mapper to create the workflow order data"
+    strictly_local: true
+    type: "*string"
+  - name: create-workflow-name
+    description: "the name of the workflow"
+    strictly_local: true
+    config_group: Create Workflow Order
+  - name: create-workflow-version
+    default_value:
+        null
+    type: "*string"
+    description: "the version of the workflow; if not set (the default), the latest version will be used"
+    strictly_local: true
+    config_group: Create Workflow Order
+  - name: create-workflow-duplicate-handling
+    default_value:
+        "SUCCESS"
+    description: "how should workflows with duplicate unique keys be handled:\n - `SUCCESS`: the workflow order instance ID is returned normally\n - `DUPLICATE`: the `DUPLICATE-ORDER-KEY` exception is rethrown"
+    strictly_local: true
+    allowed_values:
+      - "SUCCESS"
+      - "DUPLICATE"
+    config_group: Create Workflow Order Recovery
+  - name: create-workflow-output-data
+    default_value:
+        null
+    config_group: Create Workflow Order Post Processing
+    description: "the configuration of output data for `UserApi::updateOutputData()`; the output data will include a `workflow_instanceid` key with the ID created for the new workflow order and a `duplicate` key with a boolean value indicating if the order is a duplicate order (only `True` if `create-workflow-duplicate-handling` = `SUCCESS`"
+    strictly_local: true
+    type: "*hash"
+  - name: create-workflow-order-status
+    default_value:
+        null
+    config_group: Create Workflow Order
+    description: "override any status information in the order data"
+    strictly_local: true
+    type: "*string"

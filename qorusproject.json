@@ -1,0 +1,52 @@
+{
+    "qorus_instances": {
+        "David - Greybeard": [
+            {
+                "name": "greybeard-1",
+                "url": "https://localhost:8002",
+                "custom_urls": []
+            },
+            {
+                "name": "OL8 VM",
+                "url": "http://el8.local:8011",
+                "custom_urls": []
+            },
+            {
+                "name": "Kubuntu VM",
+                "url": "https://kubuntu.local:8011",
+                "custom_urls": []
+            },
+            {
+                "name": "CentOS 7 VM",
+                "url": "https://el7.local:8011",
+                "custom_urls": []
+            }
+        ],
+        "HQ": [
+            {
+                "name": "rippy main",
+                "url": "https://admin:admin@rippy:8092",
+                "custom_urls": []
+            },
+            {
+                "name": "manatee",
+                "url": "https://manatee:8001=2",
+                "custom_urls": []
+            }
+        ],
+        "David - Home Office": [
+            {
+                "name": "meteor",
+                "url": "https://localhost:8011",
+                "custom_urls": []
+            }
+        ]
+    },
+    "source_directories": [
+        "generic",
+        "service",
+        "job",
+        "step",
+        "test"
+    ]
+}

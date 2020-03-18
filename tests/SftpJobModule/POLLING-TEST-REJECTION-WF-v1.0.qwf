@@ -1,3 +1,4 @@
+# TODO remove or rewrite to new YAML syntax (this syntax is not supported)
 workflow:
     name: "POLLING-TEST-REJECTION-WF"
     author: "Qore Technologies s.r.o."
@@ -5,6 +6,4 @@ workflow:
     desc: "XXX"
     workflow-modules: ["SftpWorkflowModule",]
     keylist: ["file_name", "parent_jiid",]
-    steps:
-        - name: "PollingTestRejection_MoveFileToRejected:1.0"
-          classname: "PollingTestRejection_MoveFileToRejected"
+    steps: ["class:PollingTestRejection_MoveFileToRejected:1.0"]

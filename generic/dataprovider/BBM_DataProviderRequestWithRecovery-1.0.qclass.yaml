@@ -1,0 +1,111 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_DataProviderRequestWithRecovery
+desc: "building block for request-based data providers with recovery logic; supports recovery with a single value"
+base-class-name: BBM_DataProviderRequest
+class-connectors:
+  - name: DataProvider Request
+    method: makeDataProviderRequestConnector
+    type: input-output
+  - name: DataProvider Request Validation
+    method: makeDataProviderRequestValidationConnector
+    type: output
+class-name: BBM_DataProviderRequestWithRecovery
+lang: qore
+requires:
+  - BBM_DataProviderRequest
+version: "1.0"
+code: BBM_DataProviderRequestWithRecovery-1.0.qclass
+config-items:
+  - name: dataprovider-request-recovery-provider-path
+    config_group: Data Provider Request Recovery
+    description: "the path to the data provider to use for the request"
+    strictly_local: true
+  - name: dataprovider-request-recovery-input
+    default_value:
+        null
+    config_group: Data Provider Request Recovery
+    description: "the input value for the recovery request; either this item or *dataprovider-request-recovery-mapper* must be provided to specify the request body"
+    strictly_local: true
+    type: "any"
+  - name: dataprovider-request-recovery-mapper
+    default_value:
+        null
+    config_group: Data Provider Request Main
+    description: "the name of the mapper; either this item or *dataprovider-request-recovery-input* must be provided to specify the request body"
+    strictly_local: true
+    type: "*string"
+  - name: dataprovider-request-recovery-options
+    default_value:
+        null
+    config_group: Data Provider Request Recovery
+    description: "any options for the recovery request"
+    strictly_local: true
+    type: "*hash"
+  - name: dataprovider-request-recovery-id-location
+    default_value:
+        null
+    config_group: Data Provider Request Recovery
+    type: "*string"
+    description: "location in the response for the unique ID; `-` means the entire response is the ID; if this config item is set, and no value is found in the response at the location given here, an exception is thrown\n"
+    strictly_local: true
+  - name: dataprovider-request-recovery-body-remove-nulls
+    default_value:
+        false
+    config_group: Data Provider Request Recovery
+    type: bool
+    description: "if true then any empty key values in the request body will be removed before sending the request to the server\n"
+    strictly_local: true
+  - name: dataprovider-request-recovery-output-data
+    default_value:
+        null
+    config_group: Data Provider Request Recovery
+    type: "*hash"
+    description: "the configuration of output data; the response hash is passed as input to the `UserApi::updateOutputData()` method; if the response is not a hash itself, it will be available in the `value` key of the output data passed to this method\n"
+    strictly_local: true
+  - name: dataprovider-request-recovery-id-log-msg
+    default_value:
+        "response ID: $local:{response-id}"
+    config_group: Data Provider Request Recovery Cosmetic
+    description: "a string giving a log message for successful retrieval of the ID identified by *dataprovider-request-recovery-id-location*; this ID can be referred to as `$local:{response-id}` in the template string\n"
+    strictly_local: true
+  - name: dataprovider-request-provider-path
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequest
+        interface-version: "1.0"
+  - name: dataprovider-request-input
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequest
+        interface-version: "1.0"
+  - name: dataprovider-request-mapper
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequest
+        interface-version: "1.0"
+  - name: dataprovider-request-options
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequest
+        interface-version: "1.0"
+  - name: dataprovider-request-id-location
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequest
+        interface-version: "1.0"
+  - name: dataprovider-request-body-remove-nulls
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequest
+        interface-version: "1.0"
+  - name: dataprovider-request-output-data
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequest
+        interface-version: "1.0"
+  - name: dataprovider-request-id-log-msg
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequest
+        interface-version: "1.0"

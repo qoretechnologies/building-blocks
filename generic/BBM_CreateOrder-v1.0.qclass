@@ -1,0 +1,147 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+#! for create order options
+hashdecl CreateOrderOptionInfo {
+    #! the workflow order status to use; overrides any status value in the input data if set
+    *string status = UserApi::getConfigItemValue("create-workflow-order-status");
+    #! the mapper to use
+    *string mapper = UserApi::getConfigItemValue("create-workflow-order-mapper");
+    #! the workflow name
+    string workflow = UserApi::getConfigItemValue("create-workflow-name");
+    #! the optional workflow version
+    *string version = UserApi::getConfigItemValue("create-workflow-version");
+    #! mapper options
+    *hash<auto> mapper_opts;
+}
+
+#! creates a workflow order from the input data according to the configuration
+/** supports atomic workflow order creation through handling \c DUPLICATE-ORDER-KEY exceptions thrown by
+    @ref UserApi::createOrder()
+
+    Configuration items:
+    - \c create-workflow-order-mapper: the mapper used to create the static order data for the order; the mapper
+      returns the value used for the @ref UserApi::createOrder() \a params option giving the new workflow order
+      information
+    - \c create-workflow-name: the name of the workflow to create the order for
+    - \c create-workflow-version: the optional version of the workflow, if not set, then an order will be created for
+      the latest version of the workflow
+    - \c create-workflow-duplicate-handling: set to determine how duplicate errors are handled; set to \c "SUCCESS" to
+      enable the @ref BBM_CreateOrder::createWorkflowOrder() method to return the workflow_instanceid in case a single
+      workflow_instanceid matches, set to \c "DUPLICATE" to throw a \c DUPLICATE-ORDER-KEY exception in all cases if
+      duplicates are found
+
+      @note No comparison of the order data is made in case of duplications; it is assumed that the data is identical
+
+    Connector types:
+    - \c input: \c qoretechnologies/building-blocks/create-order/input
+    - \c output: \c qoretechnologies/building-blocks/create-order/output
+*/
+class BBM_CreateOrder {
+    public {
+        const OutputItemName = "create-workflow-output-data";
+    }
+
+    #! creates the order with the input data, returns the workflow_instanceid of the order created
+    /** @param order_context_data the input data provided to the mapper (if the
+        \c create-workflow-order-mapper config item is defined) or used directly in the create order call, if no
+        mapper is defined
+        @param opts workflow order creation options; defaults set by config items
+        @param dup a reference to a bool, will be set to @ref True if the workflow order already exists according to
+        unique keys suppplied by the mapper
+
+        @return the workflow_instanceid of the order created
+
+        @throw DUPLICATE-ORDER-KEY if unique options are provided to the @ref UserApi::createOrder() call and more
+        than one order conflicts with the unique keys given, then this exception is thrown in all cases; this
+        exception is also thrown even with one match if the \c create-workflow-duplicate-handling config item is set
+        to \c "DUPLICATE"
+    */
+    static int createWorkflowOrder(hash<auto> order_context_data = {}, hash<CreateOrderOptionInfo> opts = <CreateOrderOptionInfo>{}, *reference<bool> dup) {
+        UserApi::logDebug("create workflow order ctx: %y opts: %y", order_context_data, opts);
+        hash<auto> order_data;
+        # create the workflow order with the mapper if applicable
+        if (opts.mapper) {
+            UserApi::logInfo("using mapper %y to process the order data (opts: %y)", opts.mapper, opts.mapper_opts);
+            Mapper mapper = UserApi::getMapper(opts.mapper, opts.mapper_opts);
+            order_data = mapper.mapData(order_context_data);
+        } else {
+            order_data = order_context_data;
+        }
+        return BBM_CreateOrder::createWorkflowOrderIntern(order_data, opts, \dup);
+    }
+
+    #! create order method suitable for use as an input/output connector
+    /** @param order_data the input order data; should have type
+        \c qoretechnologies/building-blocks/create-order/input
+
+        @return a hash (connector output type \c qoretechnologies/building-blocks/create-order/output) with the
+        following keys:
+        - \c workflow_instanceid the workflow instance ID of the order created
+        - \c duplicate a boolean flag: \c True if the order already existed (config item
+          \c create-workflow-duplicate-handling = \c SUCCESS), \c False if not
+    */
+    static hash<auto> createWorkflowOrderConnector(hash<auto> order_data) {
+        bool dup = False;
+        int wfiid = BBM_CreateOrder::createWorkflowOrderIntern(order_data, <CreateOrderOptionInfo>{}, \dup);
+        return {
+            "workflow_instanceid": wfiid,
+            "duplicate": dup,
+        };
+    }
+
+    #! method that creates the order data
+    static int createWorkflowOrderIntern(hash<auto> order_data, hash<CreateOrderOptionInfo> opts, *reference<bool> dup) {
+        UserApi::logDebug("create workflow order mapper %y mapped order data: %y", opts.mapper, order_data);
+
+        string wfdesc = opts.workflow;
+        if (opts.version) {
+            wfdesc += sprintf(" v%s", opts.version);
+        }
+
+        string status = opts.status ?? remove order_data.status ?? OMQ::StatReady;
+
+        dup = False;
+        softint workflow_instanceid;
+        try {
+            workflow_instanceid = UserApi::createOrder(
+                opts.workflow,
+                opts.version,
+                order_data,
+                status,
+            );
+            UserApi::logInfo("Created %s order instance id: %d with status %y", wfdesc, workflow_instanceid, status);
+        } catch (hash<ExceptionInfo> ex) {
+            if (ex.err == "DUPLICATE-ORDER-KEY" &&
+                UserApi::getConfigItemValue("create-workflow-duplicate-handling") == "SUCCESS") {
+                workflow_instanceid = ex.arg.workflow_instance_ids[0];
+                dup = True;
+                # check if there's only one order
+                if (ex.arg.workflow_instance_ids.size() == 1) {
+                    UserApi::logInfo(LL_INFO, "duplicate order detected: order instance ID %y was detected (%s: %s)",
+                        workflow_instanceid, ex.err, ex.desc);
+                } else {
+                    UserApi::logInfo("duplicate %s order error: %s: %s (ids: %y); returning the first ID as the "
+                        "duplicate ID", wfdesc, ex.err, ex.desc, ex.arg.workflow_instance_ids);
+                }
+            } else {
+                UserApi::logError("error creating %s order: %s: %s", wfdesc, ex.err, ex.desc);
+                rethrow;
+            }
+        }
+        # save output data if configured
+        *hash<auto> output_data = UserApi::getConfigItemValue(OutputItemName);
+        if (output_data) {
+            hash<auto> output_hash = {
+                "workflow_instanceid": workflow_instanceid,
+                "duplicate": dup,
+            };
+            UserApi::updateOutputData(output_hash, output_data);
+        }
+        return workflow_instanceid;
+    }
+}

@@ -1,0 +1,100 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_AwsSnsServiceBase
+desc: "Base IoT AWS SNS service class"
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: BBM_RestServiceBase
+class-name: BBM_AwsSnsServiceBase
+lang: qore
+requires:
+  - BBM_RestServiceBase
+version: "1.0"
+code: BBM_AwsSnsServiceBase-v1.0.qclass
+config-items:
+  - name: http-listener-bind-address
+    parent:
+        interface-type: class
+        interface-name: BBM_RestServiceBase
+        interface-version: "1.0"
+  - name: http-listener-cert-location
+    parent:
+        interface-type: class
+        interface-name: BBM_RestServiceBase
+        interface-version: "1.0"
+  - name: http-listener-cert-format
+    parent:
+        interface-type: class
+        interface-name: BBM_RestServiceBase
+        interface-version: "1.0"
+  - name: http-listener-key-location
+    parent:
+        interface-type: class
+        interface-name: BBM_RestServiceBase
+        interface-version: "1.0"
+  - name: http-listener-key-format
+    parent:
+        interface-type: class
+        interface-name: BBM_RestServiceBase
+        interface-version: "1.0"
+  - name: http-listener-key-password
+    parent:
+        interface-type: class
+        interface-name: BBM_RestServiceBase
+        interface-version: "1.0"
+  - name: http-listener-ssl-mode
+    parent:
+        interface-type: class
+        interface-name: BBM_RestServiceBase
+        interface-version: "1.0"
+  - name: http-listener-accept-all-certs
+    parent:
+        interface-type: class
+        interface-name: BBM_RestServiceBase
+        interface-version: "1.0"
+  - name: http-listener-capture-client-certs
+    parent:
+        interface-type: class
+        interface-name: BBM_RestServiceBase
+        interface-version: "1.0"
+  - name: rest-root-uri
+    parent:
+        interface-type: class
+        interface-name: BBM_RestServiceBase
+        interface-version: "1.0"
+  - name: rest-auth-name
+    parent:
+        interface-type: class
+        interface-name: BBM_RestServiceBase
+        interface-version: "1.0"
+  - name: rest-swagger-schema
+    parent:
+        interface-type: class
+        interface-name: BBM_RestServiceBase
+        interface-version: "1.0"
+  - name: aws-sns-confirm-subscription
+    default_value:
+        true
+    type: bool
+    description: "set to True to confirm AWS SNS subscription requests automatically"
+    config_group: AWS SNS
+  - name: rest-cors-enable
+    parent:
+        interface-type: class
+        interface-name: BBM_RestServiceBase
+        interface-version: "1.0"
+  - name: rest-cors-methods
+    parent:
+        interface-type: class
+        interface-name: BBM_RestServiceBase
+        interface-version: "1.0"
+  - name: rest-cors-max-age
+    parent:
+        interface-type: class
+        interface-name: BBM_RestServiceBase
+        interface-version: "1.0"
+  - name: rest-cors-headers
+    parent:
+        interface-type: class
+        interface-name: BBM_RestServiceBase
+        interface-version: "1.0"

@@ -1,0 +1,92 @@
+# This is a generated file, don't edit!
+type: class
+base-class-name: QorusNormalStep
+class-name: BBM_DataProviderRequestWithRecoveryStep
+requires:
+  - BBM_DataProviderRequestWithRecovery
+desc: "step based on the building block for request-based data providers with recovery logic"
+lang: qore
+name: BBM_DataProviderRequestWithRecoveryStep
+version: "1.0"
+code: BBM_DataProviderRequestWithRecoveryStep-1.0.qstep
+config-items:
+  - name: dataprovider-request-recovery-provider-path
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequestWithRecovery
+        interface-version: "1.0"
+  - name: dataprovider-request-recovery-input
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequestWithRecovery
+        interface-version: "1.0"
+  - name: dataprovider-request-recovery-mapper
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequestWithRecovery
+        interface-version: "1.0"
+  - name: dataprovider-request-recovery-options
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequestWithRecovery
+        interface-version: "1.0"
+  - name: dataprovider-request-recovery-id-location
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequestWithRecovery
+        interface-version: "1.0"
+  - name: dataprovider-request-recovery-body-remove-nulls
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequestWithRecovery
+        interface-version: "1.0"
+  - name: dataprovider-request-recovery-output-data
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequestWithRecovery
+        interface-version: "1.0"
+  - name: dataprovider-request-recovery-id-log-msg
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequestWithRecovery
+        interface-version: "1.0"
+  - name: dataprovider-request-provider-path
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequestWithRecovery
+        interface-version: "1.0"
+  - name: dataprovider-request-input
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequestWithRecovery
+        interface-version: "1.0"
+  - name: dataprovider-request-mapper
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequestWithRecovery
+        interface-version: "1.0"
+  - name: dataprovider-request-options
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequestWithRecovery
+        interface-version: "1.0"
+  - name: dataprovider-request-id-location
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequestWithRecovery
+        interface-version: "1.0"
+  - name: dataprovider-request-body-remove-nulls
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequestWithRecovery
+        interface-version: "1.0"
+  - name: dataprovider-request-output-data
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequestWithRecovery
+        interface-version: "1.0"
+  - name: dataprovider-request-id-log-msg
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRequestWithRecovery
+        interface-version: "1.0"

@@ -1,0 +1,19 @@
+# This is a generated file, don't edit!
+type: class
+name: TestHashStore
+desc: "takes hash info and stores it in a list"
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: store
+    input-provider:
+        can_manage_fields: true
+        name: qore
+        path: /hash
+        type: type
+    method: store
+    type: input
+class-name: TestHashStore
+lang: qore
+version: "1.0"
+code: TestHashStore-1.0.qclass

@@ -1,0 +1,124 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_SftpPollerCreateOrderJob
+desc: "base class for SFTP polling jobs that create workflow orders for files received"
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusJob
+class-name: BBM_SftpPollerCreateOrderJob
+lang: qore
+requires:
+  - BBM_SftpPollerCreateOrder
+version: "1.0"
+code: BBM_SftpPollerCreateOrderJob-v1.0.qclass
+config-items:
+  - name: create-workflow-order-mapper
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-name
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-version
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-order-status
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-duplicate-handling
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: sftp-polling-connection-name
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: sftp-polling-mask
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: sftp-polling-mask-regex
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: sftp-polling-regex-options
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: sftp-polling-file-connection
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: sftp-polling-file-name
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: sftp-polling-file-temp-template
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: sftp-polling-minage
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: sftp-polling-encoding
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: sftp-polling-delete-file
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: sftp-polling-move-target
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: sftp-polling-duplicate-file-connection
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: sftp-polling-duplicate-name-template
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: sftp-polling-duplicate-workflow-name
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: sftp-polling-duplicate-workflow-version
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: sftp-polling-duplicate-order-mapper
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"
+  - name: create-workflow-output-data
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: "1.0"

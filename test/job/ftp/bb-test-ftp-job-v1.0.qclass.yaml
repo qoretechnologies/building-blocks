@@ -1,0 +1,7 @@
+type: class
+version: "1.0"
+desc: test FTP job mapper code
+name: bb-test-ftp-job
+author:
+  - Qore Technologies, s.r.o.
+code: bb-test-ftp-job-v1.0.qclass

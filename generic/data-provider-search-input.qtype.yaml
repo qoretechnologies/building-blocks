@@ -1,0 +1,64 @@
+# This is a generated file, don't edit!
+type: type
+path: qoretechnologies/building-blocks/data-provider-search/input
+typeinfo:
+    base_type: hash<auto>
+    can_manage_fields: true
+    fields:
+        search_criteria:
+            canBeNull: true
+            desc: the search criteria keyed by field name
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: search_criteria
+            type:
+                base_type: hash<auto>
+                can_manage_fields: true
+                fields: {}
+                mandatory: false
+                name: '*hash<auto>'
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: '*hash'
+                types_accepted:
+                    - hash<auto>
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - hash<auto>
+                    - nothing
+        search_options:
+            canBeNull: true
+            desc: any search options supported by the data provider
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: search_options
+            type:
+                base_type: hash<auto>
+                can_manage_fields: true
+                fields: {}
+                mandatory: false
+                name: '*hash<auto>'
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: '*hash'
+                types_accepted:
+                    - hash<auto>
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - hash<auto>
+                    - nothing
+    name: hash<auto>
