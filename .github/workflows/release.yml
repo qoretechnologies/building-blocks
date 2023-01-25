@@ -52,7 +52,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Print checkout directory
-        run: ${GITHUB_WORKSPACE}
+        run: echo $GITHUB_WORKSPACE
       - name: Run the build process with Docker
         uses: public.ecr.aws/qorus/qorus-ce:latest
           with:
