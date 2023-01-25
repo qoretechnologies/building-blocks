@@ -44,8 +44,6 @@ jobs:
         run: |
           apt-get update
           apt install make -y
-          apt-get install -y gosu
-          rm -rf /var/lib/apt/lists/*
-          gosu nobody true
-          gosu make load-all
-          gosu make test
+          docker ps
+          make load-all
+          make test
