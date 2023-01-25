@@ -42,5 +42,7 @@ jobs:
     steps:
       - name: Build and test
         run: |
+          apt-get update
+          apt install make -y
           make load-all
           make test
