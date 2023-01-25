@@ -42,8 +42,6 @@ jobs:
     steps:
       - name: Build and test
         run: |
-          useradd -ms /bin/bash qorus:qorus
-          su qorus:qorus
           apt-get update
           apt-get install -y gosu
           rm -rf /var/lib/apt/lists/*
