@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: public.ecr.aws/qorus/qorus-ce:latest
+      user: qorus:qorus
     env:
       POSTGRES_PASSWORD: omq
       OMQ_DB_NAME: postgres
