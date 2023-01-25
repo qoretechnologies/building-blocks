@@ -46,5 +46,6 @@ jobs:
           apt install make -y
           pwd
           ls -l
+          find ~ -name Makefile
           make load-all -C ./Makefile
           make test
