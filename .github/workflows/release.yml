@@ -45,6 +45,6 @@ jobs:
           apt-get update
           apt install make -y
           pwd
-          ls -la
+          ls -l
           make load-all
           make test
