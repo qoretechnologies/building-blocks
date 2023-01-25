@@ -9,7 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: public.ecr.aws/qorus/qorus-ce:latest
-      user: qorus:qorus
     env:
       POSTGRES_PASSWORD: omq
       OMQ_DB_NAME: postgres
@@ -43,6 +42,8 @@ jobs:
     steps:
       - name: Build and test
         run: |
+          useradd -ms /bin/bash qorus:qorus
+          su qorus:qorus
           apt-get update
           apt-get install -y gosu
           rm -rf /var/lib/apt/lists/*
