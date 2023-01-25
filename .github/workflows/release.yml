@@ -8,7 +8,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     container:
-      image: public.ecr.aws/qorus/qorus-ce:latest
+      image: https://git.qoretechnologies.com/infrastructure/qore-test-base/-/blob/develop/prep-ubuntu.sh
     env:
       POSTGRES_PASSWORD: omq
       OMQ_DB_NAME: postgres
