@@ -42,9 +42,5 @@ jobs:
     steps:
       - name: Build and test
         run: |
-          apt-get update
-          apt-get install -y gosu
-          rm -rf /var/lib/apt/lists/*
-          gosu nobody true
-          gosu qorus:qorus make load-all
-          gosu qorus:qorus make test
+          make load-all
+          make test
