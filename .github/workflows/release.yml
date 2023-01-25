@@ -44,6 +44,7 @@ jobs:
         run: |
           apt-get update
           apt install make -y
-          docker ps
+          pwd
+          ls -la
           make load-all
           make test
