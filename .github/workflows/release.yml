@@ -51,7 +51,7 @@ jobs:
           apt install make -y
           pwd
           ls -l
-          make load-all -C ./Makefile
+          make load-all -f Makefile
           make test
 
       # - name: Run the build process with Docker
