@@ -46,12 +46,13 @@ jobs:
         run: echo $GITHUB_WORKSPACE
       - name: Build and test
         run: |
+          cat Makefile
           apt-get update
           apt install make -y
           pwd
           ls -l
           find ~ -name Makefile
-          make load-all -C ./Makefile
+          make load-all -C Makefile
           make test
 
       # - name: Run the build process with Docker
