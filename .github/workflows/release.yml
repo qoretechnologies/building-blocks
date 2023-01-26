@@ -46,24 +46,9 @@ jobs:
         run: echo $GITHUB_WORKSPACE
       - name: Build and test
         run: |
-          cat Makefile
           apt-get update
           apt install make -y
           pwd
           ls -l
           make load-all -f Makefile
-          make test
-
-      # - name: Run the build process with Docker
-      #   uses: public.ecr.aws/qorus/qorus-ce:latest
-      #     with:
-      #       image: aschmelyun/cleaver:latest
-      #         options: -v ${{ github.workspace }}:/var/www
-      #           run: |
-      #               apt-get update
-      #               apt install make -y
-      #               pwd
-      #               ls -l
-      #               find ~ -name Makefile
-      #               make load-all -C ./Makefile
-      #               make test
+          make test -f Makefile
