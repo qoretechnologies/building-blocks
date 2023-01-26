@@ -42,8 +42,6 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
-      - name: Print checkout directory
-        run: echo $GITHUB_WORKSPACE
       - name: Build and test
         run: |
           apt-get update
