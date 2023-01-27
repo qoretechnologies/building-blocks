@@ -45,7 +45,7 @@ jobs:
       - name: Build and test
         run: |
           . /opt/qorus/bin/env.sh
-          ls /opt/qorus/**/*
+          cat /opt/qorus/etc/option*
           apt-get update
           apt install make -y
           pwd
