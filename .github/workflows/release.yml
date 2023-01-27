@@ -42,12 +42,15 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
-      - name: Run env.sh
-        run: |
-          ls /opt/qorus/bin
-          sh /opt/qorus/bin/env.sh
       - name: Build and test
         run: |
+          - name: Build and test
+        run: |
+          . /opt/qorus/bin/env.sh
+          export QORUS_LOG_DIR="`pwd`/log"
+          $WORKDIR/qorus/test/docker_test/get_external_apps.sh
+          $WORKDIR/qorus/test/docker_test/init.sh
+          . $WORKDIR/qorus/test/docker_test/launch_qorus.sh
           apt-get update
           apt install make -y
           pwd
