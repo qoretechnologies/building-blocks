@@ -44,8 +44,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Run env.sh
         run: |
-          ls ./opt/qorus/bin
-          sh ./opt/qorus/bin/env.sh
+          ls /opt/qorus/bin
+          sh /opt/qorus/bin/env.sh
       - name: Build and test
         run: |
           apt-get update
