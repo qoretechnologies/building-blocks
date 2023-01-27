@@ -44,8 +44,6 @@ jobs:
         uses: actions/checkout@v2
       - name: Build and test
         run: |
-          - name: Build and test
-        run: |
           . /opt/qorus/bin/env.sh
           export QORUS_LOG_DIR="`pwd`/log"
           $WORKDIR/qorus/test/docker_test/get_external_apps.sh
