@@ -1,4 +1,4 @@
-# Release to master
+# Release to master pull request
 name: "Release building-blocks"
 on:
   pull_request:
