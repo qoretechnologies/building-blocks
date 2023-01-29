@@ -1,0 +1,37 @@
+# This is a generated file, don't edit!
+type: job
+name: bbm-delete-file-path-test
+desc: BBM_DeleteFilePath test
+lang: qore
+active: false
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusJob
+class-name: BBM_DeleteFilePathTest
+classes:
+  - BBM_DeleteFilePath
+remote: false
+schedule:
+    minutes: "0"
+    hours: "0"
+    days: "1"
+    months: "1"
+    dow: "*"
+version: '1.0'
+code: bbm-delete-file-path-test-1.0.qjob
+class-connections:
+    run:
+      - class: BBM_DeleteFilePath
+        connector: deleteFilePath
+        trigger: run
+config-items:
+  - name: delete-file-path
+    parent:
+        interface-type: class
+        interface-name: BBM_DeleteFilePath
+        interface-version: '1.0'
+  - name: delete-file-ignore-missing
+    parent:
+        interface-type: class
+        interface-name: BBM_DeleteFilePath
+        interface-version: '1.0'

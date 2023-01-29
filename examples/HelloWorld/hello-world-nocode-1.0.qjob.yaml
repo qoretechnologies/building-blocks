@@ -1,0 +1,31 @@
+# This is a generated file, don't edit!
+type: job
+name: example-hello-world-nocode
+desc: 'HelloWorld job that just logs "Hello, world!" with a no-code solution'
+lang: qore
+active: false
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusJob
+class-name: ExampleHelloWorldNocode
+fsm:
+    [
+        {
+            "name": "hello-world",
+            "triggers": [
+                {
+                    "method": "run"
+                }
+            ]
+        }
+    ]
+schedule:
+    minutes: "0"
+    hours: "1"
+    days: "1"
+    months: "1"
+    dow: "*"
+version: '1.0'
+groups:
+  - EXAMPLES
+code: hello-world-nocode-1.0.qjob

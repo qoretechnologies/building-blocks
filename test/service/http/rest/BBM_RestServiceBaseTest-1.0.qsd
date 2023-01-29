@@ -1,0 +1,62 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class TestRootRestClass inherits BBM_RestClass {
+    string name() {
+        return "maintenance";
+    }
+
+    hash<HttpHandlerResponseInfo> get(hash<auto> cx, *hash<auto> ah) {
+        return RestHandler::makeResponse(200, "OK");
+    }
+}
+
+#! the main REST handler class
+class TestRestHandler inherits BBM_RestHandlerBase {
+    constructor() {
+        addClass(new TestRootRestClass());
+    }
+}
+
+class BbmRestServiceBaseTest inherits BBM_RestServiceBase {
+    private {
+        softint port;
+    }
+
+    init() {
+        BBM_RestServiceBase::init();
+
+        # get listening port
+        foreach hash<auto> rh in (getServiceInfo().resources.iterator()) {
+            if (rh.type == "HttpListener" && rh.info.family == AF_INET) {
+                port = rh.info.port;
+                break;
+            }
+        }
+        if (!port) {
+            # try to get a port number
+            foreach hash<auto> rh in (getServiceInfo().resources.iterator()) {
+                if (rh.type == "HttpListener") {
+                    port = rh.info.port;
+                    break;
+                }
+            }
+            if (!port) {
+                throw "PORT-ERROR", sprintf("cannot determine listening port");
+            }
+        }
+        UserApi::logDebug("listening on port %y", port);
+    }
+
+    private AbstractServiceHttpHandler getHandlerImpl() {
+        UserApi::logInfo("rest-root-uri: %y", UserApi::getConfigItemValue("rest-root-uri"));
+        UserApi::logInfo("REST val: %y", UserApi::callRestApi("GET", "services/BBM_RestServiceBaseTest/config/rest-root-uri"));
+        return new TestRestHandler();
+    }
+
+    int getPort() {
+        return port;
+    }
+}

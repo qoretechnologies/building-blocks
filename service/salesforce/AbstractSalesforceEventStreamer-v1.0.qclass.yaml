@@ -1,0 +1,9 @@
+# This is a generated file, don't edit!
+type: class
+name: AbstractSalesforceEventStreamer
+desc: Event streaming support for Salesforce.com using the streaming API
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+version: '1.0'
+code: AbstractSalesforceEventStreamer-v1.0.qclass

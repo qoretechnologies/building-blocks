@@ -1,0 +1,185 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+const WSET_STRING = "STRING";
+const WSET_BINARY = "BINARY";
+
+#! WebSocket received event info hash
+hashdecl WebSocketReceivedEventInfo {
+    #! connection context
+    hash<auto> cx;
+    #! connection ID string: this ID must be used when sending a message
+    string cid;
+    #! unique event ID
+    int event_id;
+    #! event type: \c "STRING" or \c "BINARY"
+    string type;
+    #! the actual event information
+    data msg;
+}
+
+#! Send event info
+hashdecl WebSocketSendEventInfo {
+    #! connection ID string
+    string cid;
+    #! message to send
+    data msg;
+}
+
+#! Send event info
+hashdecl WebSocketBroadcastEventInfo {
+    #! message to send
+    data msg;
+}
+
+#! Service class
+class BBM_WebSocketServiceEventSource inherits BBM_WebSocketServiceBase, ::OMQ::Observable {
+    #! Returns the HTTP handler for the service
+    private AbstractServiceHttpHandler getHandlerImpl() {
+        return new BBM_WebSocketServiceEventSourceHandler(self);
+    }
+
+    #! The constructor initializes the class
+    constructor() {
+        init();
+    }
+
+    #! Connection method for sending WebSocket messages to the client
+    /** @param info must be cast<>able to hash<WebSocketSendEventInfo>
+
+        This is listed as an input/output provider to allow it to be chained to other actions, but no output is
+        returned
+    */
+    sendMessage(hash<auto> info) {
+        cast<BBM_WebSocketServiceEventSourceHandler>(handler).sendMessage(cast<hash<WebSocketSendEventInfo>>(info));
+    }
+
+    #! Connection method for sending WebSocket messages to the client
+    /** @param info the message to send
+
+        This is listed as an input/output provider to allow it to be chained to other actions, but no output is
+        returned
+    */
+    sendMessage(hash<WebSocketSendEventInfo> info) {
+        cast<BBM_WebSocketServiceEventSourceHandler>(handler).sendMessage(info);
+    }
+
+    #! Connection method for sending WebSocket messages to all clients
+    broadcastMessage(hash<auto> info) {
+        handler.sendAll(cast<hash<WebSocketSendEventInfo>>(info).msg);
+    }
+
+    #! Connection method for sending WebSocket messages to all clients
+    broadcastMessage(hash<WebSocketBroadcastEventInfo> info) {
+        handler.sendAll(info.msg);
+    }
+
+    #! Connection method for sending WebSocket messages to all clients
+    broadcastMessage(hash<WebSocketSendEventInfo> info) {
+        handler.sendAll(info.msg);
+    }
+}
+
+#! Handler class
+class BBM_WebSocketServiceEventSourceHandler inherits BBM_WebSocketHandlerBase {
+    public {
+        BBM_WebSocketServiceEventSource service;
+    }
+
+    constructor(BBM_WebSocketServiceEventSource service) {
+        self.service = service;
+    }
+
+    BBM_WebSocketServiceEventSourceConnection getConnectionImpl(hash<auto> cx, hash<auto> hdr, string cid) {
+        return new BBM_WebSocketServiceEventSourceConnection(cx, self);
+    }
+
+    #! Method for sending WebSocket messages to the client
+    /** @param info the message to send
+    */
+    sendMessage(hash<WebSocketSendEventInfo> info) {
+        if (!exists info.msg) {
+            # ignore empty messages
+            return;
+        }
+
+        if (!exists info.cid) {
+            throw "WEBSOCKET-CONNECTION-ERROR", "missing connection ID in info arg";
+        }
+
+        UserApi::logDebug("sending WS msg to %y: %y", info.cid, info.msg);
+
+        rwl.readLock();
+        on_exit rwl.readUnlock();
+
+        *BBM_WebSocketServiceEventSourceConnection conn = ch{info.cid};
+        if (!conn) {
+            throw "WEBSOCKET-CONNECTION-ERROR", sprintf("unknown/invalid connection ID %y for outbound message",
+                info.cid);
+        }
+
+        conn.send(info.msg);
+    }
+}
+
+#! Connection class
+class BBM_WebSocketServiceEventSourceConnection inherits QorusWebSocketConnection {
+    private {
+        #! Connection context hash
+        /** important values:
+            - \c socket: the bind adddress in qorus-core for the listener that received the event
+            - \c socket-info: a hash of socket information for the listening socket (as returned by @ref Qore::Socket::getSocketInfo())
+            - \c peer-info: a hash of socket information for the remote socket (as returned by @ref Qore::Socket::getPeerInfo())
+            - \c url: a hash of broken-down URL information (as returned from parse_url())
+            - \c id: the unique HTTP connection ID; this ID is also used to identify the websocket client connection
+            - \c listener-id: the HTTP server listener ID (see HttpServer::HttpServer::getListenerInfo())
+            - \c user: the connected Qorus username (if any)
+        */
+        hash<auto> cx;
+
+        #! Event ID counter
+        int event_id = 0;
+
+        #! Context keys captured by this object
+        const WebSocketContextKeys = (
+            "id",
+            "socket",
+            "socket-info",
+            "peer-info",
+            "url",
+            "listener-id",
+            "user",
+        );
+
+        #! Connection event ID string; must match the connection parameters in the YAML metadata
+        const ConnectionId = "BBM_WebSocketServiceEventSource::event (ignored)";
+    }
+
+    constructor(hash<auto> cx, BBM_WebSocketServiceEventSourceHandler handler) : QorusWebSocketConnection(handler) {
+        self.cx = cx{WebSocketContextKeys};
+    }
+
+    #! this method is called by the @ref WebSocketHandler::WebSocketHandler "WebSocketHandler" when messages from the client are received
+    gotMessage(string msg) {
+        doEvent(WSET_STRING, msg);
+    }
+
+    #! this method is called by the @ref WebSocketHandler::WebSocketHandler "WebSocketHandler" when messages from the client are received
+    gotMessage(binary msg) {
+        doEvent(WSET_BINARY, msg);
+    }
+
+    private doEvent(string type, data msg) {
+        # get unique event ID string
+        UserApi::logDebug("connection: %y msg: %y", ConnectionId, msg);
+        cast<BBM_WebSocketServiceEventSourceHandler>(handler).service.notifyObservers(ConnectionId, <WebSocketReceivedEventInfo>{
+            "cx": cx,
+            "cid": cx.id.toString(),
+            "event_id": event_id++,
+            "type": type,
+            "msg": msg,
+        });
+    }
+}

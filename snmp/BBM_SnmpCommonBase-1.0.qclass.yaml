@@ -1,0 +1,68 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_SnmpCommonBase
+desc: Building block providing a base class for working with SNMP traps
+lang: java
+author:
+  - Qore Technologies, s.r.o.
+tags:
+    classpath: $OMQ_DIR/user/building-blocks/snmp/jar/snmp4j-3.6.2.jar
+version: '1.0'
+code: bbm_snmpcommonbase_1_0_class/BBM_SnmpCommonBase.java
+config-items:
+  - name: snmp-user
+    description: The SNMP v3 user
+    config_group: SNMP v3 Event Source Config
+    strictly_local: true
+  - name: snmp-auth-passphrase
+    default_value:
+        null
+    description: The SNMP v3 password or passphrase
+    config_group: SNMP v3 Event Source Config
+    sensitive: true
+    type: "*string"
+    strictly_local: true
+  - name: snmp-auth-protocol
+    default_value:
+        "NONE"
+    description: |-
+        The SNMP v3 authentication protocol:
+        - `NONE`
+        - `SHA224`
+        - `SHA256`
+        - `SHA384`
+        - `SHA512`
+    allowed_values:
+      - "NONE"
+      - "SHA224"
+      - "SHA256"
+      - "SHA384"
+      - "SHA512"
+    config_group: SNMP v3 Event Source Config
+    strictly_local: true
+  - name: snmp-priv-passphrase
+    default_value:
+        null
+    description: The SNMP v3 privacy passphrase
+    config_group: SNMP v3 Event Source Config
+    type: "*string"
+    sensitive: true
+    strictly_local: true
+  - name: snmp-priv-protocol
+    default_value:
+        "NONE"
+    description: |-
+        The SNMP v3 privacy protocol:
+        - `NONE`
+        - `AES128`
+        - `AES192`
+        - `AES256`
+        - `DES`
+    config_group: SNMP v3 Event Source Config
+    allowed_values:
+      - "NONE"
+      - "AES128"
+      - "AES192"
+      - "AES256"
+      - "DES"
+    strictly_local: true

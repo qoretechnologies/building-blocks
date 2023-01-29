@@ -1,0 +1,56 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_OndewoVtsiClient
+desc: ' Building block that returns an ONDEWO VTSI client from an `ondewovtsi://` Qorus connection'
+lang: python
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: startCaller
+    type: input-output
+    method: startCaller
+  - name: startListener
+    type: input-output
+    method: startListener
+version: '1.0'
+code: BBM_OndewoVtsiClient-1.0.qclass.py
+config-items:
+  - name: ondewo-vtsi-connection
+    description: ONDEWO VTSI Qorus connection name
+    config_group: ONDEWO VTSI Client Main
+    type: connection
+  - name: vtsi-client-phone-number
+    description: Phone number for initiating a caller or listener
+    config_group: ONDEWO VTSI Client Call
+  - name: vtsi-client-call-parameter
+    description: call parameters for initiating a call
+    config_group: ONDEWO VTSI Client Call
+    type: hash
+  - name: vtsi-client-output-data
+    default_value:
+        null
+    description: 'Output data of initiating a caller or listener: caller_id'
+    config_group: ONDEWO VTSI Client Call Post Processing
+    type: "*hash"
+  - name: ondewo-sip-sim-version
+    default_value:
+        "1.0.0"
+    description: ondewo-sip-sim-version
+    config_group: ONDEWO Project Config
+  - name: ondewo-project-id
+    description: ondewo-project-id
+    config_group: ONDEWO Project Config
+  - name: ondewo-project-initial-intent
+    default_value:
+        "Default Welcome Intent"
+    description: initial intent for the project
+    config_group: ONDEWO Project Config
+  - name: ondewo-project-voice
+    description: text to speech language configuation for the project (t2s_language)
+    config_group: ONDEWO Project Config
+  - name: ondewo-project-language-model
+    description: speech to text language configuation for the project (s2t_language)
+    config_group: ONDEWO Project Config
+  - name: ondewo-cai-language
+    description: language for the cai configuration
+    config_group: ONDEWO Project Config

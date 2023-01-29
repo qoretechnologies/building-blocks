@@ -1,0 +1,48 @@
+#!/usr/bin/env qore
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%require-types
+%strict-args
+%new-style
+%enable-all-warnings
+
+%exec-class BBM_SimpleFilterPipelineData
+
+%requires QorusInterfaceTest
+%requires SqlUtil
+
+class BBM_SimpleFilterPipelineData inherits QorusJobTest {
+    private {
+        const JobName = "bbm-simple-filter-pipeline-data-test";
+    }
+
+    constructor() : QorusJobTest(JobName, "1.0", \ARGV, Opts) {
+        addTestCase("pipeline test", \pipelineTest());
+        set_return_value(main());
+    }
+
+    private usageIntern(int offset = OffsetColumn) {
+        TestReporter::usageIntern(OffsetColumn);
+    }
+
+    pipelineTest() {
+        hash<auto> pdata = {
+            "a": (1, 101, 10),
+            "b": (2, 201, 20),
+        };
+        qrest.put("pipelines/bbm-simple-filter-pipeline-data-test/config/gc_wFTIjY:get-pipeline-data", {"value": pdata});
+        qrest.put("pipelines/bbm-simple-filter-pipeline-data-test/config/NEF3L8hSZ:simple-filter-criteria", {"value": "$qore-expr:{$local:a >= 100}"});
+        RunJobResult job(OMQ::StatComplete);
+        exec(job);
+        #printf("jiid: %y\n", job.getJobResult().job_instanceid);
+        assertEq({"a": 101, "b": 201}, qrest.get("jobresults/" + job.getJobResult().job_instanceid + "/info/pdata")[0]);
+
+        # run the other job
+        qrest.put("pipelines/bbm-simple-filter-pipeline-data-test-2/config/gc_wFTIjY:get-pipeline-data", {"value": pdata});
+        hash<auto> h = qrest.put("jobs/bbm-simple-filter-pipeline-data-test-2/run");
+        assertEq(OMQ::StatComplete, h.status);
+        #printf("jiid: %y\n", job.getJobResult().job_instanceid);
+        list<auto> l = map $1, pdata.contextIterator();
+        assertEq(l, qrest.get("jobresults/" + h.job_instanceid + "/info/pdata"));
+    }
+}

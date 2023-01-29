@@ -1,0 +1,79 @@
+# This is a generated file, don't edit!
+type: job
+name: bb-excel-read-base-job
+desc: test for the Excel read base building block
+lang: qore
+active: false
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusJob
+class-name: BbExcelReadBaseJob
+classes:
+  - BBM_ExcelReadDataProvider
+groups:
+  - bb-test
+remote: false
+schedule:
+    minutes: "0"
+    hours: "0"
+    days: "1"
+    months: "1"
+    dow: "*"
+version: '1.0'
+code: bb-excel-read-base-job-1.0.qjob
+config-items:
+  - name: excel-read-data-cells
+    parent:
+        interface-type: class
+        interface-name: BBM_ExcelReadDataProvider
+        interface-version: '1.0'
+  - name: excel-read-header-cells
+    parent:
+        interface-type: class
+        interface-name: BBM_ExcelReadDataProvider
+        interface-version: '1.0'
+  - name: excel-read-header-names
+    parent:
+        interface-type: class
+        interface-name: BBM_ExcelReadDataProvider
+        interface-version: '1.0'
+  - name: excel-read-headers
+    parent:
+        interface-type: class
+        interface-name: BBM_ExcelReadDataProvider
+        interface-version: '1.0'
+  - name: excel-read-path
+    parent:
+        interface-type: class
+        interface-name: BBM_ExcelReadDataProvider
+        interface-version: '1.0'
+  - name: excel-read-stream
+    parent:
+        interface-type: class
+        interface-name: BBM_ExcelReadDataProvider
+        interface-version: '1.0'
+  - name: excel-read-timezone
+    parent:
+        interface-type: class
+        interface-name: BBM_ExcelReadDataProvider
+        interface-version: '1.0'
+  - name: excel-read-tolwr
+    parent:
+        interface-type: class
+        interface-name: BBM_ExcelReadDataProvider
+        interface-version: '1.0'
+  - name: excel-read-worksheet
+    parent:
+        interface-type: class
+        interface-name: BBM_ExcelReadDataProvider
+        interface-version: '1.0'
+  - name: excel-read-search-where
+    parent:
+        interface-type: class
+        interface-name: BBM_ExcelReadDataProvider
+        interface-version: '1.0'
+  - name: excel-read-search-options
+    parent:
+        interface-type: class
+        interface-name: BBM_ExcelReadDataProvider
+        interface-version: '1.0'

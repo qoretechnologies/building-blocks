@@ -1,0 +1,364 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+%requires qore >= 0.9.3
+
+# we do the login and get a session ID with the SalesforceRestClient class
+%requires SalesforceRestClient
+
+# the steaming API requires Java support
+%requires jni
+
+# the following jar files must be in $OMQ_DIR/user/jar
+%module-cmd(jni) add-classpath $OMQ_DIR/user/building-blocks/service/salesforce/jar/emp-connector-0.0.1-SNAPSHOT-phat.jar
+
+%module-cmd(jni) import com.salesforce.emp.connector.BayeuxParameters
+%module-cmd(jni) import com.salesforce.emp.connector.EmpConnector
+%module-cmd(jni) import com.salesforce.emp.connector.LoginHelper
+%module-cmd(jni) import com.salesforce.emp.connector.TopicSubscription
+
+%module-cmd(jni) import java.net.MalformedURLException
+%module-cmd(jni) import java.net.URL
+%module-cmd(jni) import java.util.HashMap
+%module-cmd(jni) import java.util.Map
+%module-cmd(jni) import java.util.concurrent.TimeUnit
+%module-cmd(jni) import java.util.function.Consumer
+
+class AbstractSalesforceEventStreamer {
+    public {
+        #! The API version to use
+        const StreamingApi = "43.0";
+
+        # The long poll duration.
+        const ConnectionTimeout = 20 * 1000;  # milliseconds
+        const ReadTimeout = 120 * 1000; # milliseconds
+    }
+
+    private:internal {
+        #! Salesforce.com connection name
+        string conn;
+        #! channel hash; channel name -> True
+        hash<string, bool> channel_map;
+
+        #! the streaming connector object
+        EmpConnector connector;
+
+        #! the channel message consumer
+        Consumer consumer;
+
+        #! the subscription map; channel -> subscription
+        hash<string, TopicSubscription> subscription_map;
+
+        #! thread lock
+        Mutex m();
+
+        #! condition variable
+        Condition cond();
+
+        #! options
+        *hash<auto> opts;
+    }
+
+    #! creates the event streamer without the connection and channel information
+    /** @param opts options for the object:
+        - \c replay_from: a hash of optional replay IDs for the first event keyed by channel name; default: send only new events; special values:
+          - \c EmpConnector::REPLAY_FROM_EARLIEST "EmpConnector::REPLAY_FROM_EARLIEST": start from the first available event
+          - \c EmpConnector::REPLAY_FROM_TIP "EmpConnector::REPLAY_FROM_TIP": send only new events
+        - \c streaming_api: the API to use in string format for the streaming API endpoint; default: @ref StreamingApi
+     */
+    constructor(*hash<auto> opts) {
+        self.opts = opts;
+    }
+
+    #! creates the event streamer
+    /** @param conn the SalesforceRestClient connect to login and establish the streaming session
+        @param channels the streaming channels or topics to subscribe to
+        @param opts options for the object:
+        - \c replay_from: a hash of optional replay IDs for the first event keyed by channel name; default: send only new events; special values:
+          - \c EmpConnector::REPLAY_FROM_EARLIEST "EmpConnector::REPLAY_FROM_EARLIEST": start from the first available event
+          - \c EmpConnector::REPLAY_FROM_TIP "EmpConnector::REPLAY_FROM_TIP": send only new events
+        - \c streaming_api: the API to use in string format for the streaming API endpoint; default: @ref StreamingApi
+     */
+    constructor(string conn, softlist<string> channels, *hash<auto> opts) {
+        self.conn = conn;
+        channel_map = map {$1: True}, channels;
+        self.opts = opts;
+    }
+
+    #! sets the connection name for the event streamer
+    /** @param conn the SalesforceRestClient connect to login and establish the streaming session
+    */
+    setConnection(string conn) {
+        self.conn = conn;
+    }
+
+    #! sets the connection and the channels for the event streamer
+    /** @param conn the SalesforceRestClient connect to login and establish the streaming session
+        @param channels the streaming channels or topics to subscribe to
+    */
+    setConnectionAndChannels(string conn, softlist<string> channels) {
+        self.conn = conn;
+        channel_map = map {$1: True}, channels;
+    }
+
+    #! reimplement this method in concrete classes; event information from salesforce will be passed here as it occurs
+    /** @par Example:
+        @code{.py}
+messageCallbackImpl(hash<auto> mh) {
+    switch (mh.event.type) {
+        case "updated": # ...
+    }
+}
+        @endcode
+
+        @param mh message data has the following format:
+        - \c event (hash)
+            - \c createdDate (string)
+            - \c replayId (int)
+            - \c type (string; ex: \c "updated")
+        - \c sobject (hash)
+            - \c Id (string)
+            - other keys according to the event
+    */
+    abstract messageCallbackImpl(hash<auto> mh);
+
+    #! creates the internal BayeuxClient object and starts event streaming
+    /** @throw SALESFORCE-STREAMING-ERROR streaming is already running; make sure and call stop() before calling start() again
+     */
+    start() {
+        AutoLock al(m);
+
+        if (connector) {
+            throw "SALESFORCE-STREAMING-ERROR", sprintf("cannot call %s::start() when streaming is already running", self.className());
+        }
+
+        # get OAuth token
+        string token;
+        # streaming url
+        string streaming_url;
+
+        # get oauth token for streaming login
+        {
+            SalesforceRestClient src = UserApi::getUserConnection(conn);
+
+            UserApi::logInfo("connecting to %y for oauth token", src.getURL());
+
+            # login
+            src.login();
+
+            # get Salesforce.com session ID / token
+            token = src.getToken();
+
+            streaming_url = src.getURL();
+            streaming_url =~ s/services\/data\/.*$//;
+            streaming_url += (opts.streaming_api ?? "cometd/" + StreamingApi);
+        }
+        UserApi::logDebug("ouath token: %y", token);
+
+        SalesforceLoginParameters tokenProvider(token, streaming_url);
+
+        connector = new EmpConnector(tokenProvider);
+
+        # get MessageListener interface class
+        lang::Class ml = load_class("org/cometd/bayeux/client/ClientSessionChannel$MessageListener");
+
+        # debug event callback
+        code get_dbg_callback = code sub (string event) {
+            return sub (Method method, *list<auto> args) {
+                #ClientSessionChannel channel = args[0];
+                *Message message = args[1];
+                if (!message)
+                    return;
+                UserApi::logDebug("%s: %s", event, message.toString());
+
+                bool success = message.isSuccessful();
+                if (!success) {
+                    *string error = message.get("error");
+                    if (error)
+                        UserApi::logInfo("Error during %y event: %y", event, error);
+
+                    *Exception exception = message.get("exception");
+                    if (exception)
+                        UserApi::logInfo("Exception during %s", exception.toString());
+                }
+            };
+        };
+
+        # get handshake events
+        connector.addListener(bayeux::Channel::META_HANDSHAKE, cast<ClientSessionChannel__MessageListener>(implement_interface(new QoreInvocationHandler(get_dbg_callback("HANDSHAKE")), ml)));
+
+        # get connect events
+        connector.addListener(bayeux::Channel::META_CONNECT, cast<ClientSessionChannel__MessageListener>(implement_interface(new QoreInvocationHandler(get_dbg_callback("HANDSHAKE")), ml)));
+
+        # get subscription events
+        connector.addListener(bayeux::Channel::META_SUBSCRIBE, cast<ClientSessionChannel__MessageListener>(implement_interface(new QoreInvocationHandler(get_dbg_callback("HANDSHAKE")), ml)));
+
+        connector.start().get(5, TimeUnit::SECONDS);
+
+        consumer = cast<Consumer>(implement_interface(new QoreInvocationHandler(\messageCallback()), lang::Class::forName("java.util.function.Consumer")));
+
+        # subscribe to all channels
+        map subscribeToChannelIntern($1), keys channel_map;
+    }
+
+    #! stops streaming and deletes the internal BayeuxClient object
+    /**
+     */
+    stop() {
+        AutoLock al(m);
+
+        if (connector) {
+            map $1.cancel(), subscription_map.iterator();
+            remove subscription_map;
+            remove channel_map;
+
+            connector.stop();
+            UserApi::logDebug("stop: connected: %y", connector.isConnected());
+            delete connector;
+        }
+    }
+
+    #! Returns the current \c "replayFrom" event id of the subscription for the given channel
+    /** @par Example:
+        @code{.py}
+int id = stream.getReplayFrom(my_channel);
+        @endcode
+
+        @return the current \c "replayFrom" event id of the subscription for the given channel
+
+        @throw SALESFORCE-STREAM-ERROR no streaming in progress
+        @throw SALESFORCE-CHANNEL-ERROR the given channel is unknown
+    */
+    int getReplayFrom(string channel) {
+        AutoLock al(m);
+
+        TopicSubscription subscription = getSubscriptionIntern(channel);
+        return subscription.getReplayFrom();
+    }
+
+    #! Subscribes to a new channel
+    /** @param channel the channel to subscribe to
+
+        @throw SALESFORCE-STREAM-ERROR no streaming in progress; the start() method must be called before this method
+        can be used
+        @throw SALESFORCE-CHANNEL-ERROR the given channel is already subscribed
+    */
+    subscribeToChannel(string channel) {
+        AutoLock al(m);
+
+        if (!connector) {
+            throw "SALESFORCE-STREAM-ERROR", "event streaming is not in progress";
+        }
+
+        if (channel_map{channel}) {
+            throw "SALESFORCE-CHANNEL-ERROR", sprintf("channel %y is already subscribed", channel);
+        }
+
+        subscribeToChannelIntern(channel);
+    }
+
+    #! Unsubscribes from the given channel
+    /** @par Example:
+        @code{.py}
+stream.unsubscribeFromChannel(my_channel);
+        @endcode
+
+        @param channel the channel to unsubscribe from
+
+        @throw SALESFORCE-STREAM-ERROR no streaming in progress; the start() method must be called before this method
+        can be used
+        @throw SALESFORCE-CHANNEL-ERROR the given channel is unknown
+    */
+    unsubscribeFromChannel(string channel) {
+        AutoLock al(m);
+
+        TopicSubscription subscription = getSubscriptionIntern(channel);
+        subscription.cancel();
+        remove subscription_map{channel};
+        remove channel_map{channel};
+    }
+
+    #! Returns a list of all subscribed channels
+    /** @par Example:
+        @code{.py}
+*list<string> channels = stream.getChannels();
+        @endcode
+
+        @return a list of all subscribed channels or that will be subscribed to in case streaming is not in progress
+    */
+    *list<string> getChannels() {
+        return keys channel_map;
+    }
+
+    #! Returns @ref True if streaming is active, @ref False if not
+    /** @par Example:
+        @code{.py}
+bool active = stream.active();
+        @endcode
+
+        @return @ref True if streaming is active, @ref False if not
+    */
+    bool active() {
+        return connector.toBool();
+    }
+
+    #! makes the internal channel subscription
+    private subscribeToChannelIntern(string channel) {
+        int replayFrom = (remove opts.replay_from{channel}) ?? EmpConnector::REPLAY_FROM_TIP;
+        UserApi::logInfo("subscribing to channel: %y (replay from %y)", channel, replayFrom);
+        subscription_map{channel} = connector.subscribe(channel, replayFrom, consumer).get(5, TimeUnit::SECONDS);
+    }
+
+    #! returns the subscription for the given channel
+    /**
+        @param channel the subscribed channel
+        @return the subscription for the given channel
+
+        @throw SALESFORCE-STREAM-ERROR no streaming in progress; the start() method must be called before this method
+        can be used
+        @throw SALESFORCE-CHANNEL-ERROR the given channel is unknown
+    */
+    private TopicSubscription getSubscriptionIntern(string channel) {
+        if (!connector) {
+            throw "SALESFORCE-STREAM-ERROR", "event streaming is not in progress";
+        }
+
+        *TopicSubscription subscription = subscription_map{channel};
+        if (!subscription) {
+            throw "SALESFORCE-CHANNEL-ERROR", sprintf("channel %y has no subscription; active channels: %y", channel, keys subscription_map);
+        }
+
+        return subscription;
+    }
+
+    #! the internal callback method for the \c java.util.function.Consumer object in the subscription
+    private messageCallback(Method method, *list<auto> args) {
+        if (method.getName() != "accept") {
+            return;
+        }
+
+        hash<auto> mh = getValue(args[0]);
+        UserApi::logDebug("salesforce stream message: %y", mh);
+        # this is called in a background thread; make sure that any errors get logged
+        try {
+            messageCallbackImpl(mh);
+        } catch (hash<ExceptionInfo> ex) {
+            UserApi::logError(get_exception_string(ex));
+            rethrow;
+        }
+    }
+
+    #! internal utility method
+    private static auto getValue(auto v) {
+        return v;
+    }
+
+    #! internal utility method; converts a HashMap to a Qore hash
+    private static hash<auto> getValue(*HashMap msg) {
+        return msg ? map {$1: AbstractSalesforceEventStreamer::getValue(msg.get($1))}, msg.keySet().toArray() ?? {} : {};
+    }
+}

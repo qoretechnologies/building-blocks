@@ -1,0 +1,155 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_DataProviderRecordCreate
+desc: >-
+    ## Summary
+
+
+    Building block for creating records in record-based data providers.
+
+
+    The record to be created is determined by the value of the config item
+    `dataprovider-create-input`; ex:
+
+
+    ```
+
+    name: $static:name
+
+    description: $static:description
+
+    ```
+
+
+    For a data provider supporting the `returning` create option (like
+    `DbTableDataProvider`, for example), the output data can return values
+    created implicitly in the record creation action such as column values
+    populated by sequences from a trigger using the
+    `dataprovider-create-options` config item - ex: `returning: customer_id`
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the
+    `data-provider/create` API data provider in the `qorus-api` factory instead
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `DataProvider Record Create`
+
+
+    Inserts data from the input argument, or, if there is none, from config item
+    `dataprovider-create-input`
+
+
+    ### Input/Output Connector  `DataProvider Record Create From Config`
+
+
+    Inserts data solely from config item `dataprovider-create-input`.
+
+
+    The input data is available as `$local:input` for all config items resolved
+    with this connector (in internal calls to
+    `UserApi::expandTemplatedValue()`).
+
+
+    ### Input/Output Connector `DataProvider Record Validate`
+
+
+    This connector is suitable for step validation logic; it returns a string
+    providing the validation status, either `COMPLETE` or `RETRY`, depending if
+    output data was found in the output data provider or not.
+
+
+    The input data is available as `$local:input` for all config items resolved
+    with this connector (in internal calls to
+    `UserApi::expandTemplatedValue()`).
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: BBM_DataProviderRecordCreateBase
+class-connectors:
+  - name: DataProvider Record Create
+    method: makeDataProviderRecord
+    type: input-output
+  - name: DataProvider Record Create From Config
+    type: input-output
+    method: makeDataProviderRecordFromConfig
+  - name: DataProvider Record Validate
+    type: input-output
+    method: validate
+requires:
+  - BBM_DataProviderRecordCreateBase
+version: '1.0'
+code: BBM_DataProviderRecordCreate-1.0.qclass
+config-items:
+  - name: dataprovider-create-provider-path
+    description: >-
+        the path to the data provider to use to create the record; must identify a
+        record-based data provider
+    config_group: Data Provider Record Create Main
+    strictly_local: true
+    type: data-provider
+  - name: dataprovider-create-input
+    default_value:
+        null
+    config_group: Data Provider Record Create Main
+    description: >-
+        the value for the record; either this item or *dataprovider-create-mapper*
+        (or both) must be provided to specify the record; the input data type must
+        be either `hash` or a list of hashes or a runtime error will be raised
+        (`INVALID-INPUT`)
+    strictly_local: true
+    type: any
+  - name: dataprovider-create-upsert
+    default_value:
+        false
+    config_group: Data Provider Record Create Main
+    description: >-
+        If `true` then upsert operations will be performed rather than create
+        operations; also in this case the output values will be the same as the
+        input data
+    strictly_local: true
+    type: bool
+  - name: dataprovider-create-mapper
+    default_value:
+        null
+    config_group: Data Provider Record Create Main
+    description: >-
+        the name of the mapper; either this item or *dataprovider-create-input* (or
+        both) must be provided to specify the record
+    strictly_local: true
+    type: "*string"
+  - name: dataprovider-create-options
+    default_value:
+        null
+    config_group: Data Provider Record Create Main
+    description: >-
+        Any record creation options; in case `dataprovider-create-upsert` is `true`
+        then these will be data provider upsert options instead of creation options
+    strictly_local: true
+    type: "*hash"
+  - name: dataprovider-create-duplicate-handling
+    default_value:
+        "SUCCESS"
+    description: |-
+        how should calls with duplicate errors be handled:
+         - `SUCCESS`: the call succeeds
+         - `DUPLICATE`: the `DUPLICATE-ERROR` exception is rethrown
+    strictly_local: true
+    allowed_values:
+      - "SUCCESS"
+      - "DUPLICATE"
+    config_group: Data Provider Record Create Main
+  - name: dataprovider-create-output-data
+    default_value:
+        null
+    type: "*hash"
+    description: >
+        the configuration of output data; the record data as input to the
+        `UserApi::updateOutputData()` method; note that if a list of input records
+        is provided, the output list will be found in the `data` key of the output
+        hash
+    strictly_local: true
+    config_group: Data Provider Record Post Processing

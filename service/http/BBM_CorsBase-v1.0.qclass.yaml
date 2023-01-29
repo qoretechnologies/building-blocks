@@ -1,0 +1,15 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_CorsBase
+desc: >-
+    ## Summary 
+
+
+    Base class for HTTP CORS handlers; there is no configuration and no
+    connectors; this class is a helper class meant to be used by classes
+    providing HTTP handling functionality.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+version: '1.0'
+code: BBM_CorsBase-v1.0.qclass

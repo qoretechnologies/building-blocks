@@ -1,0 +1,48 @@
+#!/usr/bin/env qore
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%require-types
+%strict-args
+%new-style
+%enable-all-warnings
+
+%exec-class BBM_UpdateOrderDynamicData
+
+%requires QorusInterfaceTest
+
+class BBM_UpdateOrderDynamicData inherits QorusJobTest {
+    private {
+        const JobName = "bbm-update-order-dynamic-data-test";
+    }
+
+    constructor() : QorusJobTest(JobName, "1.0", \ARGV, Opts) {
+        addTestCase("pipeline test", \pipelineTest());
+        set_return_value(main());
+    }
+
+    private usageIntern(int offset = OffsetColumn) {
+        TestReporter::usageIntern(OffsetColumn);
+    }
+
+    pipelineTest() {
+        # create an order instance
+        hash<auto> h = qrest.post("workflows/BBM-TEST-WORKFLOW/execSynchronous", {"staticdata": {}});
+
+        # create random dynamic data
+        hash<auto> dd = {
+            "data-1": get_random_string(),
+            "data-2": get_random_string(),
+        };
+
+        # configure job
+        qrest.put("jobs/bbm-update-order-dynamic-data-test/config/update-dynamic-instance-id", {"value": h.workflow_instanceid});
+        qrest.put("jobs/bbm-update-order-dynamic-data-test/config/update-dynamic-data", {"value": dd});
+
+        # run the job
+        RunJobResult job(OMQ::StatComplete);
+        exec(job);
+
+        # compare the result
+        assertEq(dd, qrest.get("orders/" + h.workflow_instanceid + "/dynamicdata"));
+    }
+}

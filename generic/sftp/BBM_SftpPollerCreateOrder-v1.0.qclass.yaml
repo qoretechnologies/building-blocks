@@ -1,0 +1,1353 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_SftpPollerCreateOrder
+desc: >-
+    ## Summary
+
+
+    Building block class for polling for files from an SFTP server and creating
+    a workflow order from files polled.
+
+
+    The local context data for the internal workflow order creation call is the
+    file event data as described by data type
+    `qoretechnologies/building-blocks/sftp/event`; therefore this information
+    can be used when creating the order; for example
+    `create-workflow-staticdata` = `$local:*` would set the initial static order
+    data to the file event hash.
+
+
+    Duplicates can be detected from order keys, i.e. if one of the following
+    config items is used:
+
+    - `create-workflow-specific-unique-key`
+
+    - `create-workflow-unique-key`
+
+    - `create-workflow-global-unique-key`
+
+
+    In this case this object also contains configuration that allows for an
+    alternative "duplicate-file-handling" workflow order to be created.  See
+    config items in the **SFTP Polling Workflow Creation Duplicate File
+    Handling** group for more information.
+
+
+    ## References
+
+
+    See `BBM_SftpPollerCreateOrderJob` for a class designed to be used as the
+    base class for a job
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: BBM_SftpPollerBase
+class-connectors:
+  - name: runJob
+    type: input-output
+    method: runJob
+requires:
+  - BBM_SftpPollerBase
+  - BBM_CreateOrderStatic
+version: '1.0'
+code: BBM_SftpPollerCreateOrder-v1.0.qclass
+config-items:
+  - name: sftp-polling-connection-name
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: '1.0'
+  - name: sftp-polling-mask
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: '1.0'
+  - name: sftp-polling-mask-regex
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: '1.0'
+  - name: sftp-polling-regex-options
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: '1.0'
+  - name: sftp-polling-file-connection
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: '1.0'
+  - name: sftp-polling-file-name
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: '1.0'
+  - name: sftp-polling-file-temp-template
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: '1.0'
+  - name: sftp-polling-minage
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: '1.0'
+  - name: sftp-polling-encoding
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: '1.0'
+  - name: sftp-polling-delete-file
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: '1.0'
+  - name: sftp-polling-move-target
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: '1.0'
+  - name: sftp-polling-interval-secs
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerBase
+        interface-version: '1.0'
+  - name: create-workflow-order-mapper
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrderStatic
+        interface-version: '1.0'
+  - name: create-workflow-name
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrderStatic
+        interface-version: '1.0'
+    description: >-
+        The name of the workflow.
+    
+    
+        For resolving template values `$local:input` is a hash with the following
+        values:
+    
+    
+        - `name` (string): the name of the file polled
+    
+        - `size` (int): the size of the file in bytes
+    
+        - `uid` (int): the UID of the owner of the file
+    
+        - `gid` (int): the GID of the owner of the file
+    
+        - `mode` (string): the permissions / mode of the file
+    
+        - `atime` (date): the last accessed date/time of the file
+    
+        - `mtime` (date): the last modified date/time of the file
+    
+        - `type` (string): the type of file; one of: `REGULAR`, `DIRECTORY`,
+        `SYMBOLIC-LINK`, `BLOCK-DEVICE`, `CHARACTER-DEVICE`, `FIFO`,
+        `SYMBOLIC-LINK`, `SOCKET`, or `UNKNOWN`
+    
+        - `perm` (string): a string giving UNIX-style permissions for the file (ex:
+        `-rwxr-xr-x`)
+    
+        - `data` (binary): this key is only present if
+        `sftp-polling-file-connection` not set; in this case the remote file data is
+        retrieved in memory and stored in this key as binary data
+    
+        - `filepath` (string): the remote filepath relative to SFTP root directory
+    
+        - `order_status` (string): the status of the new order created (`READY` or
+        `BLOCKED`)
+    
+        - `workflow_instanceid` (int): the ID of the new workflow order
+    
+        - `duplicate` (bool): a boolean value indicating if the order is a duplicate
+        order (only `True` if `create-workflow-duplicate-handling` = `SUCCESS`)
+    
+    
+        If `sftp-polling-file-connection` is set, the `$local:input` includes the
+        following keys:
+    
+        - `local_path` (string): the target path for the file where the file will be
+        moved to in the post event action
+    
+        - `tmp_filename` (string): the temporary filename used to store the file
+        until the post action
+    
+        - `tmp_path` (string): the current temporary path on the filesystem of the
+        file
+    
+        - `transfer_time` (date): a relative date/time value giving the time it took
+        to transfer the file
+  - name: create-workflow-version
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrderStatic
+        interface-version: '1.0'
+    description: >-
+        The version of the workflow; if not set (the default), the latest version
+        will be used.
+    
+    
+        For resolving template values `$local:input` is a hash with the following
+        values:
+    
+    
+        - `name` (string): the name of the file polled
+    
+        - `size` (int): the size of the file in bytes
+    
+        - `uid` (int): the UID of the owner of the file
+    
+        - `gid` (int): the GID of the owner of the file
+    
+        - `mode` (string): the permissions / mode of the file
+    
+        - `atime` (date): the last accessed date/time of the file
+    
+        - `mtime` (date): the last modified date/time of the file
+    
+        - `type` (string): the type of file; one of: `REGULAR`, `DIRECTORY`,
+        `SYMBOLIC-LINK`, `BLOCK-DEVICE`, `CHARACTER-DEVICE`, `FIFO`,
+        `SYMBOLIC-LINK`, `SOCKET`, or `UNKNOWN`
+    
+        - `perm` (string): a string giving UNIX-style permissions for the file (ex:
+        `-rwxr-xr-x`)
+    
+        - `data` (binary): this key is only present if
+        `sftp-polling-file-connection` not set; in this case the remote file data is
+        retrieved in memory and stored in this key as binary data
+    
+        - `filepath` (string): the remote filepath relative to SFTP root directory
+    
+        - `order_status` (string): the status of the new order created (`READY` or
+        `BLOCKED`)
+    
+        - `workflow_instanceid` (int): the ID of the new workflow order
+    
+        - `duplicate` (bool): a boolean value indicating if the order is a duplicate
+        order (only `True` if `create-workflow-duplicate-handling` = `SUCCESS`)
+    
+    
+        If `sftp-polling-file-connection` is set, the `$local:input` includes the
+        following keys:
+    
+        - `local_path` (string): the target path for the file where the file will be
+        moved to in the post event action
+    
+        - `tmp_filename` (string): the temporary filename used to store the file
+        until the post action
+    
+        - `tmp_path` (string): the current temporary path on the filesystem of the
+        file
+    
+        - `transfer_time` (date): a relative date/time value giving the time it took
+        to transfer the file
+  - name: create-workflow-duplicate-handling
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrderStatic
+        interface-version: '1.0'
+  - name: create-workflow-output-data
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrderStatic
+        interface-version: '1.0'
+    description: >-
+        the configuration of output data for `UserApi::updateOutputData()`; the
+        output data includes the following keys:
+    
+        - `name` (string): the name of the file polled
+    
+        - `size` (int): the size of the file in bytes
+    
+        - `uid` (int): the UID of the owner of the file
+    
+        - `gid` (int): the GID of the owner of the file
+    
+        - `mode` (string): the permissions / mode of the file
+    
+        - `atime` (date): the last accessed date/time of the file
+    
+        - `mtime` (date): the last modified date/time of the file
+    
+        - `type` (string): the type of file; one of: `REGULAR`, `DIRECTORY`,
+        `SYMBOLIC-LINK`, `BLOCK-DEVICE`, `CHARACTER-DEVICE`, `FIFO`,
+        `SYMBOLIC-LINK`, `SOCKET`, or `UNKNOWN`
+    
+        - `perm` (string): a string giving UNIX-style permissions for the file (ex:
+        `-rwxr-xr-x`)
+    
+        - `data` (binary): this key is only present if
+        `sftp-polling-file-connection` not set; in this case the remote file data is
+        retrieved in memory and stored in this key as binary data
+    
+        - `filepath` (string): the remote filepath relative to SFTP root directory
+    
+        - `order_status` (string): the status of the new order created (`READY` or
+        `BLOCKED`)
+    
+        - `workflow_instanceid` (int): the ID of the new workflow order
+    
+        - `duplicate` (bool): a boolean value indicating if the order is a duplicate
+        order (only `True` if `create-workflow-duplicate-handling` = `SUCCESS`)
+    
+    
+        If `sftp-polling-file-connection` is set, the output data includes the
+        following keys:
+    
+        - `local_path` (string): the target path for the file where the file will be
+        moved to in the post event action
+    
+        - `tmp_filename` (string): the temporary filename used to store the file
+        until the post action
+    
+        - `tmp_path` (string): the current temporary path on the filesystem of the
+        file
+    
+        - `transfer_time` (date): a relative date/time value giving the time it took
+        to transfer the file
+    
+    
+        Values should have the format:
+    
+        `output-data-key: location-template`
+    
+    
+        For example:
+    
+        ```
+    
+        workflow_instanceid: '$dynamic:order-id'
+    
+        ```
+    
+        Will store the `workflow_instanceid` of the order created in the `order-id`
+        key in workflow dynamic data.
+    
+    
+        **NOTE**: See [Config Item / Building Block Template Substitution
+        Strings](https://qoretechnologies.com/manual/qorus/current/qorus/commonserverapi.html#bb_template_strings)
+        for more information on template strings; any output location valid for the
+        current context can be used to store output data
+  - name: create-workflow-order-status
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrderStatic
+        interface-version: '1.0'
+    description: >-
+        Override any status information in the order data.
+    
+    
+        For resolving template values `$local:input` is a hash with the following
+        values:
+    
+    
+        - `name` (string): the name of the file polled
+    
+        - `size` (int): the size of the file in bytes
+    
+        - `uid` (int): the UID of the owner of the file
+    
+        - `gid` (int): the GID of the owner of the file
+    
+        - `mode` (string): the permissions / mode of the file
+    
+        - `atime` (date): the last accessed date/time of the file
+    
+        - `mtime` (date): the last modified date/time of the file
+    
+        - `type` (string): the type of file; one of: `REGULAR`, `DIRECTORY`,
+        `SYMBOLIC-LINK`, `BLOCK-DEVICE`, `CHARACTER-DEVICE`, `FIFO`,
+        `SYMBOLIC-LINK`, `SOCKET`, or `UNKNOWN`
+    
+        - `perm` (string): a string giving UNIX-style permissions for the file (ex:
+        `-rwxr-xr-x`)
+    
+        - `data` (binary): this key is only present if
+        `sftp-polling-file-connection` not set; in this case the remote file data is
+        retrieved in memory and stored in this key as binary data
+    
+        - `filepath` (string): the remote filepath relative to SFTP root directory
+    
+        - `order_status` (string): the status of the new order created (`READY` or
+        `BLOCKED`)
+    
+        - `workflow_instanceid` (int): the ID of the new workflow order
+    
+        - `duplicate` (bool): a boolean value indicating if the order is a duplicate
+        order (only `True` if `create-workflow-duplicate-handling` = `SUCCESS`)
+    
+    
+        If `sftp-polling-file-connection` is set, the `$local:input` includes the
+        following keys:
+    
+        - `local_path` (string): the target path for the file where the file will be
+        moved to in the post event action
+    
+        - `tmp_filename` (string): the temporary filename used to store the file
+        until the post action
+    
+        - `tmp_path` (string): the current temporary path on the filesystem of the
+        file
+    
+        - `transfer_time` (date): a relative date/time value giving the time it took
+        to transfer the file
+  - name: create-workflow-staticdata
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrderStatic
+        interface-version: '1.0'
+    description: >-
+        A hash providing the initial workflow order static data; for resolving
+        template values `$local:input` is a hash with the following values:
+    
+    
+        - `name` (string): the name of the file polled
+    
+        - `size` (int): the size of the file in bytes
+    
+        - `uid` (int): the UID of the owner of the file
+    
+        - `gid` (int): the GID of the owner of the file
+    
+        - `mode` (string): the permissions / mode of the file
+    
+        - `atime` (date): the last accessed date/time of the file
+    
+        - `mtime` (date): the last modified date/time of the file
+    
+        - `type` (string): the type of file; one of: `REGULAR`, `DIRECTORY`,
+        `SYMBOLIC-LINK`, `BLOCK-DEVICE`, `CHARACTER-DEVICE`, `FIFO`,
+        `SYMBOLIC-LINK`, `SOCKET`, or `UNKNOWN`
+    
+        - `perm` (string): a string giving UNIX-style permissions for the file (ex:
+        `-rwxr-xr-x`)
+    
+        - `data` (binary): this key is only present if
+        `sftp-polling-file-connection` not set; in this case the remote file data is
+        retrieved in memory and stored in this key as binary data
+    
+        - `filepath` (string): the remote filepath relative to SFTP root directory
+    
+        - `order_status` (string): the status of the new order created (`READY` or
+        `BLOCKED`)
+    
+        - `workflow_instanceid` (int): the ID of the new workflow order
+    
+        - `duplicate` (bool): a boolean value indicating if the order is a duplicate
+        order (only `True` if `create-workflow-duplicate-handling` = `SUCCESS`)
+    
+    
+        If `sftp-polling-file-connection` is set, the `$local:input` includes the
+        following keys:
+    
+        - `local_path` (string): the target path for the file where the file will be
+        moved to in the post event action
+    
+        - `tmp_filename` (string): the temporary filename used to store the file
+        until the post action
+    
+        - `tmp_path` (string): the current temporary path on the filesystem of the
+        file
+    
+        - `transfer_time` (date): a relative date/time value giving the time it took
+        to transfer the file
+  - name: create-workflow-sensitivedata
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrderStatic
+        interface-version: '1.0'
+    description: >-
+        An optional hash providing the initial workflow order sensitive data.
+    
+    
+        For resolving template values `$local:input` is a hash with the following
+        values:
+    
+    
+        - `name` (string): the name of the file polled
+    
+        - `size` (int): the size of the file in bytes
+    
+        - `uid` (int): the UID of the owner of the file
+    
+        - `gid` (int): the GID of the owner of the file
+    
+        - `mode` (string): the permissions / mode of the file
+    
+        - `atime` (date): the last accessed date/time of the file
+    
+        - `mtime` (date): the last modified date/time of the file
+    
+        - `type` (string): the type of file; one of: `REGULAR`, `DIRECTORY`,
+        `SYMBOLIC-LINK`, `BLOCK-DEVICE`, `CHARACTER-DEVICE`, `FIFO`,
+        `SYMBOLIC-LINK`, `SOCKET`, or `UNKNOWN`
+    
+        - `perm` (string): a string giving UNIX-style permissions for the file (ex:
+        `-rwxr-xr-x`)
+    
+        - `data` (binary): this key is only present if
+        `sftp-polling-file-connection` not set; in this case the remote file data is
+        retrieved in memory and stored in this key as binary data
+    
+        - `filepath` (string): the remote filepath relative to SFTP root directory
+    
+        - `order_status` (string): the status of the new order created (`READY` or
+        `BLOCKED`)
+    
+        - `workflow_instanceid` (int): the ID of the new workflow order
+    
+        - `duplicate` (bool): a boolean value indicating if the order is a duplicate
+        order (only `True` if `create-workflow-duplicate-handling` = `SUCCESS`)
+    
+    
+        If `sftp-polling-file-connection` is set, the `$local:input` includes the
+        following keys:
+    
+        - `local_path` (string): the target path for the file where the file will be
+        moved to in the post event action
+    
+        - `tmp_filename` (string): the temporary filename used to store the file
+        until the post action
+    
+        - `tmp_path` (string): the current temporary path on the filesystem of the
+        file
+    
+        - `transfer_time` (date): a relative date/time value giving the time it took
+        to transfer the file
+  - name: create-workflow-dynamicdata
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrderStatic
+        interface-version: '1.0'
+    description: >-
+        An optional hash providing the initial workflow order dynamic data.
+    
+    
+        For resolving template values `$local:input` is a hash with the following
+        values:
+    
+    
+        - `name` (string): the name of the file polled
+    
+        - `size` (int): the size of the file in bytes
+    
+        - `uid` (int): the UID of the owner of the file
+    
+        - `gid` (int): the GID of the owner of the file
+    
+        - `mode` (string): the permissions / mode of the file
+    
+        - `atime` (date): the last accessed date/time of the file
+    
+        - `mtime` (date): the last modified date/time of the file
+    
+        - `type` (string): the type of file; one of: `REGULAR`, `DIRECTORY`,
+        `SYMBOLIC-LINK`, `BLOCK-DEVICE`, `CHARACTER-DEVICE`, `FIFO`,
+        `SYMBOLIC-LINK`, `SOCKET`, or `UNKNOWN`
+    
+        - `perm` (string): a string giving UNIX-style permissions for the file (ex:
+        `-rwxr-xr-x`)
+    
+        - `data` (binary): this key is only present if
+        `sftp-polling-file-connection` not set; in this case the remote file data is
+        retrieved in memory and stored in this key as binary data
+    
+        - `filepath` (string): the remote filepath relative to SFTP root directory
+    
+        - `order_status` (string): the status of the new order created (`READY` or
+        `BLOCKED`)
+    
+        - `workflow_instanceid` (int): the ID of the new workflow order
+    
+        - `duplicate` (bool): a boolean value indicating if the order is a duplicate
+        order (only `True` if `create-workflow-duplicate-handling` = `SUCCESS`)
+    
+    
+        If `sftp-polling-file-connection` is set, the `$local:input` includes the
+        following keys:
+    
+        - `local_path` (string): the target path for the file where the file will be
+        moved to in the post event action
+    
+        - `tmp_filename` (string): the temporary filename used to store the file
+        until the post action
+    
+        - `tmp_path` (string): the current temporary path on the filesystem of the
+        file
+    
+        - `transfer_time` (date): a relative date/time value giving the time it took
+        to transfer the file
+  - name: create-workflow-tempdata
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrderStatic
+        interface-version: '1.0'
+    description: >-
+        An optional hash providing the initial workflow order temporary / scratch
+        data.
+    
+    
+        For resolving template values `$local:input` is a hash with the following
+        values:
+    
+    
+        - `name` (string): the name of the file polled
+    
+        - `size` (int): the size of the file in bytes
+    
+        - `uid` (int): the UID of the owner of the file
+    
+        - `gid` (int): the GID of the owner of the file
+    
+        - `mode` (string): the permissions / mode of the file
+    
+        - `atime` (date): the last accessed date/time of the file
+    
+        - `mtime` (date): the last modified date/time of the file
+    
+        - `type` (string): the type of file; one of: `REGULAR`, `DIRECTORY`,
+        `SYMBOLIC-LINK`, `BLOCK-DEVICE`, `CHARACTER-DEVICE`, `FIFO`,
+        `SYMBOLIC-LINK`, `SOCKET`, or `UNKNOWN`
+    
+        - `perm` (string): a string giving UNIX-style permissions for the file (ex:
+        `-rwxr-xr-x`)
+    
+        - `data` (binary): this key is only present if
+        `sftp-polling-file-connection` not set; in this case the remote file data is
+        retrieved in memory and stored in this key as binary data
+    
+        - `filepath` (string): the remote filepath relative to SFTP root directory
+    
+        - `order_status` (string): the status of the new order created (`READY` or
+        `BLOCKED`)
+    
+        - `workflow_instanceid` (int): the ID of the new workflow order
+    
+        - `duplicate` (bool): a boolean value indicating if the order is a duplicate
+        order (only `True` if `create-workflow-duplicate-handling` = `SUCCESS`)
+    
+    
+        If `sftp-polling-file-connection` is set, the `$local:input` includes the
+        following keys:
+    
+        - `local_path` (string): the target path for the file where the file will be
+        moved to in the post event action
+    
+        - `tmp_filename` (string): the temporary filename used to store the file
+        until the post action
+    
+        - `tmp_path` (string): the current temporary path on the filesystem of the
+        file
+    
+        - `transfer_time` (date): a relative date/time value giving the time it took
+        to transfer the file
+  - name: create-workflow-external-id
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrderStatic
+        interface-version: '1.0'
+    description: >-
+        An optional external order ID; not a unique key for the order; use order
+        keys for generic order key references.
+    
+    
+        For resolving template values `$local:input` is a hash with the following
+        values:
+    
+    
+        - `name` (string): the name of the file polled
+    
+        - `size` (int): the size of the file in bytes
+    
+        - `uid` (int): the UID of the owner of the file
+    
+        - `gid` (int): the GID of the owner of the file
+    
+        - `mode` (string): the permissions / mode of the file
+    
+        - `atime` (date): the last accessed date/time of the file
+    
+        - `mtime` (date): the last modified date/time of the file
+    
+        - `type` (string): the type of file; one of: `REGULAR`, `DIRECTORY`,
+        `SYMBOLIC-LINK`, `BLOCK-DEVICE`, `CHARACTER-DEVICE`, `FIFO`,
+        `SYMBOLIC-LINK`, `SOCKET`, or `UNKNOWN`
+    
+        - `perm` (string): a string giving UNIX-style permissions for the file (ex:
+        `-rwxr-xr-x`)
+    
+        - `data` (binary): this key is only present if
+        `sftp-polling-file-connection` not set; in this case the remote file data is
+        retrieved in memory and stored in this key as binary data
+    
+        - `filepath` (string): the remote filepath relative to SFTP root directory
+    
+        - `order_status` (string): the status of the new order created (`READY` or
+        `BLOCKED`)
+    
+        - `workflow_instanceid` (int): the ID of the new workflow order
+    
+        - `duplicate` (bool): a boolean value indicating if the order is a duplicate
+        order (only `True` if `create-workflow-duplicate-handling` = `SUCCESS`)
+    
+    
+        If `sftp-polling-file-connection` is set, the `$local:input` includes the
+        following keys:
+    
+        - `local_path` (string): the target path for the file where the file will be
+        moved to in the post event action
+    
+        - `tmp_filename` (string): the temporary filename used to store the file
+        until the post action
+    
+        - `tmp_path` (string): the current temporary path on the filesystem of the
+        file
+    
+        - `transfer_time` (date): a relative date/time value giving the time it took
+        to transfer the file
+  - name: create-workflow-order-keys
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrderStatic
+        interface-version: '1.0'
+    description: >-
+        An optional hash of order keys; the keys in this hash must correspond to
+        registered workflow order keys, the values are one or more key values. These
+        keys can be used to quickly search for workflow order data.
+    
+    
+        For resolving template values `$local:input` is a hash with the following
+        values:
+    
+    
+        - `name` (string): the name of the file polled
+    
+        - `size` (int): the size of the file in bytes
+    
+        - `uid` (int): the UID of the owner of the file
+    
+        - `gid` (int): the GID of the owner of the file
+    
+        - `mode` (string): the permissions / mode of the file
+    
+        - `atime` (date): the last accessed date/time of the file
+    
+        - `mtime` (date): the last modified date/time of the file
+    
+        - `type` (string): the type of file; one of: `REGULAR`, `DIRECTORY`,
+        `SYMBOLIC-LINK`, `BLOCK-DEVICE`, `CHARACTER-DEVICE`, `FIFO`,
+        `SYMBOLIC-LINK`, `SOCKET`, or `UNKNOWN`
+    
+        - `perm` (string): a string giving UNIX-style permissions for the file (ex:
+        `-rwxr-xr-x`)
+    
+        - `data` (binary): this key is only present if
+        `sftp-polling-file-connection` not set; in this case the remote file data is
+        retrieved in memory and stored in this key as binary data
+    
+        - `filepath` (string): the remote filepath relative to SFTP root directory
+    
+        - `order_status` (string): the status of the new order created (`READY` or
+        `BLOCKED`)
+    
+        - `workflow_instanceid` (int): the ID of the new workflow order
+    
+        - `duplicate` (bool): a boolean value indicating if the order is a duplicate
+        order (only `True` if `create-workflow-duplicate-handling` = `SUCCESS`)
+    
+    
+        If `sftp-polling-file-connection` is set, the `$local:input` includes the
+        following keys:
+    
+        - `local_path` (string): the target path for the file where the file will be
+        moved to in the post event action
+    
+        - `tmp_filename` (string): the temporary filename used to store the file
+        until the post action
+    
+        - `tmp_path` (string): the current temporary path on the filesystem of the
+        file
+    
+        - `transfer_time` (date): a relative date/time value giving the time it took
+        to transfer the file
+  - name: create-workflow-specific-unique-key
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrderStatic
+        interface-version: '1.0'
+    description: >-
+        An optional hash of order keys that will ensure uniqueness for a particular
+        workflow (workflowid or name and version); the keys in this hash must
+        correspond to registered workflow order keys, the values are one or more key
+        values.  These keys can be used to quickly search for workflow order data.
+    
+        If a workflow order for the same exact workflow (workflowid) has one of the
+        given key/value combinations already, then the workflow order creation
+        duplicate logic will be triggered.
+    
+    
+        For resolving template values `$local:input` is a hash with the following
+        values:
+    
+    
+        - `name` (string): the name of the file polled
+    
+        - `size` (int): the size of the file in bytes
+    
+        - `uid` (int): the UID of the owner of the file
+    
+        - `gid` (int): the GID of the owner of the file
+    
+        - `mode` (string): the permissions / mode of the file
+    
+        - `atime` (date): the last accessed date/time of the file
+    
+        - `mtime` (date): the last modified date/time of the file
+    
+        - `type` (string): the type of file; one of: `REGULAR`, `DIRECTORY`,
+        `SYMBOLIC-LINK`, `BLOCK-DEVICE`, `CHARACTER-DEVICE`, `FIFO`,
+        `SYMBOLIC-LINK`, `SOCKET`, or `UNKNOWN`
+    
+        - `perm` (string): a string giving UNIX-style permissions for the file (ex:
+        `-rwxr-xr-x`)
+    
+        - `data` (binary): this key is only present if
+        `sftp-polling-file-connection` not set; in this case the remote file data is
+        retrieved in memory and stored in this key as binary data
+    
+        - `filepath` (string): the remote filepath relative to SFTP root directory
+    
+        - `order_status` (string): the status of the new order created (`READY` or
+        `BLOCKED`)
+    
+        - `workflow_instanceid` (int): the ID of the new workflow order
+    
+        - `duplicate` (bool): a boolean value indicating if the order is a duplicate
+        order (only `True` if `create-workflow-duplicate-handling` = `SUCCESS`)
+    
+    
+        If `sftp-polling-file-connection` is set, the `$local:input` includes the
+        following keys:
+    
+        - `local_path` (string): the target path for the file where the file will be
+        moved to in the post event action
+    
+        - `tmp_filename` (string): the temporary filename used to store the file
+        until the post action
+    
+        - `tmp_path` (string): the current temporary path on the filesystem of the
+        file
+    
+        - `transfer_time` (date): a relative date/time value giving the time it took
+        to transfer the file
+  - name: create-workflow-unique-key
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrderStatic
+        interface-version: '1.0'
+    description: >-
+        An optional hash of order keys that will ensure uniqueness for a particular
+        workflow name (across all versions); the keys in this hash must correspond
+        to registered workflow order keys, the values are one or more key values.
+        These keys can be used to quickly search for workflow order data.
+    
+        If a workflow order for the same workflow name (across all version) has one
+        of the given key/value combinations already, then the workflow order
+        creation duplicate logic will be triggered.
+    
+    
+        For resolving template values `$local:input` is a hash with the following
+        values:
+    
+    
+        - `name` (string): the name of the file polled
+    
+        - `size` (int): the size of the file in bytes
+    
+        - `uid` (int): the UID of the owner of the file
+    
+        - `gid` (int): the GID of the owner of the file
+    
+        - `mode` (string): the permissions / mode of the file
+    
+        - `atime` (date): the last accessed date/time of the file
+    
+        - `mtime` (date): the last modified date/time of the file
+    
+        - `type` (string): the type of file; one of: `REGULAR`, `DIRECTORY`,
+        `SYMBOLIC-LINK`, `BLOCK-DEVICE`, `CHARACTER-DEVICE`, `FIFO`,
+        `SYMBOLIC-LINK`, `SOCKET`, or `UNKNOWN`
+    
+        - `perm` (string): a string giving UNIX-style permissions for the file (ex:
+        `-rwxr-xr-x`)
+    
+        - `data` (binary): this key is only present if
+        `sftp-polling-file-connection` not set; in this case the remote file data is
+        retrieved in memory and stored in this key as binary data
+    
+        - `filepath` (string): the remote filepath relative to SFTP root directory
+    
+        - `order_status` (string): the status of the new order created (`READY` or
+        `BLOCKED`)
+    
+        - `workflow_instanceid` (int): the ID of the new workflow order
+    
+        - `duplicate` (bool): a boolean value indicating if the order is a duplicate
+        order (only `True` if `create-workflow-duplicate-handling` = `SUCCESS`)
+    
+    
+        If `sftp-polling-file-connection` is set, the `$local:input` includes the
+        following keys:
+    
+        - `local_path` (string): the target path for the file where the file will be
+        moved to in the post event action
+    
+        - `tmp_filename` (string): the temporary filename used to store the file
+        until the post action
+    
+        - `tmp_path` (string): the current temporary path on the filesystem of the
+        file
+    
+        - `transfer_time` (date): a relative date/time value giving the time it took
+        to transfer the file
+  - name: create-workflow-global-unique-key
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrderStatic
+        interface-version: '1.0'
+    description: >-
+        An optional hash of order keys that will ensure uniqueness across all
+        workflows in the given Qorus instance; the keys in this hash must correspond
+        to registered workflow order keys, the values are one or more key values.
+        These keys can be used to quickly search for workflow order data.
+    
+        If a workflow order already exists with one of the given key/value
+        combinations already, then the workflow order creation duplicate logic will
+        be triggered.
+    
+    
+        For resolving template values `$local:input` is a hash with the following
+        values:
+    
+    
+        - `name` (string): the name of the file polled
+    
+        - `size` (int): the size of the file in bytes
+    
+        - `uid` (int): the UID of the owner of the file
+    
+        - `gid` (int): the GID of the owner of the file
+    
+        - `mode` (string): the permissions / mode of the file
+    
+        - `atime` (date): the last accessed date/time of the file
+    
+        - `mtime` (date): the last modified date/time of the file
+    
+        - `type` (string): the type of file; one of: `REGULAR`, `DIRECTORY`,
+        `SYMBOLIC-LINK`, `BLOCK-DEVICE`, `CHARACTER-DEVICE`, `FIFO`,
+        `SYMBOLIC-LINK`, `SOCKET`, or `UNKNOWN`
+    
+        - `perm` (string): a string giving UNIX-style permissions for the file (ex:
+        `-rwxr-xr-x`)
+    
+        - `data` (binary): this key is only present if
+        `sftp-polling-file-connection` not set; in this case the remote file data is
+        retrieved in memory and stored in this key as binary data
+    
+        - `filepath` (string): the remote filepath relative to SFTP root directory
+    
+        - `order_status` (string): the status of the new order created (`READY` or
+        `BLOCKED`)
+    
+        - `workflow_instanceid` (int): the ID of the new workflow order
+    
+        - `duplicate` (bool): a boolean value indicating if the order is a duplicate
+        order (only `True` if `create-workflow-duplicate-handling` = `SUCCESS`)
+    
+    
+        If `sftp-polling-file-connection` is set, the `$local:input` includes the
+        following keys:
+    
+        - `local_path` (string): the target path for the file where the file will be
+        moved to in the post event action
+    
+        - `tmp_filename` (string): the temporary filename used to store the file
+        until the post action
+    
+        - `tmp_path` (string): the current temporary path on the filesystem of the
+        file
+    
+        - `transfer_time` (date): a relative date/time value giving the time it took
+        to transfer the file
+  - name: create-workflow-parent-workflow-id
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrderStatic
+        interface-version: '1.0'
+    description: >-
+        An optional parent workflow order instance ID to provide a loosely-coupled
+        parent-child relationship for the new order.
+    
+    
+        For resolving template values `$local:input` is a hash with the following
+        values:
+    
+    
+        - `name` (string): the name of the file polled
+    
+        - `size` (int): the size of the file in bytes
+    
+        - `uid` (int): the UID of the owner of the file
+    
+        - `gid` (int): the GID of the owner of the file
+    
+        - `mode` (string): the permissions / mode of the file
+    
+        - `atime` (date): the last accessed date/time of the file
+    
+        - `mtime` (date): the last modified date/time of the file
+    
+        - `type` (string): the type of file; one of: `REGULAR`, `DIRECTORY`,
+        `SYMBOLIC-LINK`, `BLOCK-DEVICE`, `CHARACTER-DEVICE`, `FIFO`,
+        `SYMBOLIC-LINK`, `SOCKET`, or `UNKNOWN`
+    
+        - `perm` (string): a string giving UNIX-style permissions for the file (ex:
+        `-rwxr-xr-x`)
+    
+        - `data` (binary): this key is only present if
+        `sftp-polling-file-connection` not set; in this case the remote file data is
+        retrieved in memory and stored in this key as binary data
+    
+        - `filepath` (string): the remote filepath relative to SFTP root directory
+    
+        - `order_status` (string): the status of the new order created (`READY` or
+        `BLOCKED`)
+    
+        - `workflow_instanceid` (int): the ID of the new workflow order
+    
+        - `duplicate` (bool): a boolean value indicating if the order is a duplicate
+        order (only `True` if `create-workflow-duplicate-handling` = `SUCCESS`)
+    
+    
+        If `sftp-polling-file-connection` is set, the `$local:input` includes the
+        following keys:
+    
+        - `local_path` (string): the target path for the file where the file will be
+        moved to in the post event action
+    
+        - `tmp_filename` (string): the temporary filename used to store the file
+        until the post action
+    
+        - `tmp_path` (string): the current temporary path on the filesystem of the
+        file
+    
+        - `transfer_time` (date): a relative date/time value giving the time it took
+        to transfer the file
+  - name: create-workflow-priority
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrderStatic
+        interface-version: '1.0'
+    description: >-
+        The workflow order priority value from 0 - 999; priority 0 is the highest;
+        999 is the lowest.
+    
+    
+        For resolving template values `$local:input` is a hash with the following
+        values:
+    
+    
+        - `name` (string): the name of the file polled
+    
+        - `size` (int): the size of the file in bytes
+    
+        - `uid` (int): the UID of the owner of the file
+    
+        - `gid` (int): the GID of the owner of the file
+    
+        - `mode` (string): the permissions / mode of the file
+    
+        - `atime` (date): the last accessed date/time of the file
+    
+        - `mtime` (date): the last modified date/time of the file
+    
+        - `type` (string): the type of file; one of: `REGULAR`, `DIRECTORY`,
+        `SYMBOLIC-LINK`, `BLOCK-DEVICE`, `CHARACTER-DEVICE`, `FIFO`,
+        `SYMBOLIC-LINK`, `SOCKET`, or `UNKNOWN`
+    
+        - `perm` (string): a string giving UNIX-style permissions for the file (ex:
+        `-rwxr-xr-x`)
+    
+        - `data` (binary): this key is only present if
+        `sftp-polling-file-connection` not set; in this case the remote file data is
+        retrieved in memory and stored in this key as binary data
+    
+        - `filepath` (string): the remote filepath relative to SFTP root directory
+    
+        - `order_status` (string): the status of the new order created (`READY` or
+        `BLOCKED`)
+    
+        - `workflow_instanceid` (int): the ID of the new workflow order
+    
+        - `duplicate` (bool): a boolean value indicating if the order is a duplicate
+        order (only `True` if `create-workflow-duplicate-handling` = `SUCCESS`)
+    
+    
+        If `sftp-polling-file-connection` is set, the `$local:input` includes the
+        following keys:
+    
+        - `local_path` (string): the target path for the file where the file will be
+        moved to in the post event action
+    
+        - `tmp_filename` (string): the temporary filename used to store the file
+        until the post action
+    
+        - `tmp_path` (string): the current temporary path on the filesystem of the
+        file
+    
+        - `transfer_time` (date): a relative date/time value giving the time it took
+        to transfer the file
+    default_value_true_type: int
+  - name: create-workflow-scheduled
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrderStatic
+        interface-version: '1.0'
+    description: >-
+        The workflow order scheduled date; if this value is set, then the order
+        cannot be processed before the given date/time value.
+    
+    
+        For resolving template values `$local:input` is a hash with the following
+        values:
+    
+    
+        - `name` (string): the name of the file polled
+    
+        - `size` (int): the size of the file in bytes
+    
+        - `uid` (int): the UID of the owner of the file
+    
+        - `gid` (int): the GID of the owner of the file
+    
+        - `mode` (string): the permissions / mode of the file
+    
+        - `atime` (date): the last accessed date/time of the file
+    
+        - `mtime` (date): the last modified date/time of the file
+    
+        - `type` (string): the type of file; one of: `REGULAR`, `DIRECTORY`,
+        `SYMBOLIC-LINK`, `BLOCK-DEVICE`, `CHARACTER-DEVICE`, `FIFO`,
+        `SYMBOLIC-LINK`, `SOCKET`, or `UNKNOWN`
+    
+        - `perm` (string): a string giving UNIX-style permissions for the file (ex:
+        `-rwxr-xr-x`)
+    
+        - `data` (binary): this key is only present if
+        `sftp-polling-file-connection` not set; in this case the remote file data is
+        retrieved in memory and stored in this key as binary data
+    
+        - `filepath` (string): the remote filepath relative to SFTP root directory
+    
+        - `order_status` (string): the status of the new order created (`READY` or
+        `BLOCKED`)
+    
+        - `workflow_instanceid` (int): the ID of the new workflow order
+    
+        - `duplicate` (bool): a boolean value indicating if the order is a duplicate
+        order (only `True` if `create-workflow-duplicate-handling` = `SUCCESS`)
+    
+    
+        If `sftp-polling-file-connection` is set, the `$local:input` includes the
+        following keys:
+    
+        - `local_path` (string): the target path for the file where the file will be
+        moved to in the post event action
+    
+        - `tmp_filename` (string): the temporary filename used to store the file
+        until the post action
+    
+        - `tmp_path` (string): the current temporary path on the filesystem of the
+        file
+    
+        - `transfer_time` (date): a relative date/time value giving the time it took
+        to transfer the file
+  - name: sftp-polling-duplicate-file-connection
+    default_value:
+        null
+    description: >
+        "the name of a local file connection where to save duplicate files;
+        "sftp-polling-duplicate-file-name" can be set to give a subdirectory path
+        offset from the connection"
+    config_group: SFTP Polling Workflow Creation Duplicate File Handling
+    strictly_local: true
+    type: "*connection"
+  - name: sftp-polling-duplicate-name-template
+    default_value:
+        "$local:name-$timestamp:{YYYY-MM-DD HH:mm:SS.xx}"
+    description: >
+        "the filename template for the target file when moving duplicate files; only
+        used if "sftp-polling-file-connection" and
+        "sftp-polling-duplicate-file-connection" are set; the filesystem event info
+        is available in the local context; this configuration item can also be used
+        to provide a subdirectory from the file connection in which to store
+        duplicate files"
+    strictly_local: true
+    config_group: SFTP Polling Workflow Creation Duplicate File Handling
+  - name: sftp-polling-duplicate-workflow-name
+    default_value:
+        null
+    description: >
+        "the name of the workflow for duplicate file handling; if not set (the
+        default), no workflow order will be created; only used if
+        "sftp-polling-file-connection" and "sftp-polling-duplicate-order-mapper" are
+        also set"
+    config_group: SFTP Polling Workflow Creation Duplicate File Handling
+    strictly_local: true
+    type: "*workflow"
+  - name: sftp-polling-duplicate-workflow-version
+    default_value:
+        null
+    type: "*string"
+    description: >
+        the version of the workflow for duplicate file handling; if not set (the
+        default), the latest version will be used"
+    strictly_local: true
+    config_group: SFTP Polling Workflow Creation Duplicate File Handling
+  - name: sftp-polling-duplicate-order-mapper
+    default_value:
+        null
+    type: "*string"
+    description: >
+        "the mapper for creating duplicate orders, only used if
+        "sftp-polling-file-connection" and "sftp-polling-duplicate-order-mapper" are
+        also set; the local file path is available as "$local:local_path" and if
+        "sftp-polling-duplicate-file-connection" is set, then the new name is
+        available as "$local:new_name""
+    strictly_local: true
+    config_group: SFTP Polling Workflow Creation Duplicate File Handling
+  - name: sftp-polling-duplicate-staticdata
+    default_value:
+        null
+    description: A hash providing the initial workflow order static data
+    config_group: SFTP Polling Workflow Creation Duplicate Order Data
+    strictly_local: true
+    type: "*hash"
+  - name: sftp-polling-duplicate-sensitivedata
+    default_value:
+        null
+    config_group: SFTP Polling Workflow Creation Duplicate Order Data
+    description: An optional hash providing the initial workflow order sensitive data
+    strictly_local: true
+    type: "*hash"
+  - name: sftp-polling-duplicate-dynamicdata
+    default_value:
+        null
+    config_group: SFTP Polling Workflow Creation Duplicate Order Data
+    description: An optional hash providing the initial workflow order dynamic data
+    strictly_local: true
+    type: "*hash"
+  - name: sftp-polling-duplicate-tempdata
+    default_value:
+        null
+    config_group: SFTP Polling Workflow Creation Duplicate Order Data
+    description: >-
+        An optional hash providing the initial workflow order temporary / scratch
+        data
+    strictly_local: true
+    type: "*hash"
+  - name: sftp-polling-duplicate-external-id
+    default_value:
+        null
+    config_group: SFTP Polling Workflow Creation Duplicate Order Data
+    description: >-
+        An optional external order ID; not a unique key for the order; use order
+        keys for generic order key references
+    strictly_local: true
+    type: "*hash"
+  - name: sftp-polling-duplicate-order-keys
+    default_value:
+        null
+    config_group: SFTP Polling Workflow Creation Duplicate Order Keys
+    description: >-
+        An optional hash of order keys; the keys in this hash must correspond to
+        registered workflow order keys, the values are one or more key values. These
+        keys can be used to quickly search for workflow order data
+    strictly_local: true
+    type: "*hash"
+  - name: sftp-polling-duplicate-specific-unique-key
+    default_value:
+        null
+    config_group: SFTP Polling Workflow Creation Duplicate Order Keys
+    description: >-
+        An optional hash of order keys that will ensure uniqueness for a particular
+        workflow (workflowid or name and version); the keys in this hash must
+        correspond to registered workflow order keys, the values are one or more key
+        values.  These keys can be used to quickly search for workflow order data.
+    
+        If a workflow order for the same exact workflow (workflowid) has one of the
+        given key/value combinations already, then the workflow order creation
+        duplicate logic will be triggered.
+    strictly_local: true
+    type: "*hash"
+  - name: sftp-polling-duplicate-unique-key
+    default_value:
+        null
+    config_group: SFTP Polling Workflow Creation Duplicate Order Keys
+    description: >-
+        An optional hash of order keys that will ensure uniqueness for a particular
+        workflow name (across all versions); the keys in this hash must correspond
+        to registered workflow order keys, the values are one or more key values.
+        These keys can be used to quickly search for workflow order data.
+    
+        If a workflow order for the same workflow name (across all version) has one
+        of the given key/value combinations already, then the workflow order
+        creation duplicate logic will be triggered.
+    strictly_local: true
+    type: "*hash"
+  - name: sftp-polling-duplicate-global-unique-key
+    default_value:
+        null
+    config_group: SFTP Polling Workflow Creation Duplicate Order Keys
+    description: >-
+        An optional hash of order keys that will ensure uniqueness across all
+        workflows in the given Qorus instance; the keys in this hash must correspond
+        to registered workflow order keys, the values are one or more key values.
+        These keys can be used to quickly search for workflow order data.
+    
+        If a workflow order already exists with one of the given key/value
+        combinations already, then the workflow order creation duplicate logic will
+        be triggered.
+    strictly_local: true
+    type: "*hash"
+  - name: sftp-polling-duplicate-parent-workflow-id
+    default_value:
+        null
+    config_group: SFTP Polling Workflow Creation Duplicate Additional Info
+    description: >-
+        An optional parent workflow order instance ID to provide a loosely-coupled
+        parent-child relationship for the new order
+    strictly_local: true
+    type: "*int"
+  - name: sftp-polling-duplicate-priority
+    default_value:
+        500
+    config_group: SFTP Polling Workflow Creation Duplicate Additional Info
+    description: >-
+        The workflow order priority value from 0 - 999; priority 0 is the highest;
+        999 is the lowest
+    strictly_local: true
+    type: int
+  - name: sftp-polling-duplicate-scheduled
+    default_value:
+        null
+    config_group: SFTP Polling Workflow Creation Duplicate Additional Info
+    description: >-
+        The workflow order scheduled date; if this value is set, then the order
+        cannot be processed before the given date/time value
+    strictly_local: true
+    type: "*date"

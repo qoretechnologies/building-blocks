@@ -1,0 +1,76 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_AutoMapperRecordStep
+desc: >-
+    ## Summary
+
+
+    Step base class for running a mapper with a record-based output data
+    provider in autonomous mode, meaning that the input and output data are
+    provided by data providers configured in the mapper.
+
+
+    Use this object's configuration to provide input or search filtering as well
+    as to tune the output data handling.
+
+
+    ## Connectors
+
+
+    There are no connectors in this building block, as it is already a step
+    class with the `primary()` and `validation()` methods implemented to execute
+    the auto mapper configuration.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusNormalStep
+requires:
+  - BBM_AutoMapperRecord
+version: '1.0'
+code: BBM_AutoMapperRecordStep-1.0.qclass
+config-items:
+  - name: automapper-mapper-name
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapperRecord
+        interface-version: '1.0'
+  - name: automapper-recovery-field
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapperRecord
+        interface-version: '1.0'
+  - name: automapper-recovery-value-template
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapperRecord
+        interface-version: '1.0'
+  - name: automapper-input-request
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapperRecord
+        interface-version: '1.0'
+  - name: automapper-input-request-options
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapperRecord
+        interface-version: '1.0'
+  - name: automapper-input-search
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapperRecord
+        interface-version: '1.0'
+  - name: automapper-input-search-options
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapperRecord
+        interface-version: '1.0'
+  - name: automapper-output-upsert
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapperRecord
+        interface-version: '1.0'
+  - name: automapper-output-request-options
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapperRecord
+        interface-version: '1.0'

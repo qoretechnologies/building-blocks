@@ -1,0 +1,25 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_MqttPahoClient
+desc: >-
+    ## Summary
+
+
+    [MQTT Paho](https://www.eclipse.org/paho/) client for publishing and
+    listening to MQTT messages.
+
+
+    This class is the base class for the publishing and listening classes. 
+    There are no connectors; it is driven entierly by configuration.
+lang: java
+author:
+  - Qore Technologies, s.r.o.
+tags:
+    classpath: $OMQ_DIR/user/building-blocks/mqtt-paho/jar/org.eclipse.paho.client.mqttv3-1.2.5.jar
+version: '1.0'
+code: bbm_mqttpahoclient_1_0_class/BBM_MqttPahoClient.java
+config-items:
+  - name: mqtt-paho-connection-name
+    description: The name of the MQTT Paho connection to use
+    config_group: MQTT Paho Main
+    type: connection

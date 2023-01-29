@@ -1,0 +1,54 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_PauseDataPassthru
+desc: >-
+    ## Summary
+
+
+    A building block that executes a configurable pause or delay.
+
+
+    The `pause` connector passes through any data as-is when used in a
+    connection.
+
+
+    Note that if the interface shuts down while the pause is in action, a
+    `RETRY-ERROR` will be thrown to ensure a retry when used in a workflow
+    context.
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `pause`
+
+
+    Performs a configurable pause based on the config item values resolved.
+
+
+    Input data is available as `$local:input` when resolving config items with
+    this connector.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: pause
+    type: input-output
+    method: pause
+version: '1.0'
+code: BBM_PauseDataPassthru-1.0.qclass
+config-items:
+  - name: pause-criterion
+    description: >-
+        If this config item returns `true`, then the pause is executed, if not, no
+        pause is performed
+    config_group: Pause Main
+    type: bool
+    strictly_local: true
+  - name: pause-delay-ms
+    description: >-
+        The amount of time to pause as an integer in milliseconds, only takes effect
+        if the `pause-criterion` confi item is `true`
+    config_group: Pause Main
+    type: int
+    strictly_local: true

@@ -1,0 +1,295 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_SftpPollerCreateOrderJob
+desc: >-
+    ## Summary 
+
+
+    Building block job base class for polling for files from an SFTP server and
+    creating a workflow order from files polled.
+
+
+    The local context data for the internal workflow order creation call is the
+    file event data as described by data type
+    `qoretechnologies/building-blocks/sftp/event`; therefore this information
+    can be used when creating the order; for example
+    `create-workflow-staticdata` = `$local:*` would set the initial static order
+    data to the file event hash.
+
+
+    Duplicates can be detected from order keys, i.e. if one of the following
+    config items is used: 
+
+    - `create-workflow-specific-unique-key`
+
+    - `create-workflow-unique-key`
+
+    - `create-workflow-global-unique-key`
+
+
+    In this case this object also contains configuration that allows for an
+    alternative "duplicate-file-handling" workflow order to be created.  See
+    config items in the **SFTP Polling Workflow Creation Duplicate File
+    Handling** group for more information.
+
+
+    **Note** The `sftp-polling-interval-secs` config item is always ignored in
+    this class; this class must be used as the base class for a job, and the
+    job's schedule determines the polling interval.
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `runJob`
+
+
+    Runs the poll action once.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusJob
+class-connectors:
+  - name: runJob
+    type: input-output
+    method: runJob
+requires:
+  - BBM_SftpPollerCreateOrder
+version: '1.0'
+code: BBM_SftpPollerCreateOrderJob-v1.0.qclass
+config-items:
+  - name: create-workflow-order-mapper
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-name
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-version
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-order-status
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-duplicate-handling
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-connection-name
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-mask
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-mask-regex
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-regex-options
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-file-connection
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-file-name
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-file-temp-template
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-minage
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-encoding
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-delete-file
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-move-target
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-duplicate-file-connection
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-duplicate-name-template
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-duplicate-workflow-name
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-duplicate-workflow-version
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-duplicate-order-mapper
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-output-data
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-interval-secs
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-staticdata
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-sensitivedata
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-dynamicdata
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-tempdata
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-external-id
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-order-keys
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-specific-unique-key
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-unique-key
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-global-unique-key
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-parent-workflow-id
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-priority
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-scheduled
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-duplicate-staticdata
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-duplicate-sensitivedata
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-duplicate-dynamicdata
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-duplicate-tempdata
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-duplicate-external-id
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-duplicate-order-keys
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-duplicate-specific-unique-key
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-duplicate-unique-key
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-duplicate-global-unique-key
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-duplicate-parent-workflow-id
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-duplicate-priority
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'
+  - name: sftp-polling-duplicate-scheduled
+    parent:
+        interface-type: class
+        interface-name: BBM_SftpPollerCreateOrder
+        interface-version: '1.0'

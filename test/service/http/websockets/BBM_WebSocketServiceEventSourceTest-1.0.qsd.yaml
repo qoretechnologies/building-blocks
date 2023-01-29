@@ -1,0 +1,123 @@
+# This is a generated file, don't edit!
+type: service
+name: BBM_WebSocketServiceEventSourceTest
+desc: test for the WS service event source BB
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusService
+class-name: BBM_WebSocketServiceEventSourceTest
+classes:
+  - BBM_WebSocketServiceEventSource
+groups:
+  - bb-test
+  - test
+remote: false
+version: '1.0'
+servicetype: USER
+code: BBM_WebSocketServiceEventSourceTest-1.0.qsd
+config-items:
+  - name: http-listener-bind-address
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: http-listener-cert-location
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: http-listener-cert-format
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: http-listener-key-location
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: http-listener-key-format
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: http-listener-key-password
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: http-listener-ssl-mode
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: http-listener-accept-all-certs
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: http-listener-capture-client-certs
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-root-uri
+    value:
+        "websocket-service-event-test"
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-auth-name
+    value:
+        "permissive"
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-cors-enable
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-cors-methods
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-cors-max-age
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-cors-headers
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-cors-credentials
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-auth-cookie
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-auth-redirect
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: http-listener-allow-sharing
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+methods:
+  - name: init
+    desc: init method
+  - name: getLastEvent
+    desc: returns the last event hash, if any

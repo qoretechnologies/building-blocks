@@ -1,0 +1,29 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_DataProviderRecordCreateBase
+desc: >-
+    ## Summary
+
+
+    Base class for building block classes for creating records in record-based
+    data providers.
+
+
+    This base class has no configuration; see `BBM_DataProviderRecordCreate` for
+    a usable building block with connectors and configuration.
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the
+    `data-provider/create` API data provider in the `qorus-api` factory instead
+
+
+    ## References
+
+
+    See `BBM_DataProviderRecordCreate`
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+version: '1.0'
+code: BBM_DataProviderRecordCreateBase-1.0.qclass

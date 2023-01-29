@@ -1,0 +1,152 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_AwsSnsServiceEventSource
+desc: >
+    ## Summary
+
+
+    Base AWS [Simple Notification Service][Simple Notification Service] handler
+    service event source class.
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `snsEvent`
+
+
+    Provides SNS event information when it's received by this class.
+
+
+    ## References
+
+
+    See `BBM_AwsSnsServiceBase`
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: BBM_AwsSnsServiceBase
+class-connectors:
+  - name: snsEvent
+    type: event
+    method: snsEvent
+    output-provider:
+        type: type
+        name: qoretechnologies
+        can_manage_fields: false
+        path: /building-blocks/aws/sns/notification
+requires:
+  - BBM_AwsSnsServiceBase
+version: '1.0'
+code: BBM_AwsSnsServiceEventSource-1.0.qclass
+config-items:
+  - name: http-listener-bind-address
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: http-listener-cert-location
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: http-listener-cert-format
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: http-listener-key-location
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: http-listener-key-format
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: http-listener-key-password
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: http-listener-ssl-mode
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: http-listener-accept-all-certs
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: http-listener-capture-client-certs
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: rest-root-uri
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: rest-auth-name
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: rest-swagger-schema
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: aws-sns-confirm-subscription
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: rest-cors-enable
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: rest-cors-methods
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: rest-cors-max-age
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: rest-cors-headers
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: rest-auth-cookie
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: rest-auth-redirect
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: rest-remove-leading-path-components
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: rest-cors-credentials
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: http-listener-allow-sharing
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'

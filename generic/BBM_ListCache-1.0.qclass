@@ -1,0 +1,28 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_ListCache {
+    private {
+        softlist<auto> cache;
+    }
+
+    #! connector method for adding data to the cache
+    auto cacheData(auto input) {
+        auto entry = UserApi::getConfigItemValue("list-cache-data", {"input": input});
+        UserApi::logDebug("BBM_ListCache::cacheData() input: %y caching entry: %y", input, entry);
+        cache += entry;
+        return entry;
+    }
+
+    #! connector method for returning all data in the cache
+    *list<auto> getData(auto ignored) {
+        return cache;
+    }
+
+    #! connector method for clearing the cache
+    *list<auto> clear(auto ignored) {
+        return remove cache;
+    }
+}

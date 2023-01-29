@@ -1,0 +1,281 @@
+# This is a generated file, don't edit!
+type: type
+path: qoretechnologies/building-blocks/rest-action/response
+typeinfo:
+    base_type: hash<auto>
+    can_manage_fields: true
+    fields:
+        body:
+            canBeNull: false
+            desc: the deserialized REST response message body
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: body
+            type:
+                base_type: auto
+                can_manage_fields: true
+                fields: {}
+                mandatory: false
+                name: auto
+                options: null
+                supported_options: null
+                typename: any
+                types_accepted:
+                    - any
+                types_returned:
+                    - any
+        request-headers:
+            canBeNull: true
+            desc: a hash of HTTP request headers
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: request-headers
+            type:
+                base_type: hash<auto>
+                can_manage_fields: true
+                fields: {}
+                mandatory: false
+                name: '*hash<auto>'
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: '*hash'
+                types_accepted:
+                    - hash<auto>
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - hash<auto>
+                    - nothing
+        request-serialization:
+            canBeNull: true
+            desc: the type of message serialization in the request
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: request-serialization
+            type:
+                base_type: string
+                can_manage_fields: false
+                fields: {}
+                mandatory: false
+                name: '*string'
+                options: null
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                    string.empty_to_nothing:
+                        desc: if an empty string should be converted to no value
+                        type: bool
+                    string.encoding:
+                        desc: the output encoding when writing to the type
+                        type: string
+                    string.max_size_chars:
+                        desc: the maximum length of the string in characters
+                        type: integer
+                typename: '*string'
+                types_accepted:
+                    - string
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - string
+                    - nothing
+        request-uri:
+            canBeNull: true
+            desc: >-
+                the request URI string (ex: `POST /services/async/38.0/job
+                HTTP/1.1`)
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: request-uri
+            type:
+                base_type: string
+                can_manage_fields: false
+                fields: {}
+                mandatory: false
+                name: '*string'
+                options: null
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                    string.empty_to_nothing:
+                        desc: if an empty string should be converted to no value
+                        type: bool
+                    string.encoding:
+                        desc: the output encoding when writing to the type
+                        type: string
+                    string.max_size_chars:
+                        desc: the maximum length of the string in characters
+                        type: integer
+                typename: '*string'
+                types_accepted:
+                    - string
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - string
+                    - nothing
+        response-chunked:
+            canBeNull: false
+            desc: >-
+                a boolean flag indicating if the response was subject to chunked
+                `Transfer-Encoding` or not
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: response-chunked
+            type:
+                base_type: bool
+                can_manage_fields: false
+                fields: {}
+                mandatory: true
+                name: bool
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: bool
+                types_accepted:
+                    - bool
+                types_returned:
+                    - bool
+        response-code:
+            canBeNull: false
+            desc: the HTTP response code
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: response-code
+            type:
+                base_type: int
+                can_manage_fields: false
+                fields: {}
+                mandatory: true
+                name: int
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: int
+                types_accepted:
+                    - int
+                types_returned:
+                    - int
+        response-headers:
+            canBeNull: false
+            desc: a hash of HTTP headers in the response
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: response-headers
+            type:
+                base_type: hash<auto>
+                can_manage_fields: true
+                fields: {}
+                mandatory: false
+                name: '*hash<auto>'
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: '*hash'
+                types_accepted:
+                    - hash<auto>
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - hash<auto>
+                    - nothing
+        response-serialization:
+            canBeNull: true
+            desc: the type of message serialization in the response
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: response-serialization
+            type:
+                base_type: string
+                can_manage_fields: false
+                fields: {}
+                mandatory: false
+                name: '*string'
+                options: null
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                    string.empty_to_nothing:
+                        desc: if an empty string should be converted to no value
+                        type: bool
+                    string.encoding:
+                        desc: the output encoding when writing to the type
+                        type: string
+                    string.max_size_chars:
+                        desc: the maximum length of the string in characters
+                        type: integer
+                typename: '*string'
+                types_accepted:
+                    - string
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - string
+                    - nothing
+        response-uri:
+            canBeNull: true
+            desc: the HTTP response line
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: response-uri
+            type:
+                base_type: string
+                can_manage_fields: false
+                fields: {}
+                mandatory: false
+                name: '*string'
+                options: null
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                    string.empty_to_nothing:
+                        desc: if an empty string should be converted to no value
+                        type: bool
+                    string.encoding:
+                        desc: the output encoding when writing to the type
+                        type: string
+                    string.max_size_chars:
+                        desc: the maximum length of the string in characters
+                        type: integer
+                typename: '*string'
+                types_accepted:
+                    - string
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - string
+                    - nothing
+    name: hash<auto>

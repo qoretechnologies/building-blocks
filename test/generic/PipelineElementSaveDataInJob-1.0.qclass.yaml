@@ -1,0 +1,12 @@
+# This is a generated file, don't edit!
+type: class
+name: PipelineElementSaveDataInJob
+desc: saves data in a job
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: AbstractDataProcessor
+processor:
+    {}
+version: '1.0'
+code: PipelineElementSaveDataInJob-1.0.qclass

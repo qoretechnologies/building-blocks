@@ -1,0 +1,45 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_ExecSyncWorkflow inherits BBM_CreateOrder {
+    #! create order method suitable for use as an input/output connector
+    /** @param order_data the input order data; should have type
+        \c qoretechnologies/qorus-api/workflows/create-order/request
+
+        @return if no data is set, @ref NOTHING is returned, otherwise in case no iteration key is set, a single hash
+        (connector output type \c qoretechnologies/building-blocks/exec-sync-workflow/response), or if an iteration key has
+        been set a list of hashes of the same type; each hash has the following keys:
+        - \c workflow_instanceid: the workflow instance ID of the order created
+        - \c duplicate: a boolean flag: \c True if the order already existed (config item
+          \c create-workflow-duplicate-handling = \c SUCCESS), \c False if not)
+        - \c status: the order status
+        - \c dynamicdata: any dynamic data in the order
+        - \c error: the last error code added to the order, if any
+        - \c description: the error description for the last error added to the order, if any
+        - \c info: the info hash for the last error added to the order, if any
+    */
+    static auto execSyncWorkflow(auto order_data) {
+        if (!order_data) {
+            return;
+        }
+
+        if (order_data.typeCode() == NT_LIST) {
+            if (order_data.lsize() == 1) {
+                order_data = order_data[0];
+            } else {
+                return map BBM_ExecSyncWorkflow::execSyncWorkflowIntern($1), order_data;
+            }
+        }
+
+        return BBM_ExecSyncWorkflow::execSyncWorkflowIntern(order_data);
+    }
+
+    static hash<auto> execSyncWorkflowIntern(hash<auto> order_data) {
+        bool dup;
+        hash<auto> rv = doWorkflowIntern(order_data, <CreateOrderOptionInfo>{}, \dup, True);
+        rv.duplicate = dup;
+        return rv;
+    }
+}

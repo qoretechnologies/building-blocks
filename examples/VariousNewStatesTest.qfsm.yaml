@@ -1,0 +1,378 @@
+# This is a generated file, don't edit!
+type: fsm
+name: VariousNewStatesTest
+desc: Testing of all new states
+input-type:
+    type: type
+    name: qore
+    can_manage_fields: true
+    descriptions:
+        - type entry group
+        - Qore data type "hash<auto>"
+    path: /hash
+output-type:
+    type: factory
+    name: qorus-api
+    descriptions:
+        - >-
+            Data provider for database `pgsql:omquser@omquser`; use the search API
+            with the `sql` and `args` arguments to execute record-based queries
+        - >-
+            Record-based data provider for db table `public.bb_local`; supports
+            create, read/search, update, delete, upsert, and bulk operations
+        - >-
+            Top-level Qorus API data provider; request/response (API) data providers
+            are provided as children
+        - >-
+            Top-level Qorus API data provider; request/response (API) data providers
+            are provided as children
+        - >-
+            Record-based data provider for db table `public.bb_local`; supports
+            create, read/search, update, delete, upsert, and bulk operations
+        - >-
+            Data provider providing child request-response data providers
+            representing supported Data Provider APIs in Qorus
+        - >-
+            Top-level Qorus API data provider; request/response (API) data providers
+            are provided as children
+        - >-
+            Data provider providing child request-response data providers
+            representing supported Data Provider APIs in Qorus
+        - >-
+            Request/response data provider: performs a record update action in the
+            given data provider and returns the number of records updated as output
+            data.
+    
+    
+            This API also includes arguments that allow it to do inline recoveries
+            from technical errors; by default up to 3 retries are made up to 5
+            seconds apart; see the `retries`, `retry-delay`, and `retry-errors`
+            arguments.
+        - >-
+            Top-level Qorus API data provider; request/response (API) data providers
+            are provided as children
+        - >-
+            Data provider providing child request-response data providers
+            representing supported Data Provider APIs in Qorus
+        - >-
+            Request/response data provider: performs a record update action in the
+            given data provider and returns the number of records updated as output
+            data.
+    
+    
+            This API also includes arguments that allow it to do inline recoveries
+            from technical errors; by default up to 3 retries are made up to 5
+            seconds apart; see the `retries`, `retry-delay`, and `retry-errors`
+            arguments.
+        - null
+    path: /data-provider/update/request
+states:
+    '1':
+        position:
+            x: 64
+            'y': 94.5
+        initial: true
+        name: State 1
+        desc: ''
+        type: state
+        id: qKzy1geX3
+        action:
+            type: apicall
+            value:
+                type: factory
+                name: qorus-api
+                is_api_call: true
+                supports_request: true
+                supports_read: false
+                supports_update: false
+                supports_create: false
+                supports_delete: false
+                descriptions:
+                    - >-
+                        Top-level Qorus API data provider; request/response (API) data
+                        providers are provided as children
+                    - >-
+                        Top-level Qorus API data provider; request/response (API) data
+                        providers are provided as children
+                    - >-
+                        Data provider providing child request-response data providers
+                        representing supported utility APIs in Qorus
+                    - >-
+                        Top-level Qorus API data provider; request/response (API) data
+                        providers are provided as children
+                    - >-
+                        Data provider providing child request-response data providers
+                        representing supported utility APIs in Qorus
+                    - >-
+                        Request/response data provider: writes a log message to the
+                        current log file.
+        
+        
+                        This API call can only be made internally in Qorus.
+        
+        
+                        This API call does not return any response.
+                path: /util/log-message
+                use_args: true
+                args:
+                    type: hash
+                    value:
+                        level:
+                            type: select-string
+                            value: INFO
+                        message:
+                            type: string
+                            value: This is atest
+        transitions:
+            -
+                state: '2'
+                language: qore
+    '2':
+        position:
+            x: 299
+            'y': 96.484375
+        initial: false
+        name: State 2
+        desc: ''
+        type: state
+        id: iS-XCvpv_
+        action:
+            type: search-single
+            value:
+                type: datasource
+                name: omquser
+                supports_read: true
+                supports_update: true
+                supports_create: true
+                supports_delete: true
+                descriptions:
+                    - >-
+                        Data provider for database `pgsql:omquser@omquser`; use the
+                        search API with the `sql` and `args` arguments to execute
+                        record-based queries
+                    - >-
+                        Record-based data provider for db table `public.table_1`;
+                        supports create, read/search, update, delete, upsert, and bulk
+                        operations
+                path: /table_1
+                search_options:
+                    requires_result:
+                        type: bool
+                        value: false
+                search_args:
+                    input_1:
+                        type: number
+                        value: 2
+                        op:
+                            - not
+                            - '>='
+                    input_2:
+                        type: string
+                        value: '$static:thisIsATest'
+                        op:
+                            - between
+        transitions:
+            -
+                state: '4'
+                language: qore
+    '3':
+        position:
+            x: 176
+            'y': 246.484375
+        initial: false
+        name: State 3
+        desc: ''
+        type: state
+        id: sdYnlZCCc
+        action:
+            type: search
+            value:
+                type: datasource
+                name: omquser
+                supports_read: true
+                supports_update: true
+                supports_create: true
+                supports_delete: true
+                descriptions:
+                    - >-
+                        Data provider for database `pgsql:omquser@omquser`; use the
+                        search API with the `sql` and `args` arguments to execute
+                        record-based queries
+                    - >-
+                        Record-based data provider for db table
+                        `public.regression_streams_target`; supports create,
+                        read/search, update, delete, upsert, and bulk operations
+                path: /regression_streams_target
+                search_options:
+                    requires_result:
+                        type: bool
+                        value: false
+                    limit:
+                        type: int
+                        value: 10
+                search_args:
+                    product_desc:
+                        type: string
+                        value: '%IS_THIS_A_REAL_LIFE%'
+                        op:
+                            - like
+                    cost:
+                        type: number
+                        value: 666
+                        op:
+                            - '>='
+        transitions:
+            -
+                state: '5'
+                language: qore
+    '4':
+        position:
+            x: 534
+            'y': 94.484375
+        initial: false
+        name: State 4
+        desc: ''
+        type: state
+        id: 9buBctiuv
+        action:
+            type: update
+            value:
+                type: datasource
+                name: omquser
+                supports_read: true
+                supports_update: true
+                supports_create: true
+                supports_delete: true
+                descriptions:
+                    - >-
+                        Data provider for database `pgsql:omquser@omquser`; use the
+                        search API with the `sql` and `args` arguments to execute
+                        record-based queries
+                    - >-
+                        Record-based data provider for db table `public.ds_test1`;
+                        supports create, read/search, update, delete, upsert, and bulk
+                        operations
+                path: /ds_test1
+                search_options:
+                    requires_result:
+                        type: bool
+                        value: false
+                    offset:
+                        type: int
+                        value: 10
+                search_args:
+                    status:
+                        type: string
+                        value: '$local:muchtest'
+                        op:
+                            - '='
+                update_args:
+                    updated_id:
+                        type: int
+                        value: 20
+        transitions:
+            -
+                state: '3'
+                language: qore
+    '5':
+        position:
+            x: 477
+            'y': 236.484375
+        initial: false
+        name: State 5
+        desc: ''
+        type: state
+        id: cYd5sGXjc
+        action:
+            type: create
+            value:
+                type: datasource
+                name: omquser
+                supports_read: true
+                supports_update: true
+                supports_create: true
+                supports_delete: true
+                descriptions:
+                    - >-
+                        Data provider for database `pgsql:omquser@omquser`; use the
+                        search API with the `sql` and `args` arguments to execute
+                        record-based queries
+                    - >-
+                        Record-based data provider for db table `public.gl_record`;
+                        supports create, read/search, update, delete, upsert, and bulk
+                        operations
+                path: /gl_record
+                create_args:
+                    -
+                        id:
+                            type: string
+                            value: '1'
+                        ledger_id:
+                            type: number
+                            value: 2
+                        accounting_date:
+                            type: date
+                            value: '2022-07-11T22:00:00.000Z'
+                        tax_code:
+                            type: string
+                            value: test
+                        qorus_wfiid:
+                            type: int
+                            value: 2
+                    -
+                        id:
+                            type: string
+                            value: '2'
+                        ledger_id:
+                            type: number
+                            value: 3
+                        date_created:
+                            type: date
+                            value: '2022-07-14T22:00:00.000Z'
+        transitions:
+            -
+                state: '6'
+                language: qore
+    '6':
+        position:
+            x: 774
+            'y': 234.484375
+        initial: false
+        name: State 6
+        desc: ''
+        type: state
+        id: atMtZunIK
+        action:
+            type: delete
+            value:
+                type: datasource
+                name: omquser
+                supports_read: true
+                supports_update: true
+                supports_create: true
+                supports_delete: true
+                descriptions:
+                    - >-
+                        Data provider for database `pgsql:omquser@omquser`; use the
+                        search API with the `sql` and `args` arguments to execute
+                        record-based queries
+                    - >-
+                        Record-based data provider for db table
+                        `public.erp_order_import`; supports create, read/search, update,
+                        delete, upsert, and bulk operations
+                path: /erp_order_import
+                search_options:
+                    requires_result:
+                        type: bool
+                        value: false
+                search_args:
+                    currency:
+                        type: string
+                        value: EUR
+                        op:
+                            - '='
+                    created:
+                        type: date
+                        value: '2022-07-04T22:00:00.000Z'
+                        op:
+                            - <

@@ -1,0 +1,24 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_QorusUiExtension inherits QorusExtensionHandler {
+    constructor() : QorusExtensionHandler(
+        UserApi::getConfigItemValue("ui-extension-group"),
+        UserApi::getConfigItemValue("ui-extension-menu"),
+        UserApi::getConfigItemValue("ui-extension-desc"),
+    ) {
+        if (exists (*string def_resource = UserApi::getConfigItemValue("ui-extension-default-resource"))) {
+            setDefaultResource(def_resource);
+        }
+    }
+
+    #! initialization connector
+    /** registers itself as a Qorus UI extension handler
+    */
+    auto init(auto input) {
+        ServiceApi::uiExtensionRegister(self);
+        return input;
+    }
+}

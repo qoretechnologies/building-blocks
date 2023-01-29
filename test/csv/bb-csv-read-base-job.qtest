@@ -1,0 +1,61 @@
+#!/usr/bin/env qore
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%require-types
+%strict-args
+%new-style
+%enable-all-warnings
+
+%exec-class BBM_TestCsvReadBaseJob
+
+%requires QorusInterfaceTest
+%requires Util
+%requires FsUtil
+%requires ssh2
+
+class BBM_TestCsvReadBaseJob inherits QorusJobTest {
+    private {
+        const JobName = "bb-csv-read-base-job";
+    }
+
+    constructor() : QorusJobTest(JobName, "1.0", \ARGV, Opts) {
+        addTestCase("Csv read base job test", \csvReadBaseJobTest());
+        set_return_value(main());
+    }
+
+    private usageIntern(int offset = OffsetColumn) {
+        TestReporter::usageIntern(OffsetColumn);
+    }
+
+    csvReadBaseJobTest() {
+        hash<auto> job_config = {
+            "csv-read-path": normalize_dir(get_script_dir() + "/test.csv"),
+            "csv-read-header-lines": 1,
+            "csv-read-fields": {
+                "Country": "string",
+                "SerialNo": "int",
+                "Product": "string",
+                "Date": "date",
+                "Stocked": "bool",
+            },
+            "csv-read-date-format": "DDMMYYYY",
+        };
+        map qrest.put("jobs/" + JobName + "/config/" + $1.key, {"value": $1.value}), job_config.pairIterator();
+        on_exit {
+            map qrest.del("jobs/" + JobName + "/config/" + $1), keys job_config;
+        }
+
+        RunJobResult job(OMQ::StatComplete);
+        exec(job);
+
+        int jiid = job.getJobResult().job_instanceid;
+        hash<auto> results = qrest.get("jobresults/" + jiid).info;
+        on_error printf("%N\n", results);
+        assertEq((
+            {"Country": "UK", "SerialNo": 1234567890, "Product": "Sony, Xperia S", "Date": 2012-05-31, "Stocked": True},
+            {"Country": "UK", "SerialNo": 1234567891, "Product": "Sony, Xperia S", "Date": 2012-05-31, "Stocked": True},
+            {"Country": "UK", "SerialNo": 1234567892, "Product": "Sony, Xperia S", "Date": 2012-05-31, "Stocked": False},
+            {"Country": "UK", "SerialNo": 1234567893, "Product": "Sony, Xperia S", "Date": 2012-05-31, "Stocked": True},
+        ), results.csv);
+    }
+}

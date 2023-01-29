@@ -1,0 +1,11 @@
+type: class
+name: SalesforceLoginParameters
+class-name: SalesforceLoginParameters
+version: "1.0"
+desc: Helper class for salesforce event sources in Qorus
+author:
+  - Qore Technologies, s.r.o.
+lang: java
+tags:
+  classpath: $OMQ_DIR/user/building-blocks/service/salesforce/jar/emp-connector-0.0.1-SNAPSHOT-phat.jar
+code: SalesforceLoginParameters-v1.0.qclass.java

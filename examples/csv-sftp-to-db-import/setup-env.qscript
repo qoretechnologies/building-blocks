@@ -1,0 +1,15 @@
+#!/usr/bin/env qore
+
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+# create interface directories
+# https://qoretechnologies.com/manual/qorus/current/qore/lang/html/namespace_qore.html#a834e1f95eb108bd6e4d564daecd68eda
+mkdir(ENV.OMQ_DIR + "/user/csv-import/in-process", 0755, True);
+mkdir(ENV.OMQ_DIR + "/user/csv-import/archive", 0755, True);
+mkdir(ENV.OMQ_DIR + "/user/csv-import/duplicate", 0755, True);
+
+# create SSH/SFTP config directory for staring private keys
+mkdir(ENV.OMQ_DIR + "/user/ssh-config", 0755, True);

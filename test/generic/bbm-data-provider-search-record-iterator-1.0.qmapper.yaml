@@ -1,0 +1,97 @@
+# This is a generated file, don't edit!
+type: mapper
+name: bbm-data-provider-search-record-iterator
+desc: test mapper
+mappertype: Mapper
+version: '1.0'
+author:
+  - Qore Technologies, s.r.o.
+fields:
+    remote_id:
+        name: id
+    remote_batch_id:
+        name: batch_id
+    qorus_wfiid:
+        constant: 1
+options:
+    mapper-input:
+        type: type
+        name: qore
+        can_manage_fields: true
+        path: /hash
+        custom-fields:
+            id:
+                name: id
+                desc: id
+                type:
+                    typename: string
+                    name: string
+                    supported_options:
+                        qore.no_null:
+                            type: bool
+                            desc: >-
+                                if True then NULL is not supported on input if
+                                NOTHING is also not accepted
+                        string.encoding:
+                            type: string
+                            desc: the output encoding when writing to the type
+                        string.max_size_chars:
+                            type: integer
+                            desc: the maximum length of the string in characters
+                    options:
+                        qore.no_null: true
+                    base_type: string
+                    mandatory: true
+                    types_accepted:
+                        - string
+                    types_returned:
+                        - string
+                    fields: {}
+                    can_manage_fields: false
+                isCustom: true
+                canBeNull: false
+                firstCustomInHierarchy: true
+                isChild: false
+                level: 0
+                path: id
+                parentPath: false
+            batch_id:
+                name: batch_id
+                desc: batch_id
+                type:
+                    typename: string
+                    name: string
+                    supported_options:
+                        qore.no_null:
+                            type: bool
+                            desc: >-
+                                if True then NULL is not supported on input if
+                                NOTHING is also not accepted
+                        string.encoding:
+                            type: string
+                            desc: the output encoding when writing to the type
+                        string.max_size_chars:
+                            type: integer
+                            desc: the maximum length of the string in characters
+                    options:
+                        qore.no_null: true
+                    base_type: string
+                    mandatory: true
+                    types_accepted:
+                        - string
+                    types_returned:
+                        - string
+                    fields: {}
+                    can_manage_fields: false
+                isCustom: true
+                canBeNull: false
+                firstCustomInHierarchy: true
+                isChild: false
+                level: 0
+                path: batch_id
+                parentPath: false
+    mapper-output:
+        type: datasource
+        name: omquser
+        path: /bb_local
+        custom-fields: {}

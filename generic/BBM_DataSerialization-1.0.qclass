@@ -1,0 +1,52 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! Building block class supporting data serialization
+/**
+*/
+class BBM_DataSerialization {
+    #! Connector method for serializing data
+    /**
+        @param orig_input available in the \a input key of local context data (i.e. <tt>$local:input</tt> when looking \
+        up config item values
+
+        @return a hash with a single \c output key giving the serialized data
+    */
+    static hash<auto> serialize(auto orig_input) {
+        hash<auto> local_context = {"input": orig_input};
+        UserApi::logDebug("BBM_DataSerialization: original input: %y", orig_input);
+        auto input = UserApi::getConfigItemValue("data-serialization-input", local_context);
+        UserApi::logDebug("BBM_DataSerialization: processed input: %y", input);
+        string str;
+        bool verbose = UserApi::getConfigItemValue("data-serialization-verbose-output", local_context);
+        string format = UserApi::getConfigItemValue("data-serialization-format", local_context);
+        *string key = UserApi::getConfigItemValue("data-serialization-xml-key", local_context);
+        UserApi::logDebug("BBM_DataSerialization: format: %y verbose: %y (xml key: %y) orig input type: %y", format,
+            verbose, key, orig_input.type());
+        switch (format) {
+            case "JSON":
+                str = make_json(input, verbose ? JGF_ADD_FORMATTING : JGF_NONE);
+                break;
+            case "XML": {
+                int option = verbose ? XGF_ADD_FORMATTING : XGF_NONE;
+                str = exists key ? make_xml({key: input}, option) : make_xml(input, option);
+                break;
+            }
+            case "XML-RPC":
+                int option = verbose ? XGF_ADD_FORMATTING : XGF_NONE;
+                str = make_xmlrpc_value(input, option);
+                break;
+            case "YAML":
+                int option = verbose ? YAML::BlockStyle : YAML::None;
+                str = make_yaml(input, option);
+                break;
+        }
+        hash<auto> rv = {
+            "output": str,
+        };
+        UserApi::logDebug("data serialization %y -> %y", input, rv);
+        return rv;
+    }
+}

@@ -1,0 +1,88 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+#! Binds a subworkflow order in a subworkflow step according to the configuration
+/** Configuration items:
+    - \c bind-subworkflow-name: the name of the workflow to create the order for
+    - \c bind-subworkflow-version: the optional version of the workflow, if not set, then an order will be created for
+      the latest version of the workflow
+    - \c bind-subworkflow-staticdata: the static data for the subworkflow order
+    - \c bind-subworkflow-sensitivedata: the sensitive data for the subworkflow order
+    - \c bind-subworkflow-dynamicdata: dynamic data
+    - \c bind-subworkflow-tempdata: temp data
+    - \c bind-subworkflow-external-id: external ID
+    - \c bind-subworkflow-order-keys: order keys
+    - \c bind-subworkflow-specific-unique-key: wf-specific order keys
+    - \c bind-subworkflow-unique-key: order keys unique to the workflow and version
+    - \c bind-subworkflow-global-unique-key: globally-unique order keys
+    - \c bind-subworkflow-priority: order priority
+    - \c bind-subworkflow-scheduled: future scheduled date
+    - \c bind-subworkflow-skip: set to true to ignore all other configuration and skip the bind
+
+    Connector types:
+    - \c input: any - input is ignored
+    - \c output: \c qoretechnologies/building-blocks/bind-subworkflow/response
+*/
+class BBM_BindSubworkflowStatic inherits BBM_BindSubworkflow {
+    public {
+        const StaticDataItem = "bind-subworkflow-staticdata";
+        const SensitiveDataItem = "bind-subworkflow-sensitivedata";
+        const DynamicDataItem = "bind-subworkflow-dynamicdata";
+        const TempDataItem = "bind-subworkflow-tempdata";
+        const ExternalOrderIdItem = "bind-subworkflow-external-id";
+
+        const OrderKeysItem = "bind-subworkflow-order-keys";
+        const WorkflowSpecificUniqueKeyItem = "bind-subworkflow-specific-unique-key";
+        const WorkflowUniqueKeyItem = "bind-subworkflow-unique-key";
+        const GlobalUniqueKeyItem = "bind-subworkflow-global-unique-key";
+
+        const PriorityItem = "bind-subworkflow-priority";
+        const ScheduledItem = "bind-subworkflow-scheduled";
+
+        const SkipDataItem = "bind-subworkflow-skip";
+
+        const BindOptionMap = {
+            "staticdata": StaticDataItem,
+            "sensitive_data": SensitiveDataItem,
+            "dynamicdata": DynamicDataItem,
+            "tempdata": TempDataItem,
+            "external_order_instanceid": ExternalOrderIdItem,
+
+            "priority": PriorityItem,
+            "scheduled": ScheduledItem,
+
+            "global_unique_key": GlobalUniqueKeyItem,
+            "orderkeys": OrderKeysItem,
+            "workflow_specific_unique_key": WorkflowSpecificUniqueKeyItem,
+            "workflow_unique_key": WorkflowUniqueKeyItem,
+
+            "skip": SkipDataItem,
+        };
+    }
+
+    #! Bind subworkflow method suitable for use as an input/output connector, independent of input data
+    /** @param input this argument is used as input data when resolving configuration item values; if the input data
+        is not a hash, then it is stored in the \c input key of the local context argument to
+        @ref OMQ::UserApi::UserApi::getConfigItemValue() "UserApi::getConfigItemValue()"
+
+        @return of type \c qoretechnologies/building-blocks/bind-subworkflow/response with the following keys:
+        - skipped (bool): @ref True if the bind operation was skipped, @ref False if not
+        - workflow_instanceid (*int): the workflow instance ID if the bind operation was performed (i.e. \a skipped
+          is @ref False)
+    */
+    static hash<auto> bindSubworkflow(auto input) {
+        hash<auto> local_context = {"input": input};
+        hash<auto> order_data = map {$1.key: UserApi::getConfigItemValue($1.value, local_context)},
+            BindOptionMap.pairIterator();
+        map remove order_data{$1.key}, order_data.pairIterator(), !exists $1.value;
+        # log request but do not log any sensitive data
+        UserApi::logInfo("subworkflow order data from context: %N",
+            order_data + (order_data.sensitive_data ? {"sensitive_data": "<masked>"} : NOTHING));
+
+        return BBM_BindSubworkflow::bindSubworkflowIntern(order_data, <BindSubworkflowOptionInfo>{});
+    }
+}

@@ -1,0 +1,151 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_DataProviderRecordUpdate
+desc: >
+    ## Summary
+
+
+    Building block to make an update in record-based data providers.
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `updateDataProviderRecord`
+
+
+    Used to make an update in a record-based data provider based on input data
+    providing the update hash; if no input data is provided, then the update
+    hash is taken from config item `dataprovider-update-set `.
+
+
+    The output data is a hash with the single key `count` giving the number of
+    records updated.
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the
+    `data-provider/update` API data provider in the `qorus-api` factory instead
+
+
+    ### Input/Output Connector `updateDataProviderRecordFromConfig`
+
+
+    Used to make an update in a record-based data provider based on config item
+    `dataprovider-update-set ` providing the update hash.
+
+
+    Input data is available as `$local:input` when resolving config items with
+    this connector.
+
+
+    The output data is a hash with the single key `count` giving the number of
+    records updated.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: BBM_DataProviderRecordUpdateBase
+class-connectors:
+  - name: DataProvider Record Update
+    method: updateDataProviderRecord
+    type: input-output
+    input-provider:
+        type: type
+        name: qore
+        can_manage_fields: true
+        path: /hash
+    output-provider:
+        type: type
+        name: qore
+        can_manage_fields: true
+        path: /hash
+  - name: DataProvider Record Update From Config
+    type: input-output
+    method: updateDataProviderRecordFromConfig
+    output-provider:
+        type: type
+        name: qore
+        can_manage_fields: true
+        path: /hash
+requires:
+  - BBM_DataProviderRecordUpdateBase
+version: '1.0'
+code: BBM_DataProviderRecordUpdate-1.0.qclass
+config-items:
+  - name: dataprovider-update-provider-path
+    description: >-
+        the path to the data provider to use to update records; must identify a
+        record-based data provider
+    config_group: Data Provider Record Update Main
+    strictly_local: true
+    type: data-provider
+  - name: dataprovider-update-set
+    default_value:
+        null
+    config_group: Data Provider Record Update Main
+    description: >-
+        the hash specifying the values to update; either this item or
+        `dataprovider-update-mapper` must be provided to specify the set criteria
+        when no connector input is provided
+    strictly_local: true
+    type: "*hash"
+  - name: dataprovider-update-where
+    config_group: Data Provider Record Update Main
+    description: the search criteria identifying the records to update
+    strictly_local: true
+    type: "*hash"
+  - name: dataprovider-update-search-options
+    default_value:
+        null
+    config_group: Data Provider Record Update Main
+    description: any record search options
+    strictly_local: true
+    type: "*hash"
+  - name: dataprovider-update-mapper
+    default_value:
+        null
+    config_group: Data Provider Record Update Main
+    description: >-
+        the name of the mapper; either this item or *dataprovider-update-set* (or
+        both) must be provided to specify the set criteria when no connector input
+        is provided
+    strictly_local: true
+    type: "*string"
+  - name: dataprovider-update-output-data
+    default_value:
+        null
+    type: "*hash"
+    description: >-
+        the configuration of output data; a hash with a `count` key giving the
+        record count will be used as input to the `UserApi::updateOutputData()`
+        method
+    strictly_local: true
+    config_group: Data Provider Record Update Post Processing
+  - name: dataprovider-update-retries
+    default_value:
+        3
+    description: >-
+        Number of times a search action will be retried if a connection error is
+        encountered; if this number is <=0, then no retries are made
+    config_group: Data Provider Update Retry
+    strictly_local: true
+    type: int
+  - name: dataprovider-update-retry-delay
+    default_value:
+        5
+    description: >-
+        The retry delay in number of seconds; only takes effect if
+        `dataprovider-update-retries` is > 0
+    config_group: Data Provider Update Retry
+    type: int
+    strictly_local: true
+  - name: dataprovider-update-retry-errors
+    default_value:
+      - SOCKET-CONNECT-ERROR
+      - SOCKET-CLOSED
+    description: >-
+        The list of error codes that result in a retry of the search operation if
+        `dataprovider-search-retries` > 0
+    config_group: Data Provider Update Retry
+    strictly_local: true
+    type: list

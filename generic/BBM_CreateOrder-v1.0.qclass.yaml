@@ -1,0 +1,122 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_CreateOrder
+desc: >-
+    ## Summary
+
+
+    Building block for creating a workflow order from input data.
+
+
+    This building block uses the input data for creating the new workflow order;
+    for a building block that binds based on configuration, see
+    `BBM_CreateOrderStatic`
+
+
+    This building block is useful only in limited use cases;
+    `BBM_CreateOrderStatic` can do everything this building block can do and
+    more; it's recommended to use `BBM_CreateOrderStatic` instead.
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the
+    `workflows/create-order` API data provider in the `qorus-api` factory
+    instead
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `createOrder`
+
+
+    Creates a new workflow order based on the input data; configuration is only
+    used to identify the workflow and to specify output data handling.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: createOrder
+    input-provider:
+        name: qoretechnologies
+        path: /qorus-api/workflows/create-order/request
+        type: type
+    method: createWorkflowOrderConnector
+    output-provider:
+        type: type
+        name: qoretechnologies
+        can_manage_fields: false
+        path: /qorus-api/workflows/create-order/response
+    type: input-output
+version: '1.0'
+code: BBM_CreateOrder-v1.0.qclass
+config-items:
+  - name: create-workflow-name
+    description: the name of the workflow
+    config_group: Create Workflow Order
+    strictly_local: true
+    type: workflow
+  - name: create-workflow-version
+    default_value:
+        null
+    type: "*string"
+    description: >-
+        the version of the workflow; if not set (the default), the latest version
+        will be used
+    strictly_local: true
+    config_group: Create Workflow Order
+  - name: create-workflow-order-mapper
+    default_value:
+        null
+    description: the name of the mapper to create the workflow order data
+    config_group: Create Workflow Order
+    strictly_local: true
+    type: "*mapper"
+  - name: create-workflow-order-status
+    default_value:
+        null
+    config_group: Create Workflow Order
+    description: override any status information in the order data
+    strictly_local: true
+    type: "*string"
+  - name: create-workflow-duplicate-handling
+    default_value:
+        "SUCCESS"
+    description: |-
+        how should workflows with duplicate unique keys be handled:
+         - `SUCCESS`: the workflow order instance ID is returned normally
+         - `DUPLICATE`: the `DUPLICATE-ORDER-KEY` exception is rethrown
+    strictly_local: true
+    allowed_values:
+      - "SUCCESS"
+      - "DUPLICATE"
+    config_group: Create Workflow Order Recovery
+  - name: create-workflow-output-data
+    default_value:
+        null
+    config_group: Create Workflow Order Post Processing
+    description: >-
+        the configuration of output data for `UserApi::updateOutputData()`; the
+        output data will include a `workflow_instanceid` key with the ID created for
+        the new workflow order and a `duplicate` key with a boolean value indicating
+        if the order is a duplicate order (only `True` if
+        `create-workflow-duplicate-handling` = `SUCCESS`
+
+
+        Values should have the format:
+
+        `data: location`
+
+
+        For example:
+
+        ```
+
+        workflow_instanceid: '$dynamic:order-id'
+
+        ```
+
+        Will store the `workflow_instanceid` of the order created in the `order-id`
+        key in workflow dynamic data.
+    strictly_local: true
+    type: "*hash"

@@ -1,0 +1,32 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+#! The base WebSocket handler class
+class BBM_WebSocketHandlerBase inherits AbstractServiceWebSocketHandler, BBM_HttpAuthenticatorBase, BBM_CorsBase {
+    #! Creates the object
+    constructor(AbstractAuthenticator auth = BBM_HttpAuthenticatorBase::getAuthenticator("websockets-auth-name",
+            "websockets-auth-cookie", "websockets-auth-redirect"))
+            : AbstractServiceWebSocketHandler(ServiceApi::getConfigItemValue("websockets-root-uri"), auth),
+            BBM_CorsBase("websockets") {
+    }
+
+    hash<auto> handleRequest(HttpListenerInterface listener, Socket s, hash<auto> cx, hash<auto> hdr, *data b) {
+        if (hdr.method == "OPTIONS") {
+            return handleOptions(cx);
+        }
+        hash<HttpResponseInfo> rv = AbstractServiceWebSocketHandler::handleRequest(listener, s, cx, hdr, b);
+        rv.hdr += getCorsResponseHeaders(cx);
+        return rv;
+    }
+}
+
+#! The WebSocket service base class; includes a parametrized handler class as well
+class BBM_WebSocketServiceBase inherits BBM_HttpServiceGenericBase {
+    private string getHandlerProtocol() {
+        return "WebSocket";
+    }
+}

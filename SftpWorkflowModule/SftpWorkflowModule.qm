@@ -1,0 +1,475 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%requires qore >= 0.9
+
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+%requires FsUtil
+
+module SftpWorkflowModule {
+    version = "1.0";
+    desc = "XXX";
+    author = "Qore Technologies <info@qoretechnologies.com>";
+    url = "http://www.qoretechnologies.com";
+}
+
+public namespace SftpModule {
+    class SftpStepHelper {
+        public const SFTP_CONNECTION_NAME_CONFIG_ITEM = {
+            "sftp_connection_name": <ConfigItemInfo>{
+                "type": "string",
+                "description": "SFTP connection name",
+                "strictly_local": False,
+            },
+        };
+
+        public const SFTP_TIMEOUT_CONFIT_ITEM = {
+            "sftp_timeout": <ConfigItemInfo>{
+                "type": "int",
+                "default_value": "60",
+                "description": "Sftp timeout [seconds] for upload/download/create dirs etc",
+                "strictly_local": False,
+            },
+        };
+
+        public const LOCAL_CONNECTION_NAME_CONFIG_ITEM = {
+            "local_connection_name": <ConfigItemInfo>{
+                "type": "string",
+                "description": "Local connection name",
+                "strictly_local": False,
+            },
+        };
+
+        public const MAKE_PARENT_DIRS_AS_NEEDED_CONFIG_ITEM = {
+            "make_parent_dirs_as_needed": <ConfigItemInfo>{
+                "type": "bool",
+                "default_value": False,
+                "description": "Make parent directories as needed",
+                "strictly_local": False,
+            },
+        };
+
+        public const PARENT_DIR_MODE_CONFIG_ITEM = {
+            "parent_dir_mode": <ConfigItemInfo>{
+                "type": "int",
+                "default_value": 0777,
+                "description": "Dir mode when creating parent dirs",
+                "strictly_local": False,
+            },
+        };
+
+        public static SFTPClient getSftpClient() {
+            string sftp_connection_name = WorkflowApi::getConfigItemValue("sftp_connection_name");
+            UserApi::logDebug("sftp_connection_name='%s'", sftp_connection_name);
+            return UserApi::getUserConnection(sftp_connection_name);
+        }
+
+        public static Dir getLocalFilesystem() {
+            string local_connection_name = WorkflowApi::getConfigItemValue("local_connection_name");
+            UserApi::logDebug("local_connection_name='%s'", local_connection_name);
+            return UserApi::getUserConnection(local_connection_name);
+        }
+
+        # TODO
+#         public nothing makeParentDirectoriesAsNeeded(SFTPClient sftp_client, string sftp_path, int mode, timeout timeout_) {
+#                 return;
+#             }
+
+#             string current_dir = dirname(sftp_path)
+#             while() {
+#             }
+#         }
+
+#         public nothing makeParentDirectoriesAsNeeded(string local_path, int mode) {
+#             if (!WorkflowApi::getConfigItemValue("make_parent_dirs_as_needed")) {
+#                 return;
+#             }
+#             int res = mkdir(dirname(local_path), mode, True);
+#             if (res < 0) {
+#                 throw "CREATING-PARENT-DIRECTORIES-FAILED", sprintf("Error: %s", strerror(errno()));
+#             }
+#         }
+    }
+
+    public class MoveFileStep inherits QorusNormalStep {
+
+        private string getOrigFilePath() {
+            string orig_file_path = UserApi::getInputData("orig_file_path");
+            logDebug("orig_file_path='%s'", orig_file_path);
+            return orig_file_path;
+        }
+
+        private string getNewFilePath(string orig_file_path) {
+            hash<string, string> templates = {
+                "orig_file_name": FsUtil::basename_ext(orig_file_path),
+                "orig_file_path": orig_file_path,
+                "wfiid": getWfiid().toString(),
+            };
+            string new_file_path = UserApi::getInputData("new_file_path", templates);
+            new_file_path = UserApi::expandTemplatedValue(new_file_path, templates);
+            logDebug("new_file_path='%s';", new_file_path);
+            return new_file_path;
+        }
+
+        primary() {
+            logInfo("MoveFileStep::primary()");
+
+            string orig_file_path = getOrigFilePath();
+            string new_file_path = getNewFilePath(orig_file_path);
+
+            SFTPClient sftp_client = SftpStepHelper::getSftpClient();
+            # SftpStepHelper::makeParentDirectoriesAsNeeded(sftp_client, new_file_path, );
+            sftp_client.rename(orig_file_path, new_file_path);
+
+            UserApi::updateOutputData("new_file_path", new_file_path);
+            logInfo("File moved from '%n' to '%n'", orig_file_path, new_file_path);
+        }
+
+        string validation() {
+            logInfo("MoveFileStep::validation()");
+
+            string orig_file_path = getOrigFilePath();
+            string new_file_path = getNewFilePath(orig_file_path);
+
+            SFTPClient sftp_client = SftpStepHelper::getSftpClient();
+            bool orig_exists = exists sftp_client.stat(orig_file_path);
+            bool new_exists = exists sftp_client.stat(new_file_path);
+            logDebug("orig_exists='%n'; new_exists='%n'", orig_exists, new_exists);
+
+            if (!orig_exists && new_exists) {
+                return OMQ::StatComplete;
+            }
+            if (!orig_exists) {
+                return OMQ::StatError;
+            }
+            return OMQ::StatRetry;
+        }
+
+        private *hash<string, hash<ConfigItemInfo>> getConfigItemsImpl() {
+            return
+                SftpStepHelper::SFTP_CONNECTION_NAME_CONFIG_ITEM +
+                SftpStepHelper::SFTP_TIMEOUT_CONFIT_ITEM +
+                SftpStepHelper::MAKE_PARENT_DIRS_AS_NEEDED_CONFIG_ITEM +
+                SftpStepHelper::PARENT_DIR_MODE_CONFIG_ITEM +
+                {
+                    "new_file_path": <ConfigItemInfo>{
+                        "type": "string",
+                        "description": "New file path using template args: $local:orig_file_name, "
+                                       "$local:orig_file_path, $local:wfiid",
+                        "strictly_local": True,
+                    },
+                    # -----------------------------------
+                    "input_data": <ConfigItemInfo>{
+                        "type": "hash",
+                        "default_value": {
+                            "orig_file_path": "$dynamic:file_path",
+                            "new_file_path": "$config:new_file_path",
+                        },
+                        "description": "Input step data",
+                        "strictly_local": True,
+                    },
+                    "output_data": <ConfigItemInfo>{
+                        "type": "hash",
+                        "default_value": {
+                            "new_file_path": "$dynamic:file_path",
+                        },
+                        "description": "Output step data",
+                        "strictly_local": True,
+                    },
+                };
+        }
+    }
+
+    public class DownloadFileStep inherits QorusNormalStep {
+        private string getSftpFilePath() {
+            string sftp_file_path = UserApi::getInputData("sftp_file_path");
+            logDebug("sftp_file_path='%s'", sftp_file_path);
+            return sftp_file_path;
+        }
+
+        private string getLocalFilePath(string sftp_file_path) {
+            hash<string, string> templates = {
+                "sftp_file_name": FsUtil::basename_ext(sftp_file_path),
+                "sftp_file_path": sftp_file_path,
+                "wfiid": getWfiid().toString(),
+            };
+            string local_file_path = UserApi::getInputData("local_file_path", templates);
+            local_file_path = UserApi::expandTemplatedValue(local_file_path, templates);
+            logDebug("local_file_path='%s';", local_file_path);
+            return local_file_path;
+        }
+
+        primary() {
+            logInfo("DownloadFileStep::primary()");
+
+            string sftp_file_path = getSftpFilePath();
+            string local_file_path = getLocalFilePath(sftp_file_path);
+            int timeout_value = getConfigItemValue("sftp_timeout");
+            int mode = getConfigItemValue("local_file_mode");
+
+            SFTPClient sftp_client = SftpStepHelper::getSftpClient();
+            # SftpStepHelper::makeParentDirectoriesAsNeeded(local_file_path);
+            sftp_client.retrieveFile(sftp_file_path, local_file_path, timeout_value, mode);
+
+            UserApi::updateOutputData("local_file_path", local_file_path);
+            logInfo("File downloaded to '%s'", local_file_path);
+
+            # TODO: config item flag specifying whether the file should be removed?
+            sftp_client.removeFile(sftp_file_path, timeout_value);
+            logInfo("File removed from SFTP.");
+        }
+
+        string validation() {
+            logInfo("DownloadFileStep::validation()");
+
+            string sftp_file_path = getSftpFilePath();
+            string local_file_path = getLocalFilePath(sftp_file_path);
+
+            SFTPClient sftp_client = SftpStepHelper::getSftpClient();
+            bool sftp_exists = exists sftp_client.stat(sftp_file_path);
+            bool local_exists = FsUtil::path_exists(local_file_path);
+            logDebug("sftp_exists='%n'; local_exists='%n'", sftp_exists, local_exists);
+
+            if (!sftp_exists && local_exists) {
+                return OMQ::StatComplete;
+            }
+            if (!sftp_exists) {
+                return OMQ::StatError;
+            }
+            return OMQ::StatRetry;
+        }
+
+        private *hash<string, hash<ConfigItemInfo>> getConfigItemsImpl() {
+            return
+                SftpStepHelper::SFTP_CONNECTION_NAME_CONFIG_ITEM +
+                SftpStepHelper::SFTP_TIMEOUT_CONFIT_ITEM +
+                SftpStepHelper::MAKE_PARENT_DIRS_AS_NEEDED_CONFIG_ITEM +
+                SftpStepHelper::PARENT_DIR_MODE_CONFIG_ITEM +
+                SftpStepHelper::LOCAL_CONNECTION_NAME_CONFIG_ITEM +
+                {
+                    "local_file_path": <ConfigItemInfo>{
+                        "type": "string",
+                        "description": "Local file path using template args: $local:sftp_file_name, "
+                                       "$local:sftp_file_path, $local:wfiid",
+                        "strictly_local": True,
+                    },
+                    "local_file_mode": <ConfigItemInfo>{
+                        "type": "int",
+                        "default_value": 0644,      # TODO: will be displayed as 420 in the UI (OCT -> DEC)
+                        "description": "File mode of downloaded file",
+                        "strictly_local": False,
+                    },
+                    # -----------------------------------
+                    "input_data": <ConfigItemInfo>{
+                        "type": "hash",
+                        "default_value": {
+                            "sftp_file_path": "$dynamic:file_path",
+                            "local_file_path": "$config:local_file_path",
+                        },
+                        "description": "Input step data",
+                        "strictly_local": True,
+                    },
+                    "output_data": <ConfigItemInfo>{
+                        "type": "hash",
+                        "default_value": {
+                            "local_file_path": "$dynamic:file_path",
+                        },
+                        "description": "Output step data",
+                        "strictly_local": True,
+                    },
+                };
+        }
+    }
+
+    public class UploadFileStep inherits QorusNormalStep {
+        private string getLocalFilePath() {
+            string local_file_path = UserApi::getInputData("local_file_path");
+            logDebug("local_file_path='%s'", local_file_path);
+            return local_file_path;
+        }
+
+        private string getSftpFilePath(string local_file_path) {
+            hash<string, string> templates = {
+                "local_file_name": FsUtil::basename_ext(local_file_path),
+                "local_file_path": local_file_path,
+                "wfiid": getWfiid().toString(),
+            };
+            string sftp_file_path = UserApi::getInputData("sftp_file_path", templates);
+            sftp_file_path = UserApi::expandTemplatedValue(sftp_file_path, templates);
+            logDebug("sftp_file_path='%s';", sftp_file_path);
+            return sftp_file_path;
+        }
+
+        primary() {
+            logInfo("UploadFileStep::primary()");
+
+            string local_file_path = getLocalFilePath();
+            string sftp_file_path = getSftpFilePath(local_file_path);
+            int timeout_value = getConfigItemValue("sftp_timeout");
+            *int mode = getConfigItemValue("sftp_file_mode");
+
+            SFTPClient sftp_client = SftpStepHelper::getSftpClient();
+            # SftpStepHelper::makeParentDirectoriesAsNeeded(sftp_client, sftp_file_path);
+            sftp_client.transferFile(local_file_path, sftp_file_path, timeout_value, mode);
+
+            UserApi::updateOutputData("sftp_file_path", sftp_file_path);
+            logInfo("File uploaded to '%s'", sftp_file_path);
+        }
+
+        string validation() {
+            logInfo("UploadFileStep::validation()");
+
+            string local_file_path = getLocalFilePath();
+            string sftp_file_path = getSftpFilePath(local_file_path);
+
+            SFTPClient sftp_client = SftpStepHelper::getSftpClient();
+            bool local_exists = FsUtil::path_exists(local_file_path);
+            bool sftp_exists = exists sftp_client.stat(sftp_file_path);
+            logDebug("local_exists='%n'; sftp_exists='%n'", local_exists, sftp_exists);
+
+            if (!local_exists && sftp_exists) {
+                return OMQ::StatComplete;
+            }
+            if (!local_exists) {
+                return OMQ::StatError;
+            }
+            return OMQ::StatRetry;
+        }
+
+        private *hash<string, hash<ConfigItemInfo>> getConfigItemsImpl() {
+            return
+                SftpStepHelper::SFTP_CONNECTION_NAME_CONFIG_ITEM +
+                SftpStepHelper::SFTP_TIMEOUT_CONFIT_ITEM +
+                SftpStepHelper::MAKE_PARENT_DIRS_AS_NEEDED_CONFIG_ITEM +
+                SftpStepHelper::PARENT_DIR_MODE_CONFIG_ITEM +
+                SftpStepHelper::LOCAL_CONNECTION_NAME_CONFIG_ITEM +
+                {
+                    "sftp_file_path": <ConfigItemInfo>{
+                        "type": "string",
+                        "default_value": "",
+                        "description": "SFTP file path using template args: $local:local_file_name, "
+                                       "$local:local_file_path, $local:wfiid",
+                        "strictly_local": True,
+                    },
+                    "sftp_file_mode": <ConfigItemInfo>{
+                        "type": "int",
+                        "default_value": 0644,
+                        "description": "Sftp file mode",
+                        "strictly_local": False,
+                    },
+                    # -----------------------------------
+                    "input_data": <ConfigItemInfo>{
+                        "type": "hash",
+                        "default_value": {
+                            "local_file_path": "$dynamic:file_path",
+                            "sftp_file_path": "$config:sftp_file_path",
+                        },
+                        "description": "Input step data",
+                        "strictly_local": True,
+                    },
+                    "output_data": <ConfigItemInfo>{
+                        "type": "hash",
+                        "default_value": {
+                            "sftp_file_path": "$dynamic:file_path",
+                        },
+                        "description": "Output step data",
+                        "strictly_local": True,
+                    },
+                };
+        }
+    }
+
+    public class UploadDataStep inherits QorusNormalStep {
+
+        private data getData() {
+            data data_ = UserApi::getInputData("data");
+            logDebug("data[0..100]='%s'; size=%d", data_[0..100], data_.size());
+            return data_;
+        }
+
+        private string getSftpFilePath() {
+            hash<string, string> templates = {
+                "wfiid": getWfiid().toString(),
+            };
+            string sftp_file_path = UserApi::getInputData("sftp_file_path");
+            sftp_file_path = UserApi::expandTemplatedValue(sftp_file_path, templates);
+            logDebug("sftp_file_path='%s';", sftp_file_path);
+            return sftp_file_path;
+        }
+
+        primary() {
+            logInfo("UploadDataStep::primary()");
+
+            data data_ = getData();
+            string sftp_file_path = getSftpFilePath();
+            int timeout_value = getConfigItemValue("sftp_timeout");
+            int mode = getConfigItemValue("sftp_file_mode");
+
+            SFTPClient sftp_client = SftpStepHelper::getSftpClient();
+            # SftpStepHelper::makeParentDirectoriesAsNeeded(sftp_client, sftp_file_path);
+            sftp_client.putFile(data_, sftp_file_path, mode, timeout_value);
+
+            UserApi::updateOutputData("sftp_file_path", sftp_file_path);
+            logInfo("Data uploaded to '%s'", sftp_file_path);
+        }
+
+        string validation() {
+            logInfo("UploadDataStep::validation()");
+
+            string sftp_file_path = getSftpFilePath();
+
+            SFTPClient sftp_client = SftpStepHelper::getSftpClient();
+            int data_size = getData().size();
+            softint sftp_file_size = sftp_client.stat(sftp_file_path).size;
+            logDebug("data_size='%n'; sftp_file_size='%n'", data_size, sftp_file_size);
+
+            if (data_size == sftp_file_size) {
+                return OMQ::StatComplete;
+            }
+            return OMQ::StatRetry;
+        }
+
+        private *hash<string, hash<ConfigItemInfo>> getConfigItemsImpl() {
+            return
+                SftpStepHelper::SFTP_CONNECTION_NAME_CONFIG_ITEM +
+                SftpStepHelper::SFTP_TIMEOUT_CONFIT_ITEM +
+                SftpStepHelper::MAKE_PARENT_DIRS_AS_NEEDED_CONFIG_ITEM +
+                SftpStepHelper::PARENT_DIR_MODE_CONFIG_ITEM +
+                {
+                    "sftp_file_path": <ConfigItemInfo>{
+                        "type": "string",
+                        "default_value": "",
+                        "description": "SFTP file path using template args: $local:wfiid",
+                        "strictly_local": True,
+                    },
+                    "sftp_file_mode": <ConfigItemInfo>{
+                        "type": "int",
+                        "default_value": 0644,          # TODO: will be displayed as 420 in the UI (OCT -> DEC)
+                        "description": "File mode of uploaded file",
+                        "strictly_local": False,
+                    },
+                    # -----------------------------------
+                    "input_data": <ConfigItemInfo>{
+                        "type": "hash",
+                        "default_value": {
+                            "data": "$dynamic:data",
+                            "sftp_file_path": "$config:sftp_file_path",
+                        },
+                        "description": "Input step data",
+                        "strictly_local": True,
+                    },
+                    "output_data": <ConfigItemInfo>{
+                        "type": "hash",
+                        "default_value": {
+                            "sftp_file_path": "$dynamic:file_path",
+                        },
+                        "description": "Output step data",
+                        "strictly_local": True,
+                    },
+                };
+        }
+    }
+}

@@ -1,0 +1,137 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+# import the Swagger module for Swagger / OpenAPI 2.0 REST schema validation
+%requires Swagger
+
+#! The base CORS-handling code
+class BBM_CorsRest inherits BBM_CorsBase {
+    #! Creates the object
+    constructor() : BBM_CorsBase("rest") {
+    }
+
+    #! Returns a response to the OPTIONS method if CORS is enabled, otherwise returns an error
+    hash<HttpHandlerResponseInfo> options(hash<auto> cx, *hash<auto> ah) {
+        # check if CORS is enabled
+        *hash<auto> hdr = getCorsResponseHeaders(cx);
+        if (hdr) {
+            # return a CORS response
+            return RestHandler::makeResponse(200, NOTHING, hdr);
+        }
+
+        # see if alternate methods would work
+        list<string> hl = map $1.key, RestHandler::Methods.pairIterator(),
+            $1.key != "OPTIONS" && self.hasCallableMethod($1.value + cx.rest_method);
+        # if we have alternate methods, return an appropriate 405 Method Not Allowed error
+        if (hl) {
+            string desc = sprintf("HTTP method %s is unimplemented in REST class %y (%s)", cx.hdr.method, name(),
+                self.className());
+            if (cx.orig_method)
+                desc += sprintf(" REST method %y", cx.orig_method);
+            string ml = foldl $1 + "," + $2, hl;
+            desc += sprintf(", available methods: %s", ml);
+            return cast<hash<HttpHandlerResponseInfo>>(
+                HttpServer::AbstractHttpRequestHandler::makeResponse({"Allow": ml}, 405, desc)
+            );
+        }
+
+        # otherwise return a 501 Not Implemeneted response
+        return cast<hash<HttpHandlerResponseInfo>>(RestHandler::make501("REST class %y (%s) does not "
+            "implement method %y", name(), self.className(), "options"));
+    }
+
+    #! Returns the current REST URI path element name
+    abstract string name();
+}
+
+#! The base request handler class
+class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
+}
+
+#! The base REST handler class
+class BBM_RestHandlerBase inherits AbstractServiceRestHandler, BBM_HttpAuthenticatorBase, BBM_CorsRest {
+    #! Creates the object
+    constructor(AbstractAuthenticator auth = BBM_HttpAuthenticatorBase::getAuthenticator("rest-auth-name",
+            "rest-auth-cookie", "rest-auth-redirect"))
+            : AbstractServiceRestHandler(
+            ServiceApi::getConfigItemValue("rest-root-uri"),
+            False,
+            auth,
+            BBM_RestHandlerBase::getSwaggerSchema()) {
+    }
+
+    #! Returns the Swagger schema, if any
+    private static *SwaggerSchema getSwaggerSchema() {
+        *string schema = ServiceApi::getConfigItemValue("rest-swagger-schema");
+        if (!schema) {
+            return;
+        }
+        # add "resource://" prefix to string if it is not a location
+        if (schema !~ /\w+:\/\//) {
+            schema = "resource://" + schema;
+        }
+        return SwaggerLoader::fromString(UserApi::getTextFileFromLocation(schema));
+    }
+
+    hash<HttpResponseInfo> handleRequest(HttpListenerInterface listener, Socket s, hash<auto> cx, hash<auto> hdr, *data b) {
+        hash<HttpResponseInfo> rv = AbstractServiceRestHandler::handleRequest(listener, s, cx, hdr, b);
+        rv.hdr += getCorsResponseHeaders(cx);
+        return rv;
+    }
+
+    removeRootPath(reference<string> path) {
+        *int rm_comp = ServiceApi::getConfigItemValue("rest-remove-leading-path-components");
+        if (!exists rm_comp && url.val()) {
+            rm_comp = url.split("/").size();
+        }
+        if (rm_comp) {
+            list<string> l = path.split("/");
+            int start = 1;
+            if (path !~ /^\//) {
+                --start;
+            }
+            # leave any URI query in the path
+            if (rm_comp == l.size()) {
+                path =~ s/^[^\?]*//;
+            } else {
+                splice l, start, rm_comp;
+                path = l.join("/");
+            }
+        }
+    }
+
+    string name() {
+        return "/";
+    }
+
+    private hash<HttpHandlerResponseInfo> returnRestException(hash<ExceptionInfo> ex) {
+        if (ex.err =~ /-ARG-ERROR$/) {
+            return <HttpHandlerResponseInfo>{
+                "code": 400,
+                "body": ex.desc,
+            };
+        }
+        if (ex.err == "AUTHORIZATION-ERROR" || ex.err =~ /-ACCESS-ERROR$/) {
+            return <HttpHandlerResponseInfo>{
+                "code": 403,
+                "body": ex,
+            };
+        }
+        if (ex.err == "REST-NOT-FOUND-ERROR") {
+            return <HttpHandlerResponseInfo>{
+                "code": 404,
+                "body": ex.desc,
+            };
+        }
+        # for all other errors, return the standard "409 Conflict" response
+        return RestHandler::returnRestException(ex);
+    }
+}
+
+#! The REST service base class; includes a parametrized handler class as well
+class BBM_RestServiceBase inherits BBM_HttpServiceGenericBase {
+}

@@ -1,0 +1,21 @@
+# This is a generated file, don't edit!
+type: fsm
+name: bbm-simple-filter-pipeline-data-test
+desc: test
+groups:
+  - bb-test
+  - test
+states:
+    '1':
+        position:
+            x: 113
+            'y': 95
+        initial: true
+        name: test pipeline
+        desc: ''
+        type: state
+        id: 1KpMc-AGQ
+        action:
+            type: pipeline
+            value: bbm-simple-filter-pipeline-data-test
+        execution_order: 1

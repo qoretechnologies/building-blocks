@@ -1,0 +1,47 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_AutoMapper {
+    private {
+        const MapperItem = "automapper-mapper-name";
+
+        const RuntimeOpts = {
+            "automapper-input-search": "input_provider_search",
+            "automapper-input-search-options": "input_search_options",
+            "automapper-input-request": "input_request",
+            "automapper-input-request-options": "input_request_options",
+            "automapper-output-upsert": "output_provider_upsert",
+            "automapper-output-request-options": "output_request_options",
+        };
+    }
+
+    #! method suitable for use as a connector; no input or output data
+    /** @param input used as local data when looking up config item values; available as <tt>$local:input</tt> when
+        resolving config item values
+
+        @return always returns @ref NOTHING
+    */
+    auto runMapper(auto input) {
+        hash<auto> local_context = {"input": input};
+        string mapper_name = UserApi::getConfigItemValue(MapperItem, local_context);
+        *hash<auto> rtopts = getRuntimeOptions(local_context);
+        UserApi::logInfo("retrieving mapper %y with options: %y", mapper_name, rtopts);
+        Mapper mapper = UserApi::getMapper(mapper_name, rtopts);
+        mapper.runAutonomous();
+        int cnt = mapper.getCount();
+        UserApi::logInfo("%d record%s mapped", cnt, cnt == 1 ? "" : "s");
+    }
+
+    *hash<auto> getRuntimeOptions(*hash<auto> local_context) {
+        hash<auto> rtopts;
+        foreach hash<auto> i in (RuntimeOpts.pairIterator()) {
+            auto val = UserApi::getConfigItemValue(i.key, local_context);
+            if (exists val) {
+                rtopts{i.value} = val;
+            }
+        }
+        return rtopts;
+    }
+}

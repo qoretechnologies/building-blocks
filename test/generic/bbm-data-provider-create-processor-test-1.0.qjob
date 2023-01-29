@@ -1,0 +1,9 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_DataProviderCreateProcessorTest inherits QorusJob {
+    run() {
+    }
+}

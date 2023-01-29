@@ -1,0 +1,35 @@
+# This is a generated file, don't edit!
+type: service
+name: bb-ftp-test
+desc: "test for the FTP BB job"
+author:
+  - Qore Technologies, s.r.o.
+autostart: false
+base-class-name: QorusService
+class-name: BbFtpTest
+lang: qore
+remote: false
+version: "1.0"
+servicetype: USER
+code: bb-ftp-test-1.0.qsd
+config-items:
+  - name: ftp-server-bind
+    value:
+        0
+    default_value:
+        "\"0\""
+    config_group: FTP Server
+    description: "FTP server listener bind argument; `\"0\"` means bind on a random port on all interfaces"
+    strictly_local: true
+  - name: ftp-server-root
+    default_value:
+        null
+    config_group: FTP Server
+    description: "The root directory of the FTP server; if not defined, then a random directory in the temporary directory will be created"
+    strictly_local: true
+    type: "*string"
+methods:
+  - name: init
+    desc: init method
+  - name: getPort
+    desc: returns the port used for the FTP server

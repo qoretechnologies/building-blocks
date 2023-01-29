@@ -1,0 +1,223 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_CreateOrderStatic
+desc: >-
+    ## Summary
+
+
+    Building block for creating a workflow order from configuration.
+
+
+    This building block uses configuration to create the new workflow order; for
+    a building block that binds purely based on input data, see
+    `BBM_CreateOrder`
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the
+    `workflows/create-order` API data provider in the `qorus-api` factory
+    instead
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `createOrderStatic`
+
+
+    Create the workflow order based on configuration.
+
+    The input data is available as `$local:input` for all config items resolved
+    with this connector (in internal calls to
+    `UserApi::expandTemplatedValue()`).
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: BBM_CreateOrder
+class-connectors:
+  - name: createOrderStatic
+    method: createOrderStatic
+    output-provider:
+        name: qoretechnologies
+        path: /qorus-api/workflows/create-order/response
+        type: type
+    type: input-output
+requires:
+  - BBM_CreateOrder
+version: '1.0'
+code: BBM_CreateOrderStatic-v1.0.qclass
+config-items:
+  - name: create-workflow-name
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-version
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-order-mapper
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-duplicate-handling
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-output-data
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: '1.0'
+    description: >-
+        the configuration of output data for `UserApi::updateOutputData()`; the
+        output data will include a `workflow_instanceid` key with the ID created for
+        the new workflow order and a `duplicate` key with a boolean value indicating
+        if the order is a duplicate order (only `True` if
+        `create-workflow-duplicate-handling` = `SUCCESS`
+    
+    
+        Values should have the format:
+    
+        `data: location`
+    
+    
+        For example:
+    
+        ```
+    
+        workflow_instanceid: '$dynamic:order-id'
+    
+        ```
+    
+        Will store the `workflow_instanceid` of the order created in the `order-id`
+        key in workflow dynamic data. 
+  - name: create-workflow-order-status
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-staticdata
+    default_value:
+        null
+    description: A hash providing the initial workflow order static data
+    config_group: Create Workflow Order Data
+    strictly_local: true
+    type: "*hash"
+  - name: create-workflow-sensitivedata
+    default_value:
+        null
+    config_group: Create Workflow Order Data
+    description: An optional hash providing the initial workflow order sensitive data
+    strictly_local: true
+    type: "*hash"
+  - name: create-workflow-dynamicdata
+    default_value:
+        null
+    config_group: Create Workflow Order Data
+    description: An optional hash providing the initial workflow order dynamic data
+    strictly_local: true
+    type: "*hash"
+  - name: create-workflow-tempdata
+    default_value:
+        null
+    config_group: Create Workflow Order Data
+    description: >-
+        An optional hash providing the initial workflow order temporary / scratch
+        data
+    strictly_local: true
+    type: "*hash"
+  - name: create-workflow-external-id
+    default_value:
+        null
+    config_group: Create Workflow Order Data
+    description: >-
+        An optional external order ID; not a unique key for the order; use order
+        keys for generic order key references
+    strictly_local: true
+    type: "*hash"
+  - name: create-workflow-order-keys
+    default_value:
+        null
+    config_group: Create Workflow Order Keys
+    description: >-
+        An optional hash of order keys; the keys in this hash must correspond to
+        registered workflow order keys, the values are one or more key values. These
+        keys can be used to quickly search for workflow order data
+    strictly_local: true
+    type: "*hash"
+  - name: create-workflow-specific-unique-key
+    default_value:
+        null
+    config_group: Create Workflow Order Keys
+    description: >-
+        An optional hash of order keys that will ensure uniqueness for a particular
+        workflow (workflowid or name and version); the keys in this hash must
+        correspond to registered workflow order keys, the values are one or more key
+        values.  These keys can be used to quickly search for workflow order data.
+    
+        If a workflow order for the same exact workflow (workflowid) has one of the
+        given key/value combinations already, then the workflow order creation
+        duplicate logic will be triggered.
+    strictly_local: true
+    type: "*hash"
+  - name: create-workflow-unique-key
+    default_value:
+        null
+    config_group: Create Workflow Order Keys
+    description: >-
+        An optional hash of order keys that will ensure uniqueness for a particular
+        workflow name (across all versions); the keys in this hash must correspond
+        to registered workflow order keys, the values are one or more key values.
+        These keys can be used to quickly search for workflow order data.
+    
+        If a workflow order for the same workflow name (across all version) has one
+        of the given key/value combinations already, then the workflow order
+        creation duplicate logic will be triggered.
+    strictly_local: true
+    type: "*hash"
+  - name: create-workflow-global-unique-key
+    default_value:
+        null
+    config_group: Create Workflow Order Keys
+    description: >-
+        An optional hash of order keys that will ensure uniqueness across all
+        workflows in the given Qorus instance; the keys in this hash must correspond
+        to registered workflow order keys, the values are one or more key values.
+        These keys can be used to quickly search for workflow order data.
+    
+        If a workflow order already exists with one of the given key/value
+        combinations already, then the workflow order creation duplicate logic will
+        be triggered.
+    strictly_local: true
+    type: "*hash"
+  - name: create-workflow-parent-workflow-id
+    default_value:
+        null
+    config_group: Create Workflow Order Additional Info
+    description: >-
+        An optional parent workflow order instance ID to provide a loosely-coupled
+        parent-child relationship for the new order
+    strictly_local: true
+    type: "*int"
+  - name: create-workflow-priority
+    default_value:
+        500
+    config_group: Create Workflow Order Additional Info
+    description: >-
+        The workflow order priority value from 0 - 999; priority 0 is the highest;
+        999 is the lowest
+    strictly_local: true
+    type: int
+  - name: create-workflow-scheduled
+    default_value:
+        null
+    config_group: Create Workflow Order Additional Info
+    description: >-
+        The workflow order scheduled date; if this value is set, then the order
+        cannot be processed before the given date/time value
+    strictly_local: true
+    type: "*date"

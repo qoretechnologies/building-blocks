@@ -1,0 +1,49 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_InternalIterator {
+    public {
+        const IteratorKeyPathItem = "internal-iterator-key-path";
+    }
+
+    *list<auto> internalIterator(auto input_data) {
+        hash<auto> local_context = {"input": input_data};
+        string iteration_key = UserApi::getConfigItemValue(IteratorKeyPathItem, local_context);
+        # get data to be iterated
+        list<string> path = iteration_key.split(".");
+        auto idata = input_data;
+        map idata = idata{$1}, path, exists idata;
+
+        UserApi::logInfo("internal iterator using path %y elements: %y", iteration_key, idata.lsize());
+        UserApi::logDebug("internal iterator data: %y", idata);
+
+        list<auto> rv;
+        foreach auto i in (idata) {
+            hash<auto> elem = input_data;
+            string fail_key;
+            writeExistingHashOutput(\elem, i, path, 0, \fail_key);
+            if (exists fail_key) {
+                UserApi::logInfo("internal iterator skipping element %d/%d; no internal data for key %y in path "
+                    "%y", $# + 1, path.lsize(), fail_key, iteration_key);
+                continue;
+            }
+            rv += elem;
+        }
+        return rv;
+    }
+
+    # recursively write output hash
+    private static writeExistingHashOutput(reference<auto> output, auto value, list<auto> path, int offset, reference<string> fail_key) {
+        if (offset == (path.size() - 1)) {
+            output{path[offset]} = value;
+        } else {
+            if (!exists output{path[offset]}) {
+                fail_key = path[offset];
+                return;
+            }
+            BBM_InternalIterator::writeExistingHashOutput(\output{path[offset]}, value, path, offset + 1, \fail_key);
+        }
+    }
+}

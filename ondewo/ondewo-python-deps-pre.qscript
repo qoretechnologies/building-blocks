@@ -1,0 +1,31 @@
+#!/bin/bash
+
+if [ -z "$OMQ_DIR" ]; then
+    echo "$0: OMQ_DIR is not set; exiting!"
+    exit 1
+fi
+
+# set pip name
+if [ "`uname -s`" = "Darwin" ]; then
+    PIP=pip3
+else
+    PIP=pip
+fi
+
+# install ONDEWO BPI dependencies
+REQ_FILE=/tmp/ondewo-requirements.txt
+
+cat <<EOF > ${REQ_FILE}
+# The only requirements are included in the ondewo-nlu-client-python and ondewo-logging submodules, make sure they are properly installed.
+grpcio
+grpcio_reflection
+protobuf==3.13.0
+python-dotenv
+ondewo-logging>=2.0.0
+ondewo-nlu-client==2.0.*
+ondewo-vtsi-client
+ondewo-sip-client
+EOF
+
+${PIP} install --prefix=$OMQ_DIR/user/python -r ${REQ_FILE}
+rm ${REQ_FILE}

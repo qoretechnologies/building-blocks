@@ -1,0 +1,63 @@
+#!/usr/bin/env qore
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%require-types
+%strict-args
+%new-style
+%enable-all-warnings
+
+%exec-class BBM_DeleteFilePathTest
+
+%requires QorusInterfaceTest
+%requires Util
+%requires FsUtil
+
+class BBM_DeleteFilePathTest inherits QorusJobTest {
+    private {
+        const JobName = "bbm-delete-file-path-test";
+    }
+
+    constructor() : QorusJobTest(JobName, "1.0", \ARGV, Opts) {
+        addTestCase("bb test", \bbTest());
+        addTestCase("bb neg test", \bbNegativeTest());
+        set_return_value(main());
+    }
+
+    private usageIntern(int offset = OffsetColumn) {
+        TestReporter::usageIntern(OffsetColumn);
+    }
+
+    bbTest() {
+        string str = get_random_string();
+
+        hash<TmpFileHash> t = make_tmp_file();
+        t.file.write(str);
+        t.file.close();
+        on_error unlink(t.path);
+
+        assertEq(str, File::readTextFile(t.path));
+
+        assertEq("hash<StatInfo>", hstat(t.path).fullType());
+
+        qrest.put("jobs/bbm-delete-file-path-test/config/delete-file-path", {"value": t.path});
+
+        RunJobResult job(OMQ::StatComplete);
+        exec(job);
+
+        assertNothing(hstat(t.path));
+    }
+
+    bbNegativeTest() {
+        # ERROR: delete non-existent file
+        qrest.put("jobs/bbm-delete-file-path-test/config/delete-file-path", {
+            "value": tmp_location() + "/" + get_random_string(),
+        });
+        qrest.put("jobs/bbm-delete-file-path-test/config/delete-file-ignore-missing", {"value": False});
+        RunJobResult job(OMQ::StatError);
+        exec(job);
+
+        # ERROR: delete non-file
+        qrest.put("jobs/bbm-delete-file-path-test/config/delete-file-path", {"value": tmp_location()});
+        exec(job);
+    }
+}

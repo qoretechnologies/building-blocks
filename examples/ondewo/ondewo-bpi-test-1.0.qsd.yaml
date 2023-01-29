@@ -1,0 +1,57 @@
+# This is a generated file, don't edit!
+type: service
+name: ondewo-bpi-test
+desc: Runs the ONDEWO BPI Service
+lang: python
+autostart: true
+base-class-name: QorusService
+class-name: OndewoBpiTest
+classes:
+  - BBM_OndewoBpiServer
+fsm:
+    [
+        {
+            "name": "OndewoIntentHandler",
+            "triggers": [
+                {
+                    "connector": "intentEvent",
+                    "class": "BBM_OndewoBpiServer"
+                }
+            ]
+        }
+    ]
+remote: true
+system-options:
+    stack-size:
+        type: byte-size
+        value: 4MB
+version: '1.0'
+servicetype: USER
+code: ondewo-bpi-test-1.0.qsd.py
+class-connections:
+    start:
+      - class: BBM_OndewoBpiServer
+        connector: start
+        trigger: start
+    stop:
+      - class: BBM_OndewoBpiServer
+        connector: stop
+        trigger: stop
+config-items:
+  - name: ondewo-bpi-server-port
+    parent:
+        interface-type: class
+        interface-name: BBM_OndewoBpiServer
+        interface-version: '1.0'
+  - name: ondewo-nlu-connection
+    value:
+        "ondewo-nlu"
+    parent:
+        interface-type: class
+        interface-name: BBM_OndewoBpiServer
+        interface-version: '1.0'
+methods:
+  - name: start
+    desc: starts the service
+  - name: stop
+    desc: stops the service

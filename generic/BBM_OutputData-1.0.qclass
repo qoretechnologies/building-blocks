@@ -1,0 +1,47 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! A class for writing generic output data
+class BBM_OutputData {
+    public {
+        const OutputDataItem = "output-data-hash";
+    }
+
+    #! Writes to output data according to the config item
+    /** as a connector, the input data is used as local context data; if it's a hash, then it's used directly; if it's
+        not, then the input data is used as "input" in the local context hash (i.e. referenced as
+        <tt>$local:input</tt>)
+    */
+    auto writeOutputData(auto input_data) {
+        return writeOutputDataIntern(input_data.typeCode() == NT_HASH ? input_data : {"input": input_data});
+    }
+
+    #! Writes to output data according to the config item
+    /** @param input_data available as <tt>$local:input</tt>) in the key values of the
+        \c output-data-hash config item
+    */
+    auto writeOutput(auto input_data) {
+        return writeOutputDataIntern({"input": input_data});
+    }
+
+    auto writeOutputDataIntern(hash<auto> local_context) {
+        int count = 0;
+
+        hash<auto> values;
+        hash<auto> output;
+        UserApi::logDebug("BBM_OutputData: local context: %y", local_context);
+        foreach hash<auto> i in (UserApi::getConfigItemValue(OutputDataItem, local_context, False).pairIterator()) {
+            string key = sprintf("k%d", count++);
+            values{key} = UserApi::expandTemplatedValue(i.key, local_context);
+            output{key} = i.value;
+        }
+        #UserApi::logDebug("v: %y output: %y (c: %y)", values, output, UserApi::getConfigItemValue(OutputDataItem,
+        #   NOTHING, False));
+
+        UserApi::logDebug("writing output data: %y", (map {output{$1}: values{$1}}, keys values));
+        on_error UserApi::logError("output error values: %y output: %y (local context: %y)", values, output, local_context);
+        UserApi::updateOutputData(values, output);
+    }
+}

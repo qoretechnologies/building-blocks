@@ -1,0 +1,199 @@
+# This is a generated file, don't edit!
+type: type
+path: qoretechnologies/building-blocks/kafka/record-metadata
+typeinfo:
+    base_type: hash<auto>
+    name: hash<auto>
+    can_manage_fields: true
+    fields:
+        offset:
+            name: offset
+            desc: The offset of the record in the topic/partition.
+            type:
+                typename: int
+                name: int
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                options:
+                    qore.no_null: true
+                base_type: int
+                mandatory: true
+                types_accepted:
+                    - int
+                    - integer
+                types_returned:
+                    - int
+                    - integer
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+        partition:
+            name: partition
+            desc: The partition the record was sent to
+            type:
+                typename: int
+                name: int
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                options:
+                    qore.no_null: true
+                base_type: int
+                mandatory: true
+                types_accepted:
+                    - int
+                    - integer
+                types_returned:
+                    - int
+                    - integer
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+        serialized_key_size:
+            name: serialized_key_size
+            desc: 'The size of the serialized, uncompressed key in bytes.'
+            type:
+                typename: int
+                name: int
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                options:
+                    qore.no_null: true
+                base_type: int
+                mandatory: true
+                types_accepted:
+                    - int
+                    - integer
+                types_returned:
+                    - int
+                    - integer
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+        serialized_value_size:
+            name: serialized_value_size
+            desc: 'The size of the serialized, uncompressed value in bytes.'
+            type:
+                typename: int
+                name: int
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                options:
+                    qore.no_null: true
+                base_type: int
+                mandatory: true
+                types_accepted:
+                    - int
+                    - integer
+                types_returned:
+                    - int
+                    - integer
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+        timestamp:
+            name: timestamp
+            desc: The timestamp of the record in the topic/partition.
+            type:
+                typename: int
+                name: int
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                options:
+                    qore.no_null: true
+                base_type: int
+                mandatory: true
+                types_accepted:
+                    - int
+                    - integer
+                types_returned:
+                    - int
+                    - integer
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+        timestamp_date:
+            name: timestamp_date
+            desc: The timestamp of this record as a date/time value
+            type:
+                typename: date
+                name: date
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                options:
+                    qore.no_null: true
+                base_type: date
+                mandatory: true
+                types_accepted:
+                    - date
+                types_returned:
+                    - date
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+        topic:
+            name: topic
+            desc: The topic the record was appended to
+            type:
+                typename: string
+                name: string
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                    string.encoding:
+                        type: string
+                        desc: the output encoding when writing to the type
+                    string.max_size_chars:
+                        type: integer
+                        desc: the maximum length of the string in characters
+                options:
+                    qore.no_null: true
+                base_type: string
+                mandatory: true
+                types_accepted:
+                    - string
+                types_returned:
+                    - string
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true

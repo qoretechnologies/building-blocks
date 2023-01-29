@@ -1,0 +1,32 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%requires qore >= 0.9
+
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+module SftpJobModule {
+    version = "1.0";
+    desc = "XXX";
+    author = "Qore Technologies <info@qoretechnologies.com>";
+    url = "http://www.qoretechnologies.com";
+}
+
+public namespace SftpJobModule {
+    #! Split workflow name and version from one string specifying both
+    /** @param wf_name_ver string in a format wf_name:wf_version where the part after colon (incl. the colon) is not
+                           mandatory
+
+        @return hash with "name" and "version" keys if version is provided as a part of wf_name_ver, otherwise just
+                name is in the returned hash
+    */
+    public hash sub splitWfNameVersion(string wf_name_ver) {
+        list<string> name_ver = wf_name_ver.split(":");
+        return {
+            "name": name_ver[0],
+            "version": name_ver[1]
+        };
+    }
+}

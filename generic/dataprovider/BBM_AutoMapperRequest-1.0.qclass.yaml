@@ -1,0 +1,162 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_AutoMapperRequest
+desc: >-
+    ## Summary
+
+
+    Base class for running a mapper with a request/response-based output data
+    provider in autonomous mode, meaning that the input and output data are
+    provided by data providers configured in the mapper.  This building block
+    also supports recovery logic and a validation connector.
+
+
+    This building block is not suitable for mapping input data and returning
+    output data, for that use `BBM_GenericMapper` or a mapper in an FSM, a data
+    pipeline, or in a class connection in an interface.
+
+
+    Use this object's configuration to provide input or search filtering as well
+    as to tune the output data handling.
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `runMapper`
+
+
+    This connector runs the mapper in autonomous mode.
+
+
+    Local data for the call to `UserApi::expandTemplatedValue()` is the input
+    argument data for the connector available as `$local:input`.
+
+
+    ### Input/Output Connector `validate`
+
+
+    This connector is suitable for step validation logic; it returns a string
+    providing the validation status, either `COMPLETE` or `RETRY`, depending if
+    output data was found in the output data provider or not.
+
+
+    Local data for the call to `UserApi::expandTemplatedValue()` is the input
+    argument data for the connector available as `$local:input`.
+
+
+    ## References
+
+
+    See `BBM_GenericMapper`
+lang: qore
+base-class-name: BBM_AutoMapper
+class-connectors:
+  - name: runMapper
+    type: input-output
+    method: runMapper
+  - name: validate
+    type: input-output
+    method: validate
+requires:
+  - BBM_AutoMapper
+  - BBM_DataProviderRequestBase
+version: '1.0'
+code: BBM_AutoMapperRequest-1.0.qclass
+config-items:
+  - name: automapper-request-recovery-provider-path
+    description: the path to the data provider to use for the request
+    config_group: Auto Mapper Request Recovery
+    strictly_local: true
+    type: data-provider
+  - name: automapper-request-recovery-input
+    config_group: Auto Mapper Request Recovery
+    description: the input value for the recovery request
+    strictly_local: true
+    type: any
+  - name: automapper-request-recovery-options
+    default_value:
+        null
+    config_group: Auto Mapper Request Recovery
+    description: any options for the recovery request
+    strictly_local: true
+    type: "*hash"
+  - name: automapper-request-recovery-id-location
+    config_group: Auto Mapper Request Recovery
+    type: "*string"
+    description: >
+        location in the response for the unique ID; `-` means the entire response is
+        the ID; if this config item is set, and no value is found in the response at
+        the location given here, an exception is thrown
+    strictly_local: true
+  - name: automapper-request-recovery-body-remove-nulls
+    default_value:
+        false
+    config_group: Auto Mapper Request Recovery
+    type: bool
+    description: >
+        if true then any empty key values in the request body will be removed before
+        sending the request to the server
+    strictly_local: true
+  - name: automapper-request-recovery-output-data
+    default_value:
+        null
+    config_group: Auto Mapper Request Recovery
+    type: "*hash"
+    description: >
+        the configuration of output data; the response hash is passed as input to
+        the `UserApi::updateOutputData()` method; if the response is not a hash
+        itself, it will be available in the `value` key of the output data passed to
+        this method
+    strictly_local: true
+  - name: automapper-request-recovery-id-log-msg
+    default_value:
+        "response ID: $local:{response-id}"
+    config_group: Auto Mapper Request Recovery Cosmetic
+    description: >
+        a string giving a log message for successful retrieval of the ID identified
+        by *dataprovider-request-id-location*; this ID can be referred to as
+        `$local:{response-id}` in the template string
+    strictly_local: true
+  - name: automapper-mapper-name
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: '1.0'
+  - name: automapper-input-request
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: '1.0'
+  - name: automapper-input-request-options
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: '1.0'
+  - name: automapper-input-search
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: '1.0'
+  - name: automapper-input-search-options
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: '1.0'
+  - name: automapper-output-upsert
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: '1.0'
+  - name: automapper-output-request-options
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: '1.0'
+  - name: automapper-request-recovery-mapper-name
+    default_value:
+        null
+    config_group: Auto Mapper Request Recovery
+    description: The name of any mapper to use when recovering
+    strictly_local: true
+    type: "*string"

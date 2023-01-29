@@ -1,0 +1,55 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_ThrowException
+desc: >-
+    ## Summary
+
+
+    Throws an exception
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the
+    `util/throw-exception` API data provider in the `qorus-api` factory instead
+
+
+    ## Connectors
+
+
+    ### Input Connector throwException
+
+
+    This connector throws an exception according to the configuration.
+
+
+    Input data is available as `$local:input` when resolving config items with
+    this connector.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: throwException
+    type: input
+    method: throwException
+version: '1.0'
+code: BBM_ThrowException-1.0.qclass
+config-items:
+  - name: throw-exception-err
+    default_value:
+        "EXCEPTION"
+    description: >-
+        The error code for the exception, by convention in upper-case letters with
+        words separated by dashes
+    config_group: Throw Exception Config
+    strictly_local: true
+  - name: throw-exception-desc
+    description: The description of the exception
+    config_group: Throw Exception Config
+    strictly_local: true
+  - name: throw-exception-arg
+    default_value:
+        null
+    description: The `arg` value of the exception
+    config_group: Throw Exception Config
+    strictly_local: true
+    type: any

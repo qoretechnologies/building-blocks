@@ -1,0 +1,114 @@
+# This is a generated file, don't edit!
+type: service
+name: example-create-customer
+desc: >-
+    Example **Create Customer** Service
+
+
+    This service uses a Swagger schema to provide a REST API to simulate
+    creating a customer in a CRM system.
+
+
+    In this case the storage for the customer data is made up of two DB tables.
+
+
+    This service will listen on a random port when started; call the `getPort()`
+    method to get the port the service is listening on.
+
+
+    The OpenAPI / Swagger schema can be acquired with an authenticated call to
+    the Qorus server:
+    *...*`/api/latest/services/example-create-customer/resource_files/example-customer-schema-1.0.yaml/data`
+    (note that this returns a YAML or JSON string according to the client's
+    `Accept` header for the schema) - examples:
+
+    - `qrest
+    services/example-create-customer/resource_files/example-customer-schema-1.0.yaml/data`
+
+    - `curl -k -u my-qorus-user:password
+    https://localhost:8011/api/latest/services/example-create-customer/resource_files/example-customer-schema-1.0.yaml/download`
+
+
+    Make sure to deploy the schema first: `oload CrmCustomerExampleSchema.qsm` -
+    this will create the DB definitions (sequences, tables, triggers, etc)
+    necessary to support the REST API.
+
+
+    The schema will be written to the `omquser` datasource and will create the
+    following two tables:
+
+    - `crm_customer_example`
+
+    - `crm_address_example`
+
+
+    Additionally, two sequences will be created as well.
+
+
+    The REST API endpoints can be seen below in the service configuration; each
+    one has a hand-coded method.  
+
+
+    This example service is written in Qore.
+lang: qore
+api-manager:
+    factory: swagger
+    provider-options:
+        schema:
+            type: file-as-string
+            value: example-customer-schema-1.0.yaml
+        root-uri:
+            type: string
+            value: example-crm
+        auth-name:
+            type: select-string
+            value: permissive
+        listener-bind-address:
+            type: string
+            value: '*:0'
+    endpoints:
+        -
+            endpoint: /customers/POST
+            type: method
+            value: customerCreate
+        -
+            endpoint: /customers/*/DELETE
+            type: method
+            value: customerDelete
+        -
+            endpoint: /customers/*/GET
+            type: method
+            value: customerRead
+        -
+            endpoint: /customers/*/PUT
+            type: method
+            value: customerUpdate
+        -
+            endpoint: /customers/GET
+            type: method
+            value: customersGet
+author:
+  - Qore Technologies, s.r.o.
+autostart: true
+base-class-name: QorusService
+class-name: ExampleCreateCustomer
+groups:
+  - EXAMPLES
+version: '1.0'
+servicetype: USER
+code: example-create-customer-1.0.qsd
+methods:
+  - name: init
+    desc: init
+  - name: customerCreate
+    desc: Creates a new customer record
+  - name: customerDelete
+    desc: Deletes an existing customer
+  - name: customerRead
+    desc: Returns info about one customer
+  - name: customerUpdate
+    desc: Updates a customer
+  - name: customersGet
+    desc: Retrieve / search customers
+  - name: getPort
+    desc: Returns the port of the listener

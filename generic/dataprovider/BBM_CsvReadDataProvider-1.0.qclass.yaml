@@ -1,0 +1,191 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_CsvReadDataProvider
+desc: >-
+    ## Summary
+
+
+    Provides a config-based data provider object for data from CSV input data
+
+
+    ## Connectors
+
+     ### Input/Output Connector `searchRecordsConnector`
+
+    Creates a CSV read data provider object and returns the records parsed.
+
+
+    Local data for the call to `UserApi::expandTemplatedValue()` for all config
+    items is the input  argument data for the connector available as
+    `$local:input`.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: searchRecordsConnector
+    type: input-output
+    method: searchRecordsConnector
+version: '1.0'
+code: BBM_CsvReadDataProvider-1.0.qclass
+config-items:
+  - name: csv-read-path
+    default_value:
+        null
+    description: The path to the Csv data; mutually exclusive with `csv-read-stream`
+    config_group: CSV Read Data Provider Main Options
+    type: "*string"
+  - name: csv-read-stream
+    default_value:
+        null
+    description: >-
+        A Java or Qore `InputStream` object providing the CSV data; mutually
+        exclusive with `csv-read-path`
+    config_group: CSV Read Data Provider Main Options
+    type: "*string"
+  - name: csv-read-tolwr
+    default_value:
+        false
+    description: >-
+        If `true` then all automatically-detected header names will be converted to
+        lower case.
+    config_group: CSV Read Data Provider Header Options
+    type: bool
+  - name: csv-read-header-lines
+    default_value:
+        null
+    description: |
+        The number of header lines in the CSV data
+    config_group: CSV Read Data Provider Header Options
+    type: "*int"
+  - name: csv-read-header-names
+    default_value:
+        false
+    description: >-
+        if `true` then the object will parse the header names from the first header
+        row, in this case if `header_cells` is not set explicitly, it will be
+        assumed to be `1`
+    config_group: CSV Read Data Provider Header Options
+    type: bool
+  - name: csv-read-header-reorder
+    default_value:
+        true
+    description: >-
+        if `true` (the default) then if `headers` are provided, then data fields are
+        reordered to follow headers config_group: CSV Read Data Provider Header
+        Options
+    type: bool
+  - name: csv-read-headers
+    default_value:
+      null
+    description: >-
+        The ist of header / column names for the data iterated; if this is present,
+        then `header_names` must be `false`
+    config_group: CSV Read Data Provider Header Options
+    type: "*list"
+  - name: csv-read-eol
+    default_value:
+        null
+    description: |-
+        The end of line characters used in the input data.
+    
+        If not set the end of line characters will be automatically detected.
+    config_group: CSV Read Data Provider Field Options
+    type: "*string"
+  - name: csv-read-fields
+    default_value:
+        null
+    description: >-
+        The fields in the CSV data; keys are field names as given by the
+        `header_names` or `headers` options (in case neither of these options are
+        used, then field names are numbers starting with `0`) and the values are
+        either strings (one of `bool`, `int`, `float`, `number`, `string`, `date`,
+        optionally prefixed by `*` if the value is optional) or a hash describing
+        the field; also sets `headers` if not set automatically with `header_names`;
+        if no field type is given, the default is `*string`; note that invalid field
+        names given in this option are ignored
+    config_group: CSV Read Data Provider Field Options
+    type: "*hash"
+  - name: csv-read-separator
+    default_value:
+        null
+    description: 'The string separating the fields in the file (default: `,`).'
+    config_group: CSV Read Data Provider Field Options
+    type: "*string"
+  - name: csv-read-quote
+    default_value:
+        "\""
+    description: 'the field quote character (default: `\"`)'
+    config_group: CSV Read Data Provider Field Options
+    type: "*string"
+  - name: csv-read-verify-columns
+    default_value:
+        true
+    description: >-
+        if `true` (default `false`), if a line is parsed with a different column or
+        field count than other lines, an exception is raised
+    config_group: CSV Read Data Provider Field Options
+    type: bool
+  - name: csv-read-date-format
+    default_value:
+        null
+    description: |-
+        The date format to use when parsing date/time values (ex: `DD.MM.YYYY`).
+    
+        If not set then ISO-8601 format is assumed (i.e. `YYYY-MM-DD HH:mm:SS`)
+    config_group: CSV Read Data Provider Data Options
+    type: "*string"
+  - name: csv-read-encoding
+    default_value:
+        null
+    description: |-
+        The character encoding used for the input data.
+    
+        If not set then \c UTF-8 is assumed
+    config_group: CSV Read Data Provider Data Options
+    type: "*string"
+  - name: csv-read-ignore-empty
+    default_value:
+        false
+    description: if `true` then empty lines will be ignored
+    config_group: CSV Read Data Provider Data Options
+    type: bool
+  - name: csv-read-ignore-whitespace
+    default_value:
+        false
+    description: >-
+        if `true`, leading and trailing whitespace will be stripped from non-quoted
+        field
+    config_group: CSV Read Data Provider Data Options
+    type: bool
+  - name: csv-read-number-format
+    default_value:
+        null
+    description: >-
+        the default format for `int`, `float`, and `number` fields as a string
+        giving the thousands separator character followed by the decimal separator
+        character (ex: `.,` for continental-European-style numbers)
+    config_group: CSV Read Data Provider Data Options
+    type: "*string"
+  - name: csv-read-timezone
+    default_value:
+        null
+    description: >-
+        The timezone region to use when creating date/time values (ex:
+        `Europe/Prague`).
+    
+    
+        If not set then all dates are assumed to be in the server's time zone.
+    config_group: CSV Read Data Provider Data Options
+    type: "*string"
+  - name: csv-read-search-where
+    default_value:
+        null
+    description: Search "where" criteria for the `searchRecords` connector
+    config_group: CSV Read Data Provider Search Options
+    type: "*hash"
+  - name: csv-read-search-options
+    default_value:
+        null
+    description: Search options for the `searchRecords` connector
+    config_group: CSV Read Data Provider Search Options
+    type: "*hash"

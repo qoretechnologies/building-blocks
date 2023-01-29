@@ -1,0 +1,124 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_HttpServiceGenericBase
+desc: >-
+    ## Summary
+
+
+    Abstract base class for HTTP handler services.
+
+
+    As an abstract class, it cannot support connectors; it is entirely driven by
+    configuration.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusService
+version: '1.0'
+code: BBM_HttpServiceGenericBase-v1.0.qclass
+config-items:
+  - name: http-listener-bind-address
+    default_value:
+        null
+    type: "*string"
+    description: >-
+        optional bind address for a dedicated listener; if not set, then it will
+        bind on all Qorus system listeners as a global handler
+    strictly_local: true
+    config_group: HTTP/S Listener
+  - name: http-listener-cert-location
+    default_value:
+        null
+    type: "*string"
+    description: >-
+        optional X.509 certificate location name for a dedicated listener; location
+        resolved with `UserApi::getTextFileFromLocation()` or
+        `UserApi::getBinaryFileFromLocation()` depending on the value of
+        `http-listener-cert-format` (ex: `file://$OMQ_DIR/user/certs/my-cert.pem`)
+    strictly_local: true
+    config_group: HTTP/S Listener
+  - name: http-listener-cert-format
+    default_value:
+        "AUTO"
+    description: >-
+        possible values giving the format of the data defined by
+        `http-listener-cert-location`:
+    
+        - **`PEM`**: PEM format (text)
+    
+        - **`DER`**: DER format (binary)
+    
+        - **`AUTO`**: try to determine the format automatically
+    allowed_values:
+      - "PEM"
+      - "DER"
+      - "AUTO"
+    strictly_local: true
+    config_group: HTTP/S Listener
+  - name: http-listener-key-location
+    default_value:
+        null
+    type: "*string"
+    description: >-
+        optional private key resource name for a dedicated listener; location
+        resolved with `UserApi::getTextFileFromLocation()` or
+        `UserApi::getBinaryFileFromLocation()` depending on the value of
+        `http-listener-key-format` (ex: `file://$OMQ_DIR/user/certs/my-key.pem`)
+    strictly_local: true
+    config_group: HTTP/S Listener
+  - name: http-listener-key-format
+    default_value:
+        "AUTO"
+    description: >-
+        possible values giving the format of the data defined by
+        `http-listener-key-location`:
+    
+        - **`PEM`**: PEM format (text)
+    
+        - **`DER`**: DER format (binary)
+    
+        - **`AUTO`**: try to determine the format automatically
+    allowed_values:
+      - "PEM"
+      - "DER"
+      - "AUTO"
+    strictly_local: true
+    config_group: HTTP/S Listener
+  - name: http-listener-key-password
+    default_value:
+        null
+    type: "*string"
+    description: optional password to PEM private key data for a dedicated listener
+    strictly_local: true
+    config_group: HTTP/S Listener
+  - name: http-listener-ssl-mode
+    default_value:
+        "NO-CLIENT-CERT-REQUIRED"
+    description: set the SSL mode
+    allowed_values:
+      - "REQUIRE-CLIENT-CERT"
+      - "NO-CLIENT-CERT-REQUIRED"
+      - "REQUEST-CLIENT-CERT"
+    strictly_local: true
+    config_group: HTTP/S Listener
+  - name: http-listener-accept-all-certs
+    default_value:
+        true
+    type: bool
+    description: flag to accept all client certificates
+    strictly_local: true
+    config_group: HTTP/S Listener
+  - name: http-listener-capture-client-certs
+    default_value:
+        true
+    type: bool
+    description: flag to capture client certificates
+    strictly_local: true
+    config_group: HTTP/S Listener
+  - name: http-listener-allow-sharing
+    default_value:
+        true
+    type: bool
+    description: allow multiple Qorus services to bind handlers to the same listener
+    strictly_local: true
+    config_group: HTTP/S Listener

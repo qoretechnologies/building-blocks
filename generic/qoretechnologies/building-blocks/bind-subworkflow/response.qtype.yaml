@@ -1,0 +1,63 @@
+# This is a generated file, don't edit!
+type: type
+path: qoretechnologies/building-blocks/bind-subworkflow/response
+typeinfo:
+    base_type: hash<auto>
+    name: hash<auto>
+    can_manage_fields: true
+    fields:
+        workflow_instanceid:
+            name: workflow_instanceid
+            canBeNull: false
+            desc: the workflow instance ID created
+            firstCustomInHierarchy: true
+            isChild: false
+            isCustom: true
+            level: 0
+            parentPath: false
+            path: workflow_instanceid
+            type:
+                base_type: int
+                can_manage_fields: false
+                fields: {}
+                mandatory: false
+                name: int
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: '*int'
+                types_accepted:
+                    - int
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - int
+                    - nothing
+        skipped:
+            name: skipped
+            canBeNull: true
+            desc: 'if `true`, then the workflow bind operation was skipped'
+            firstCustomInHierarchy: true
+            isChild: false
+            isCustom: true
+            level: 0
+            parentPath: false
+            path: skipped
+            type:
+                typename: bool
+                name: bool
+                supported_options: null
+                options: null
+                base_type: bool
+                mandatory: false
+                types_accepted:
+                    - bool
+                types_returned:
+                    - bool
+                fields: {}
+                can_manage_fields: false

@@ -1,0 +1,15 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_DataProviderRecordUpdateBase
+desc: >-
+    building block for record-based data providers
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the
+    `data-provider/update` API data provider in the `qorus-api` factory instead
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+version: '1.0'
+code: BBM_DataProviderRecordUpdateBase-1.0.qclass

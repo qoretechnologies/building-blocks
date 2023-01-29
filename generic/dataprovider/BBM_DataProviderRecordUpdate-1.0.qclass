@@ -1,0 +1,56 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! Base class for creating a record with a data provider using the record API
+class BBM_DataProviderRecordUpdate inherits BBM_DataProviderRecordUpdateBase {
+    public {
+        const ProviderPathItem = "dataprovider-update-provider-path";
+        const SetItem = "dataprovider-update-set";
+        const WhereItem = "dataprovider-update-where";
+        const SearchOptionsItem = "dataprovider-update-search-options";
+        const MapperItem = "dataprovider-update-mapper";
+        const OutputItem = "dataprovider-update-output-data";
+        const RetriesItem = "dataprovider-update-retries";
+        const RetryDelayItem = "dataprovider-update-retry-delay";
+        const RetryErrorsItem = "dataprovider-update-retry-errors";
+    }
+
+    #! the primary record action logic: update the record from the input data provided
+    /** @param set a hash of data to set in the record or @ref NOTHING
+
+        @return a hash or a list of hashes (for multiple set criteria hashes) with the following keys:
+        - \c count: the number of records updated
+
+        @throw INVALID-OPERATION the data provider does not support record updating
+    */
+    auto updateDataProviderRecord(*hash<auto> set) {
+        return updateRecordIntern(set, ProviderPathItem, SetItem, WhereItem, SearchOptionsItem, MapperItem,
+            OutputItem, RetriesItem, RetryDelayItem, RetryErrorsItem);
+    }
+
+    #! the primary record action logic: update the record from configuration; input data is ignored
+    /** @param ignored the value passed here is ignored
+
+        @return a hash or a list of hashes (for multiple set criteria hashes) with the following keys:
+        - \c count: the number of records updated
+
+        @throw INVALID-OPERATION the data provider does not support record updating
+    */
+    auto updateDataProviderRecordFromConfig(auto ignored) {
+        return updateRecordIntern(NOTHING, ProviderPathItem, SetItem, WhereItem, SearchOptionsItem, MapperItem,
+            OutputItem, RetriesItem, RetryDelayItem, RetryErrorsItem);
+    }
+
+    #! the primary record action logic: update the record
+    /** @return a hash with the following keys:
+        - \c count: the number of records updated
+
+        @throw INVALID-OPERATION the data provider does not support record updating
+    */
+    list<hash<auto>> updateDataProviderRecord(list<hash<auto>> set_list) {
+        return map updateRecordIntern($1, ProviderPathItem, SetItem, WhereItem, SearchOptionsItem, MapperItem,
+            OutputItem, RetriesItem, RetryDelayItem, RetryErrorsItem), set_list;
+    }
+}

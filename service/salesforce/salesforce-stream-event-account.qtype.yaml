@@ -1,0 +1,2468 @@
+# This is a generated file, don't edit!
+type: type
+path: qoretechnologies/building-blocks/salesforce/stream-event-account
+typeinfo:
+    base_type: hash<auto>
+    can_manage_fields: true
+    fields:
+        event:
+            canBeNull: false
+            desc: event metadata hash
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: event
+            type:
+                base_type: hash<auto>
+                can_manage_fields: true
+                fields:
+                    replayId:
+                        canBeNull: false
+                        desc: Salesforce event ID
+                        isCustom: true
+                        name: replayId
+                        type:
+                            base_type: int
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: true
+                            name: int
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                            typename: int
+                            types_accepted:
+                                - int
+                            types_returned:
+                                - int
+                mandatory: true
+                name: hash<auto>
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: hash
+                types_accepted:
+                    - hash<auto>
+                types_returned:
+                    - hash<auto>
+        payload:
+            canBeNull: false
+            desc: the event payload hash; contents depend on the event source
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: payload
+            type:
+                base_type: hash<auto>
+                can_manage_fields: false
+                fields:
+                    AccountNumber:
+                        canBeNull: true
+                        desc: Account AccountNumber
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: AccountNumber
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    AccountSource:
+                        canBeNull: true
+                        desc: Account AccountSource
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: AccountSource
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    Active__c:
+                        canBeNull: true
+                        desc: Account Active__c
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: Active__c
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    AnnualRevenue:
+                        canBeNull: true
+                        desc: Account AnnualRevenue
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: AnnualRevenue
+                        type:
+                            base_type: float
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*float'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                            typename: '*float'
+                            types_accepted:
+                                - float
+                                - int
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - float
+                                - 'null'
+                    BillingAddress:
+                        canBeNull: true
+                        desc: Account Billing info
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: Billing
+                        type:
+                            base_type: hash
+                            can_manage_fields: false
+                            fields:
+                                City:
+                                    canBeNull: true
+                                    desc: Account Billing City
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: City
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: false
+                                        name: '*string'
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: '*string'
+                                        types_accepted:
+                                            - string
+                                            - nothing
+                                            - 'null'
+                                        types_returned:
+                                            - string
+                                            - 'null'
+                                Country:
+                                    canBeNull: true
+                                    desc: Account Billing Country
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: Country
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: false
+                                        name: '*string'
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: '*string'
+                                        types_accepted:
+                                            - string
+                                            - nothing
+                                            - 'null'
+                                        types_returned:
+                                            - string
+                                            - 'null'
+                                GeocodeAccuracy:
+                                    canBeNull: true
+                                    desc: Account Billing GeocodeAccuracy
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: GeocodeAccuracy
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: false
+                                        name: '*string'
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: '*string'
+                                        types_accepted:
+                                            - string
+                                            - nothing
+                                            - 'null'
+                                        types_returned:
+                                            - string
+                                            - 'null'
+                                Latitude:
+                                    canBeNull: true
+                                    desc: Account Billing Latitude
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: Latitude
+                                    type:
+                                        base_type: float
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: false
+                                        name: '*float'
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                        typename: '*float'
+                                        types_accepted:
+                                            - float
+                                            - int
+                                            - nothing
+                                            - 'null'
+                                        types_returned:
+                                            - float
+                                            - 'null'
+                                Longitude:
+                                    canBeNull: true
+                                    desc: Account Billing Longitude
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: Longitude
+                                    type:
+                                        base_type: float
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: false
+                                        name: '*float'
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                        typename: '*float'
+                                        types_accepted:
+                                            - float
+                                            - int
+                                            - nothing
+                                            - 'null'
+                                        types_returned:
+                                            - float
+                                            - 'null'
+                                PostalCode:
+                                    canBeNull: true
+                                    desc: Account Billing PostalCode
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: PostalCode
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: false
+                                        name: '*string'
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: '*string'
+                                        types_accepted:
+                                            - string
+                                            - nothing
+                                            - 'null'
+                                        types_returned:
+                                            - string
+                                            - 'null'
+                                State:
+                                    canBeNull: true
+                                    desc: Account Billing State
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: State
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: false
+                                        name: '*string'
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: '*string'
+                                        types_accepted:
+                                            - string
+                                            - nothing
+                                            - 'null'
+                                        types_returned:
+                                            - string
+                                            - 'null'
+                                Street:
+                                    canBeNull: true
+                                    desc: Account Billing Street
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: Street
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: false
+                                        name: '*string'
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: '*string'
+                                        types_accepted:
+                                            - string
+                                            - nothing
+                                            - 'null'
+                                        types_returned:
+                                            - string
+                                            - 'null'
+                            mandatory: false
+                            name: '*hash<auto>'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*hash'
+                            types_accepted:
+                                - hash
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - hash
+                                - 'null'
+                    CleanStatus:
+                        canBeNull: true
+                        desc: Account CleanStatus
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: CleanStatus
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    CustomerPriority__c:
+                        canBeNull: true
+                        desc: Account CustomerPriority__c
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: CustomerPriority__c
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    DandbCompanyId:
+                        canBeNull: true
+                        desc: Account DandbCompanyId
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: DandbCompanyId
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    Description:
+                        canBeNull: true
+                        desc: Account Description
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: Description
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    DunsNumber:
+                        canBeNull: true
+                        desc: Account DunsNumber
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: DunsNumber
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    Fax:
+                        canBeNull: true
+                        desc: Account Fax
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: Fax
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    Hardware_Key_Id__c:
+                        canBeNull: true
+                        desc: Account Hardware_Key_Id__c
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: Hardware_Key_Id__c
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    Industry:
+                        canBeNull: true
+                        desc: Account Industry
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: Industry
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    Jigsaw:
+                        canBeNull: true
+                        desc: Account Jigsaw
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: Jigsaw
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    JigsawCompanyId:
+                        canBeNull: true
+                        desc: Account JigsawCompanyId
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: JigsawCompanyId
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    NaicsCode:
+                        canBeNull: true
+                        desc: Account NaicsCode
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: NaicsCode
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    NaicsDesc:
+                        canBeNull: true
+                        desc: Account NaicsDesc
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: NaicsDesc
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    Name:
+                        canBeNull: true
+                        desc: Account name
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: Name
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    NumberOfEmployees:
+                        canBeNull: true
+                        desc: Account NumberOfEmployees
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: NumberOfEmployees
+                        type:
+                            base_type: int
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*int'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                            typename: '*int'
+                            types_accepted:
+                                - int
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - int
+                                - 'null'
+                    NumberofLocations__c:
+                        canBeNull: true
+                        desc: Account NumberofLocations__c
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: NumberofLocations__c
+                        type:
+                            base_type: float
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*float'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                            typename: '*float'
+                            types_accepted:
+                                - float
+                                - int
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - float
+                                - 'null'
+                    OwnerId:
+                        canBeNull: true
+                        desc: Account OwnerId
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: OwnerId
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    Ownership:
+                        canBeNull: true
+                        desc: Account Ownership
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: Ownership
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    ParentId:
+                        canBeNull: true
+                        desc: Account ParentId
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: ParentId
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    Phone:
+                        canBeNull: true
+                        desc: Account Phone
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: Phone
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    PhotoUrl:
+                        canBeNull: true
+                        desc: Account PhotoUrl
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: PhotoUrl
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    Rating:
+                        canBeNull: true
+                        desc: Account Rating
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: Rating
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    SLAExpirationDate__c:
+                        canBeNull: true
+                        desc: Account SLAExpirationDate__c
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: SLAExpirationDate__c
+                        type:
+                            base_type: date
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*date'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                            typename: '*date'
+                            types_accepted:
+                                - date
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - date
+                                - 'null'
+                    SLASerialNumber__c:
+                        canBeNull: true
+                        desc: Account SLASerialNumber__c
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: SLASerialNumber__c
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    SLA__c:
+                        canBeNull: true
+                        desc: Account SLA__c
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: SLA__c
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    ShippingAddress:
+                        canBeNull: true
+                        desc: Account Shipping info
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: ShippingAddress
+                        type:
+                            base_type: hash
+                            can_manage_fields: false
+                            fields:
+                                City:
+                                    canBeNull: true
+                                    desc: Account Shipping City
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: City
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: false
+                                        name: '*string'
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: '*string'
+                                        types_accepted:
+                                            - string
+                                            - nothing
+                                            - 'null'
+                                        types_returned:
+                                            - string
+                                            - 'null'
+                                Country:
+                                    canBeNull: true
+                                    desc: Account Shipping Country
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: Country
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: false
+                                        name: '*string'
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: '*string'
+                                        types_accepted:
+                                            - string
+                                            - nothing
+                                            - 'null'
+                                        types_returned:
+                                            - string
+                                            - 'null'
+                                GeocodeAccuracy:
+                                    canBeNull: true
+                                    desc: Account Shipping GeocodeAccuracy
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: GeocodeAccuracy
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: false
+                                        name: '*string'
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: '*string'
+                                        types_accepted:
+                                            - string
+                                            - nothing
+                                            - 'null'
+                                        types_returned:
+                                            - string
+                                            - 'null'
+                                Latitude:
+                                    canBeNull: true
+                                    desc: Account Shipping Latitude
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: Latitude
+                                    type:
+                                        base_type: float
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: false
+                                        name: '*float'
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                        typename: '*float'
+                                        types_accepted:
+                                            - float
+                                            - int
+                                            - nothing
+                                            - 'null'
+                                        types_returned:
+                                            - float
+                                            - 'null'
+                                Longitude:
+                                    canBeNull: true
+                                    desc: Account Shipping Longitude
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: Longitude
+                                    type:
+                                        base_type: float
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: false
+                                        name: '*float'
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                        typename: '*float'
+                                        types_accepted:
+                                            - float
+                                            - int
+                                            - nothing
+                                            - 'null'
+                                        types_returned:
+                                            - float
+                                            - 'null'
+                                PostalCode:
+                                    canBeNull: true
+                                    desc: Account Shipping PostalCode
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: PostalCode
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: false
+                                        name: '*string'
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: '*string'
+                                        types_accepted:
+                                            - string
+                                            - nothing
+                                            - 'null'
+                                        types_returned:
+                                            - string
+                                            - 'null'
+                                State:
+                                    canBeNull: true
+                                    desc: Account Shipping State
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: State
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: false
+                                        name: '*string'
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: '*string'
+                                        types_accepted:
+                                            - string
+                                            - nothing
+                                            - 'null'
+                                        types_returned:
+                                            - string
+                                            - 'null'
+                                Street:
+                                    canBeNull: true
+                                    desc: Account Shipping Street
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: Street
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: false
+                                        name: '*string'
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: '*string'
+                                        types_accepted:
+                                            - string
+                                            - nothing
+                                            - 'null'
+                                        types_returned:
+                                            - string
+                                            - 'null'
+                            mandatory: false
+                            name: '*hash<auto>'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                            typename: '*hash'
+                            types_accepted:
+                                - hash
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - hash
+                                - 'null'
+                    Sic:
+                        canBeNull: true
+                        desc: Account Sic
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: Sic
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    SicDesc:
+                        canBeNull: true
+                        desc: Account SicDesc
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: SicDesc
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    Site:
+                        canBeNull: true
+                        desc: Account Site
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: Site
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    TickerSymbol:
+                        canBeNull: true
+                        desc: Account TickerSymbol
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: TickerSymbol
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    Tradestyle:
+                        canBeNull: true
+                        desc: Account Tradestyle
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: Tradestyle
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    Type:
+                        canBeNull: true
+                        desc: Account Type
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: Type
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    UpsellOpportunity__c:
+                        canBeNull: true
+                        desc: Account UpsellOpportunity__c
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: UpsellOpportunity__c
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    Website:
+                        canBeNull: true
+                        desc: Account Website
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: Website
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    YearStarted:
+                        canBeNull: true
+                        desc: Account YearStarted
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: YearStarted
+                        type:
+                            base_type: string
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*string'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                                string.encoding:
+                                    desc: the output encoding when writing to the type
+                                    type: string
+                                string.max_size_chars:
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                    type: integer
+                            typename: '*string'
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - 'null'
+                    LastModifiedDate:
+                        canBeNull: true
+                        desc: Object LastModifiedDate
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: LastModifiedDate
+                        type:
+                            base_type: date
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: 'date'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                            typename: 'date'
+                            types_accepted:
+                                - date
+                            types_returned:
+                                - date
+                    ChangeEventHeader:
+                        canBeNull: false
+                        desc: Salesforce change event info
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: ChangeEventHeader
+                        type:
+                            base_type: hash<auto>
+                            can_manage_fields: false
+                            fields:
+                                changeOrigin:
+                                    canBeNull: false
+                                    desc: >-
+                                        Only populated for changes done by API apps
+                                        or from Lightning Experience; empty
+                                        otherwise. The Salesforce API and the API
+                                        client ID that initiated the change, if set
+                                        by the client
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: changeOrigin
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: string
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: string
+                                        types_accepted:
+                                            - string
+                                        types_returned:
+                                            - string
+                                changeType:
+                                    canBeNull: false
+                                    desc: >-
+                                        The operation that caused the change. Can be
+                                        one of the following values: - `CREATE` -
+                                        `UPDATE` - `DELETE` - `UNDELETE`
+
+                                        For gap events, the change type starts with
+                                        the `GAP_` prefix: - `GAP_CREATE` -
+                                        `GAP_UPDATE` - `GAP_DELETE` - `GAP_UNDELETE`
+
+                                        For overflow events, the change type is
+                                        `GAP_OVERFLOW`.
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: changeType
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: string
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: string
+                                        types_accepted:
+                                            - string
+                                        types_returned:
+                                            - string
+                                changedFields:
+                                    canBeNull: false
+                                    desc: >-
+                                        list of the fields that were changed in an
+                                        update operation, including the
+                                        `LastModifiedDate` system field. This field
+                                        is empty for other operations, including
+                                        record creation
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: changedFields
+                                    type:
+                                        base_type: list<auto>
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: list<auto>
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                        typename: list
+                                        types_accepted:
+                                            - list<auto>
+                                        types_returned:
+                                            - list<auto>
+                                commitNumber:
+                                    canBeNull: false
+                                    desc: >-
+                                        The system change number (SCN) of a
+                                        committed transaction, which increases
+                                        sequentially
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: commitNumber
+                                    type:
+                                        base_type: int
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: int
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                        typename: int
+                                        types_accepted:
+                                            - int
+                                        types_returned:
+                                            - int
+                                commitTimestamp:
+                                    canBeNull: false
+                                    desc: >-
+                                        The date and time when the change occurred,
+                                        represented as the number of milliseconds
+                                        since `January 1, 1970 00:00:00 GMT`
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: commitTimestamp
+                                    type:
+                                        base_type: int
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: int
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                        typename: int
+                                        types_accepted:
+                                            - int
+                                        types_returned:
+                                            - int
+                                commitUser:
+                                    canBeNull: false
+                                    desc: >-
+                                        The ID of the user that ran the change
+                                        operation
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: commitUser
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: string
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: string
+                                        types_accepted:
+                                            - string
+                                        types_returned:
+                                            - string
+                                entityName:
+                                    canBeNull: false
+                                    desc: >-
+                                        The API name of the standard or custom
+                                        object that the change pertains to
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: entityName
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: string
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: string
+                                        types_accepted:
+                                            - string
+                                        types_returned:
+                                            - string
+                                recordIds:
+                                    canBeNull: false
+                                    desc: >-
+                                        One or more record IDs for the changed
+                                        records (typically only one ID)
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: recordIds
+                                    type:
+                                        base_type: list<auto>
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: list<auto>
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                        typename: list
+                                        types_accepted:
+                                            - list<auto>
+                                        types_returned:
+                                            - list<auto>
+                                sequenceNumber:
+                                    canBeNull: false
+                                    desc: >-
+                                        The sequence of the change within a
+                                        transaction
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: sequenceNumber
+                                    type:
+                                        base_type: int
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: int
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                        typename: int
+                                        types_accepted:
+                                            - int
+                                        types_returned:
+                                            - int
+                                transactionKey:
+                                    canBeNull: false
+                                    desc: >-
+                                        A string that uniquely identifies each
+                                        Salesforce transaction. You can use this key
+                                        to identify and group all changes that were
+                                        made in the same transaction
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: transactionKey
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: string
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: string
+                                        types_accepted:
+                                            - string
+                                        types_returned:
+                                            - string
+                            mandatory: true
+                            name: hash<auto>
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                            typename: hash
+                            types_accepted:
+                                - hash<auto>
+                            types_returned:
+                                - hash<auto>
+                    zeyos_contact_id__c:
+                        canBeNull: true
+                        desc: Account zeyos_contact_id__c
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: zeyos_contact_id__c
+                        type:
+                            base_type: float
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: false
+                            name: '*float'
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                            typename: '*float'
+                            types_accepted:
+                                - float
+                                - int
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - float
+                                - 'null'
+                mandatory: true
+                name: hash<auto>
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: hash
+                types_accepted:
+                    - hash<auto>
+                types_returned:
+                    - hash<auto>
+        schema:
+            canBeNull: false
+            desc: Salesforce event REST event schema identifier
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: schema
+            type:
+                base_type: string
+                can_manage_fields: false
+                fields: {}
+                mandatory: true
+                name: string
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                    string.encoding:
+                        desc: the output encoding when writing to the type
+                        type: string
+                    string.max_size_chars:
+                        desc: the maximum length of the string in characters
+                        type: integer
+                typename: string
+                types_accepted:
+                    - string
+                types_returned:
+                    - string
+    name: hash<auto>

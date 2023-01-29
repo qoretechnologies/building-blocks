@@ -1,0 +1,46 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_WsgiUiExtension
+desc: >-
+    WSGi Qorus UI Extension Building Block for Qorus
+
+
+    This class is written in Qore instead of Python to be thread-safe and
+    scalable.
+
+
+    The `WsgiAppHelper` class is used to initialize the WSGi app with the same
+    syntax as [Gunicorn](https://gunicorn.org/)
+lang: qore
+base-class-name: BBM_QorusUiExtension
+requires:
+  - BBM_QorusUiExtension
+  - BBM_WsgiHandlerBase
+version: '1.0'
+code: BBM_WsgiUiExtension-v1.0.qclass
+config-items:
+  - name: ui-extension-group
+    parent:
+        interface-type: class
+        interface-name: BBM_WsgiUiExtension
+        interface-version: '1.0'
+  - name: ui-extension-menu
+    parent:
+        interface-type: class
+        interface-name: BBM_WsgiUiExtension
+        interface-version: '1.0'
+  - name: ui-extension-desc
+    parent:
+        interface-type: class
+        interface-name: BBM_WsgiUiExtension
+        interface-version: '1.0'
+  - name: ui-extension-default-resource
+    parent:
+        interface-type: class
+        interface-name: BBM_WsgiUiExtension
+        interface-version: '1.0'
+  - name: wsgi-app
+    parent:
+        interface-type: class
+        interface-name: WsgiAppHelper
+        interface-version: '1.0'

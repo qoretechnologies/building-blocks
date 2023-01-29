@@ -1,0 +1,65 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_ListCache
+desc: >-
+    ## Summary
+
+
+    A building block class that implements a simple cache of a list of data
+    items of any type
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `cacheData`
+
+
+    This connector adds data to the cache by resolving the `list-cache-data`
+    config item.
+
+
+    The input data is available as `$local:input` for all config items resolved
+    with this connector (in the call to `UserApi::expandTemplatedValue()`).
+
+
+    The input data is returned as output data as well.
+
+
+    ### Input/Output Connector `getData`
+
+
+    Returns the data cached; input data is ignored as no configuration is used
+    in this connector.
+
+
+    ### Input/Output Connector `clear`
+
+
+    The cache is emptied; input data is ignored; the cache contents are returned
+    as output data.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: cacheData
+    type: input-output
+    method: cacheData
+  - name: getData
+    type: input-output
+    method: getData
+  - name: clear
+    type: input-output
+    method: clear
+version: '1.0'
+code: BBM_ListCache-1.0.qclass
+config-items:
+  - name: list-cache-data
+    default_value:
+        "$local:input"
+    default_value_true_type: string
+    description: >-
+        The data to add to the cache; input data for the `cacheData` connector is
+        available as `$local:input`
+    config_group: List Cache Main
+    type: any

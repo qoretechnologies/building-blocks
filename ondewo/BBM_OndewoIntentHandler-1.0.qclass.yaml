@@ -1,0 +1,23 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_OndewoIntentHandler
+desc: ONDEWO intent handler
+lang: python
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: handleIntent
+    type: input-output
+    method: handleIntent
+    input-provider:
+        type: type
+        name: qore
+        can_manage_fields: true
+        path: /hash
+    output-provider:
+        type: type
+        name: qore
+        can_manage_fields: true
+        path: /hash
+version: '1.0'
+code: BBM_OndewoIntentHandler-1.0.qclass.py

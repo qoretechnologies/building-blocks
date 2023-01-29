@@ -1,0 +1,39 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_Continue
+desc: >
+    ## Summary
+
+
+    Building block that throws an `FSM-CONTINUE` exception to provide a
+    `continue` action when executing an FSM.
+
+
+    There is no configuration
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the
+    `util/continue` API data provider in the `qorus-api` factory instead
+
+
+    ## Connectors
+
+
+    ### Input Connector doContinue
+
+
+    Throws an `FSM-CONTINUE` exception to provide a `continue` action when
+    executing an FSM.
+
+
+    Input data is ignored
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: doContinue
+    type: input
+    method: doContinue
+version: '1.0'
+code: BBM_Continue-1.0.qclass

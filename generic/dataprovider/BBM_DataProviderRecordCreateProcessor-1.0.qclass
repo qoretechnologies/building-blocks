@@ -1,0 +1,51 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_DataProviderRecordCreateProcessor inherits AbstractDataProcessor {
+    private {
+        #! data provider object
+        AbstractDataProvider prov;
+        #! bulk operation object
+        AbstractDataProviderBulkOperation bulk;
+    }
+
+    private flushImpl(code enqueue) {
+        if (bulk) {
+            # flush all pending records to the data provider
+            bulk.flush();
+            # this call has no effect if the data provider does not support transaction management
+            bulk.commit();
+        }
+    }
+
+    private submitImpl(code enqueue, auto _data) {
+        if (!bulk) {
+            init();
+        }
+        bulk.queueData(_data);
+    }
+
+    private bool supportsBulkApiImpl() {
+        return True;
+    }
+
+    # on-demand initialization
+    private init() {
+        string provider_path = UserApi::getConfigItemValue("record-create-processor-data-provider");
+        bool upsert = UserApi::getConfigItemValue("record-create-processor-upsert");
+        UserApi::logInfo("BBM_DataProviderRecordCreateProcessor: using data provider: %y upsert: %y", provider_path,
+            upsert);
+
+        prov = UserApi::getDataProvider(provider_path);
+        # in case the data provider does not support bulk operations, the following calls return objects that simulate
+        # bulk operations with single calls for each record
+        bulk = upsert
+            ? prov.getBulkUpserter()
+            : prov.getBulkInserter();
+
+        # this call has no effect if the data provider does not support transaction management
+        prov.beginTransaction();
+    }
+}

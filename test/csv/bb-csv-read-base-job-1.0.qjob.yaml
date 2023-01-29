@@ -1,0 +1,139 @@
+# This is a generated file, don't edit!
+type: job
+name: bb-csv-read-base-job
+desc: test for the CSV read base building block
+lang: qore
+active: false
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusJob
+class-name: BbCsvReadBaseJob
+classes:
+  - BBM_CsvReadDataProvider
+  - BBM_OutputData
+groups:
+  - bb-test
+remote: false
+schedule:
+    minutes: "0"
+    hours: "0"
+    days: "*"
+    months: "*"
+    dow: "*"
+version: '1.0'
+code: bb-csv-read-base-job-1.0.qjob
+class-connections:
+    run:
+      - class: BBM_CsvReadDataProvider
+        connector: searchRecordsConnector
+        trigger: run
+      - class: BBM_OutputData
+        connector: writeOutput
+config-items:
+  - name: csv-read-path
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: csv-read-stream
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: csv-read-tolwr
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: csv-read-header-lines
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: csv-read-header-names
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: csv-read-header-reorder
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: csv-read-headers
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: csv-read-eol
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: csv-read-fields
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: csv-read-separator
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: csv-read-quote
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: csv-read-verify-columns
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: csv-read-date-format
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: csv-read-encoding
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: csv-read-ignore-empty
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: csv-read-ignore-whitespace
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: csv-read-number-format
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: csv-read-timezone
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: csv-read-search-where
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: csv-read-search-options
+    parent:
+        interface-type: class
+        interface-name: BBM_CsvReadDataProvider
+        interface-version: '1.0'
+  - name: output-data-hash
+    value:
+        '$local:input': '$jinfo:csv'
+    parent:
+        interface-type: class
+        interface-name: BBM_OutputData
+        interface-version: '1.0'

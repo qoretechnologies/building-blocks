@@ -1,0 +1,53 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_DataSerializationTest inherits QorusJob {
+    private {
+        ####### GENERATED SECTION! DON'T EDIT! ########
+        ClassConnections_BBM_DataSerializationTest class_connections();
+        ############ GENERATED SECTION END ############
+    }
+
+    ####### GENERATED SECTION! DON'T EDIT! ########
+    run() {
+        class_connections.run();
+    }
+    ############ GENERATED SECTION END ############
+}
+
+####### GENERATED SECTION! DON'T EDIT! ########
+class ClassConnections_BBM_DataSerializationTest {
+    private {
+        # map of prefixed class names to class instances
+        hash<auto> class_map;
+    }
+
+    constructor() {
+        class_map = {
+            "BBM_GetData": new BBM_GetData(),
+            "BBM_DataSerialization": new BBM_DataSerialization(),
+            "BBM_OutputData": new BBM_OutputData(),
+        };
+    }
+
+    auto callClassWithPrefixMethod(string prefixed_class, string method) {
+        UserApi::logDebug("ClassConnections_BBM_DataSerializationTest: callClassWithPrefixMethod: method: %s class: %y", method, prefixed_class);
+        return call_object_method_args(class_map{prefixed_class}, method, argv);
+    }
+
+    auto run(auto params) {
+        UserApi::logDebug("run called with data: %y", params);
+
+        UserApi::logDebug("calling getData: %y", params);
+        params = callClassWithPrefixMethod("BBM_GetData", "getData", params);
+
+        UserApi::logDebug("calling serialize: %y", params);
+        params = callClassWithPrefixMethod("BBM_DataSerialization", "serialize", params);
+
+        UserApi::logDebug("calling writeOutputData: %y", params);
+        return callClassWithPrefixMethod("BBM_OutputData", "writeOutputData", params);
+    }
+}
+############ GENERATED SECTION END ############

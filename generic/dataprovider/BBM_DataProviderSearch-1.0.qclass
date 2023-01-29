@@ -1,0 +1,136 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_DataProviderSearch inherits BBM_DataProviderSearchBase {
+    public {
+        const ProviderPathItem = "dataprovider-search-provider-path";
+        const SearchCriteriaItem = "dataprovider-search-criteria";
+        const SearchOptionsItem = "dataprovider-search-options";
+        const RequiresResultItem = "dataprovider-search-requires-result";
+        const OutputItem = "dataprovider-search-output-data";
+        const RetriesItem = "dataprovider-search-retries";
+        const RetryDelayItem = "dataprovider-search-retry-delay";
+        const RetryErrorsItem = "dataprovider-search-retry-errors";
+    }
+
+    #! The primary search action logic: perform the search and returns any records
+    /** @return the record data as provided by the data provider
+    */
+    *list<hash<auto>> doSearch() {
+        return doSearchWithItems(ProviderPathItem, SearchCriteriaItem, SearchOptionsItem, RequiresResultItem,
+            OutputItem, RetriesItem, RetryDelayItem, RetryErrorsItem);
+    }
+
+    #! Connector for the data provider search building block
+    /** @param opts the input search data; must be of type: \c qoretechnologies/building-blocks/data-provider-search/input
+
+        @return any records matched
+
+        @note
+        - the actual type of records returned depends on the data provider
+        - connector removed as this method returns multiple records but throws an exception if the output data config
+          item is used with a result that returns multiple records; the method is left here to provide backwards
+          compatibility in case there are dependent interfaces
+
+        @deprecated Use doMultipleSearchConnector() instead
+    */
+    *list<hash<auto>> doSearchConnector(*hash<auto> opts) {
+        return doSearchWithItemsIntern(opts.search_criteria ?? UserApi::getConfigItemValue(SearchCriteriaItem),
+            opts.search_options ?? UserApi::getConfigItemValue(SearchOptionsItem),
+            ProviderPathItem, RequiresResultItem, OutputItem, RetriesItem, RetryDelayItem, RetryErrorsItem);
+    }
+
+    #! Connector for the data provider search building block
+    /** @param input used as local data when looking up config item values; available as <tt>$local:input</tt> when
+        resolving config item values
+
+        @return any records matched
+
+        @note
+        - the actual type of records returned depends on the data provider
+        - connector removed as this method returns multiple records but throws an exception if the output data config
+          item is used with a result that returns multiple records; the method is left here to provide backwards
+          compatibility in case there are dependent interfaces
+
+        @deprecated Use doMultipleSearchConnectorFromConfig() instead
+    */
+    *list<hash<auto>> doSearchConnectorFromConfig(auto input) {
+        hash<auto> local_context = {"input": input};
+        return doSearchWithItemsIntern(UserApi::getConfigItemValue(SearchCriteriaItem, local_context),
+            UserApi::getConfigItemValue(SearchOptionsItem, local_context),
+            ProviderPathItem, RequiresResultItem, OutputItem, RetriesItem, RetryDelayItem, RetryErrorsItem, NOTHING,
+            NOTHING, NOTHING, local_context);
+    }
+
+    #! Connector for the data provider search building block
+    /** @param opts the input search data; must be of type: \c qoretechnologies/building-blocks/data-provider-search/input
+
+        @return any records matched
+
+        @note the actual type of records returned depends on the data provider
+    */
+    *list<hash<auto>> doMultipleSearchConnector(*hash<auto> opts) {
+        return doSearchWithItemsIntern(opts.search_criteria ?? UserApi::getConfigItemValue(SearchCriteriaItem),
+            opts.search_options ?? UserApi::getConfigItemValue(SearchOptionsItem),
+            ProviderPathItem, RequiresResultItem, OutputItem, RetriesItem, RetryDelayItem, RetryErrorsItem, True);
+    }
+
+    #! Connector for the data provider search building block
+    /** @param input used as local data when looking up config item values; available as <tt>$local:input</tt> when
+        resolving config item values
+
+        @return any records matched
+
+        @note the actual type of records returned depends on the data provider
+    */
+    *list<hash<auto>> doMultipleSearchConnectorFromConfig(auto input) {
+        hash<auto> local_context = {"input": input};
+        return doSearchWithItemsIntern(UserApi::getConfigItemValue(SearchCriteriaItem, local_context),
+            UserApi::getConfigItemValue(SearchOptionsItem, local_context),
+            ProviderPathItem, RequiresResultItem, OutputItem, RetriesItem, RetryDelayItem, RetryErrorsItem, True,
+            NOTHING, NOTHING, local_context);
+    }
+
+    #! Connector for the data provider search building block for a single record
+    /** @param opts the input search data; must be of type: \c qoretechnologies/building-blocks/data-provider-search/input
+
+        @return any record matched; generic type: \c qore/hash
+
+        @note the actual type of the record returned depends on the data provider
+    */
+    *hash<auto> doSingleRecordSearchConnector(*hash<auto> opts) {
+        *list<hash<auto>> records = doSearchWithItemsIntern(
+            opts.search_criteria ?? UserApi::getConfigItemValue(SearchCriteriaItem),
+            opts.search_options ?? UserApi::getConfigItemValue(SearchOptionsItem),
+            ProviderPathItem, RequiresResultItem, OutputItem, RetriesItem, RetryDelayItem, RetryErrorsItem);
+        if (records.size() > 1) {
+            throw "SINGLE-RECORD-SEARCH-ERROR", sprintf("search returned %d records; a single record search must "
+                "return no more than 1 record", records.size());
+        }
+        return records[0];
+    }
+
+    #! Connector for the data provider search building block for a single record
+    /** @param input used as local data when looking up config item values; available as <tt>$local:input</tt> when
+        resolving config item values
+
+        @return any record matched; generic type: \c qore/hash
+
+        @note the actual type of the record returned depends on the data provider
+    */
+    *hash<auto> doSingleRecordSearchConnectorFromConfig(auto input) {
+        hash<auto> local_context = {"input": input};
+        *list<hash<auto>> records = doSearchWithItemsIntern(
+            UserApi::getConfigItemValue(SearchCriteriaItem, local_context),
+            UserApi::getConfigItemValue(SearchOptionsItem, local_context),
+            ProviderPathItem, RequiresResultItem, OutputItem, RetriesItem, RetryDelayItem, RetryErrorsItem, NOTHING,
+            NOTHING, NOTHING, local_context);
+        if (records.size() > 1) {
+            throw "SINGLE-RECORD-SEARCH-ERROR", sprintf("search returned %d records; a single record search must "
+                "return no more than 1 record", records.size());
+        }
+        return records[0];
+    }
+}

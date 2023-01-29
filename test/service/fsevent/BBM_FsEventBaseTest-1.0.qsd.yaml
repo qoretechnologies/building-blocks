@@ -1,0 +1,70 @@
+# This is a generated file, don't edit!
+type: service
+name: BBM_FsEventBaseTest
+desc: test for the BBM_FsEventBase class
+lang: qore
+base-class-name: QorusService
+class-name: BBM_FsEventBaseTest
+classes:
+  - BBM_FsEventBase
+  - TestHashStore
+version: '1.0'
+servicetype: USER
+code: BBM_FsEventBaseTest-1.0.qsd
+class-connections:
+    Event:
+      - class: BBM_FsEventBase
+        connector: event
+        trigger: null
+      - class: TestHashStore
+        connector: store
+    Stop:
+      - class: BBM_FsEventBase
+        connector: stop
+        trigger: stop
+    Get:
+      - class: TestHashStore
+        connector: get
+        trigger: get
+    Clear:
+      - class: TestHashStore
+        connector: clear
+        trigger: clear
+config-items:
+  - name: fsevent-root-path
+    parent:
+        interface-type: class
+        interface-name: BBM_FsEventBase
+        interface-version: '1.0'
+  - name: fsevent-mask-type
+    parent:
+        interface-type: class
+        interface-name: BBM_FsEventBase
+        interface-version: '1.0'
+  - name: fsevent-mask
+    parent:
+        interface-type: class
+        interface-name: BBM_FsEventBase
+        interface-version: '1.0'
+  - name: fsevent-min-age-secs
+    parent:
+        interface-type: class
+        interface-name: BBM_FsEventBase
+        interface-version: '1.0'
+  - name: fsevent-recursive
+    parent:
+        interface-type: class
+        interface-name: BBM_FsEventBase
+        interface-version: '1.0'
+  - name: fsevent-regex-opts
+    parent:
+        interface-type: class
+        interface-name: BBM_FsEventBase
+        interface-version: '1.0'
+methods:
+  - name: get
+    desc: returns the event cache
+  - name: stop
+    desc: stop method
+  - name: clear
+    desc: clear hash store

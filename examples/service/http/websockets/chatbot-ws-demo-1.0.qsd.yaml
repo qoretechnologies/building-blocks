@@ -1,0 +1,227 @@
+# This is a generated file, don't edit!
+type: service
+name: chatbot-ws-demo
+desc: AI / NLP Chatbot Demo Server
+lang: java
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusService
+class-name: ChatbotWsDemo
+classes:
+  - BBM_WebSocketServiceBase
+  - BBM_WebSocketServiceEventSource
+  - BBM_TextAnalysis
+  - BBM_QorusUiExtension
+fsm:
+    [
+        {
+            "name": "authorize-payment",
+            "triggers": []
+        }
+    ]
+mappers:
+  - chatbot-ws-input:1.0
+  - chatbot-ws-output:1.0
+remote: true
+resource:
+  - intents.json
+  - public/*
+  - views/*
+stateless: false
+system-options:
+    stack-size:
+        type: byte-size
+        value: 4MB
+version: '1.0'
+servicetype: USER
+code: chatbot_ws_demo_1_0_service/ChatbotWsDemo.java
+class-connections:
+    UI_Extension:
+      - class: BBM_QorusUiExtension
+        connector: init
+        trigger: init
+    WebSockets:
+      - class: BBM_WebSocketServiceEventSource
+        connector: webSocketReceiveEvent
+        trigger: null
+      - class: BBM_TextAnalysis
+        connector: processInputHash
+        mapper: chatbot-ws-input:1.0
+      - class: BBM_WebSocketServiceEventSource
+        connector: webSocketSendEvent
+        mapper: chatbot-ws-output:1.0
+config-items:
+  - name: http-listener-bind-address
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: http-listener-cert-location
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: http-listener-cert-format
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: http-listener-key-location
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: http-listener-key-format
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: http-listener-key-password
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: http-listener-ssl-mode
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: http-listener-accept-all-certs
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: http-listener-capture-client-certs
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: websockets-root-uri
+    value:
+        "ai-chatbot"
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: websockets-auth-name
+    value:
+        "permissive"
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: websockets-cors-enable
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: websockets-cors-methods
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: websockets-cors-max-age
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: websockets-cors-headers
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: websockets-cors-credentials
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: text-analysis-intents
+    value:
+        "resource://intents.json"
+    parent:
+        interface-type: class
+        interface-name: BBM_TextAnalysis
+        interface-version: '1.0'
+  - name: text-analysis-model
+    value:
+        "$OMQ_DIR/user/building-blocks/examples/service/http/websockets/saved_model"
+    parent:
+        interface-type: class
+        interface-name: BBM_TextAnalysis
+        interface-version: '1.0'
+  - name: text-analysis-actions
+    parent:
+        interface-type: class
+        interface-name: BBM_TextAnalysis
+        interface-version: '1.0'
+  - name: text-analysis-threshold
+    parent:
+        interface-type: class
+        interface-name: BBM_TextAnalysis
+        interface-version: '1.0'
+  - name: text-analysis-hard-actions
+    value:
+        i authorize payment: 'fsm:authorize-payment'
+        i authorise payment: 'fsm:authorize-payment'
+        i authorized payment: 'fsm:authorize-payment'
+        i authorised payment: 'fsm:authorize-payment'
+    parent:
+        interface-type: class
+        interface-name: BBM_TextAnalysis
+        interface-version: '1.0'
+  - name: text-analysis-hash-event-key
+    parent:
+        interface-type: class
+        interface-name: BBM_TextAnalysis
+        interface-version: '1.0'
+  - name: ui-extension-group
+    value:
+        "Chatbot"
+    parent:
+        interface-type: class
+        interface-name: BBM_QorusUiExtension
+        interface-version: '1.0'
+  - name: ui-extension-menu
+    value:
+        "AI Chatbot Demo: Public Transport Services"
+    parent:
+        interface-type: class
+        interface-name: BBM_QorusUiExtension
+        interface-version: '1.0'
+  - name: ui-extension-desc
+    value:
+        "AI chatbot demo service"
+    parent:
+        interface-type: class
+        interface-name: BBM_QorusUiExtension
+        interface-version: '1.0'
+  - name: ui-extension-default-resource
+    value:
+        "views/index.html"
+    parent:
+        interface-type: class
+        interface-name: BBM_QorusUiExtension
+        interface-version: '1.0'
+  - name: websockets-auth-cookie
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: websockets-auth-redirect
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: http-listener-allow-sharing
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: test-analysis-input
+    parent:
+        interface-type: class
+        interface-name: BBM_TextAnalysis
+        interface-version: '1.0'
+methods:
+  - name: init
+    desc: init method

@@ -1,0 +1,383 @@
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+#! Proxy Request Handler
+class BBM_HttpReverseProxyRequestHandler inherits AbstractStreamRequest, BBM_CorsBase {
+    # no public members
+    public {
+    }
+
+    private {
+        # HTTP client for remote request
+        HTTPClient client;
+
+        # send client / receive target data queue
+        Queue queue(5);
+
+        # receive client / send target data queue
+        Queue recv_queue(5);
+
+        # counter to signal that the remote header has been received
+        Counter cnt(1);
+
+        # remote header hash
+        hash<auto> remote_hdr;
+
+        # remote header hash in lower case
+        hash<auto> remote_hdr_lwr;
+
+        int io_timeout_ms = ServiceApi::getConfigItemValue("http-reverse-proxy-client-timeout-ms");
+
+        # if the protocol needs to be rewritten in redirect msgs
+        *string prot_rewrite;
+
+        # is this listener an HTTPS listener?
+        bool server_secure = ServiceApi::getConfigItemValue("http-listener-cert-location").val();
+    }
+
+    # create the object
+    constructor(HttpListenerInterface listener, AbstractHttpRequestHandler handler, Socket s, hash<auto> cx,
+            hash<auto> hdr, *data body)
+            : AbstractStreamRequest(listener, handler, s, cx, hdr, body), BBM_CorsBase("http") {
+        #UserApi::logDebug("CID %y: proxying %s %s", cx.id, hdr.method);
+    }
+
+    # get the response header
+    hash<HttpResponseInfo> getResponseHeaderMessageImpl() {
+        # use the original path exactly as it arrived (decoded, as it will be re-encoded in the HTTP client in any
+        # case)
+        *string path = cx.orig_path;
+
+        string proxy_url = ServiceApi::getConfigItemValue("http-reverse-proxy-target");
+
+        bool proxy_secure = (proxy_url =~ /^https/);
+
+        ServiceApi::logInfo("cid %y: > %s %s HTTP/%s -> %y (timeout %d ms)", cx.id, hdr.method, path,
+            hdr.http_version, proxy_url, io_timeout_ms);
+
+        hash<auto> req_hdr = cx."header-info"."headers-raw";
+        if (!ServiceApi::getConfigItemValue("http-reverse-proxy-client-override-host")) {
+            remove req_hdr.Host;
+        }
+
+        if (*list<auto> hdr_filter_list =
+            ServiceApi::getConfigItemValue("http-reverse-proxy-request-strip-headers")) {
+            req_hdr -= hdr_filter_list;
+        }
+
+        if (*hash<auto> hdr_add = ServiceApi::getConfigItemValue("http-reverse-proxy-request-add-headers")) {
+            req_hdr += hdr_add;
+        }
+
+        # make sure the send thread stops if there's an error
+        on_error queue.push();
+
+        try {
+            # try to open a request to the target HTTP server
+            hash<auto> opts = {
+                "url": proxy_url,
+                "additional_methods": {
+                    hdr.method: (hdr.method == "OPTIONS" ? False : True),
+                },
+                "redirect_passthru": True,
+                "error_passthru": True,
+            };
+            ServiceApi::logDebug("HTTP client options: %y", opts);
+
+            client = new HTTPClient(opts);
+
+            ServiceApi::logDebug("CID %y: outgoing request hdr: %N", cx.id, req_hdr);
+            ServiceApi::logDebug("CID %y: body: %N", cx.id, body);
+            req_hdr -= "Content-Length";
+
+            # get request from backend server in the background to pipeline to the original client
+            code req = sub () {
+                try {
+                    hash<auto> info;
+                    on_exit UserApi::logDebug("CID %y: INFO: %N", cx.id, info);
+                    if (!body && (hdr.method != "HEAD") && (hdr."content-length" || hdr."transfer-encoding")) {
+                        UserApi::logDebug("CID %y: HTTP client: send / receive operation", cx.id);
+                        client.sendWithCallbacks(\sendRemoteData(), \recvRemoteData(), hdr.method, path, req_hdr,
+                            io_timeout_ms, NOTHING, \info);
+                    } else {
+                        UserApi::logDebug("CID %y: HTTP client: receive operation only (%s request: %d bytes)", cx.id,
+                            hdr.method, body.size());
+                        client.sendWithRecvCallback(\recvRemoteData(), body, hdr.method, path, req_hdr, io_timeout_ms,
+                            NOTHING, \info);
+                    }
+                } catch (hash<ExceptionInfo> ex) {
+                    UserApi::logError("cid %y: error in background I/O thread: %s", cx.id, get_exception_string(ex));
+                    queue.push(NOTHING, io_timeout_ms);
+                }
+            };
+            ServiceApi::startThread(req);
+
+            # wait for the remote header
+            if (cnt.waitForZero(io_timeout_ms)) {
+                throw "REVERSE-PROXY-RECV-TIMEOUT", sprintf("waited more than %y to receive data from %y",
+                    milliseconds(io_timeout_ms), proxy_url);
+            }
+        } catch (hash<ExceptionInfo> ex) {
+            # log exception internally
+            ServiceApi::logInfo("ERROR serving path: %y: %s: %s: %s", path, get_ex_pos(ex), ex.err, ex.desc);
+            # return a generic error to the client with original path; do not expose internal implementation to
+            # requesting clients
+            return AbstractHttpRequestHandler::makeResponse(500, "could not retrieve path %y due to a server error",
+                hdr.path);
+        }
+
+        #ServiceApi::logDebug("CID %y: remote hdr (lc): %N", cx.id, remote_hdr_lwr);
+        #ServiceApi::logDebug("CID %y: remote hdr: %N", cx.id, remote_hdr);
+
+        hash<auto> response_hdr = remote_hdr;
+
+        if (!hdr.method != "HEAD" && remote_hdr_lwr."content-length"
+            && (remote_hdr_lwr.status_code >= 200) && (remote_hdr_lwr.status_code != 204)
+            && (remote_hdr_lwr.status_code != 304) && !remote_hdr_lwr."transfer-encoding") {
+            response_hdr."Transfer-Encoding" = "chunked";
+        }
+
+        if (*list<auto> hdr_filter_list = ServiceApi::getConfigItemValue("http-reverse-proxy-response-strip-headers")) {
+            response_hdr -= hdr_filter_list;
+        }
+        if (*hash<auto> hdr_add = ServiceApi::getConfigItemValue("http-reverse-proxy-response-add-headers")) {
+            response_hdr += hdr_add;
+        }
+        response_hdr += getCorsResponseHeaders(cx);
+
+        ServiceApi::logInfo("cid %y: < HTTP/%s %d %s", cx.id, remote_hdr_lwr.http_version, remote_hdr_lwr.status_code,
+            remote_hdr_lwr.status_message);
+
+        # rewrite redirect messages if proxying from HTTPS -> HTTP or vice versa
+        if (remote_hdr_lwr.status_code / 100 == 3 && (server_secure != proxy_secure) && response_hdr.Location
+                && response_hdr.Location =~ /^http:\/\//) {
+            response_hdr.Location = regex_subst(response_hdr.Location, "^http" + (proxy_secure ? "s" : ""),
+                "http" + (server_secure ? "s": ""));
+            ServiceApi::logInfo("rewrote redirect from %y -> %y", remote_hdr.Location, response_hdr.Location);
+        }
+
+        return <HttpResponseInfo>{
+            "code": remote_hdr_lwr.status_code,
+            "hdr": response_hdr,
+            "user_state": {
+                "proxy_client": client,
+            },
+        };
+    }
+
+    # used to queue remote data received from the remote request
+    recvRemoteData(hash<auto> h) {
+        # NOTE: do not log the entire message here; it can be very large
+        ServiceApi::logDebug("CID %y: GOT h: %N", cx.id, keys h);
+        if (h.hdr) {
+            remote_hdr = h.info."response-headers-raw";
+            remote_hdr_lwr = h.hdr;
+            ServiceApi::logDebug("CID %y: set hdrs; decrementing cnt", cx.id);
+            cnt.dec();
+            return;
+        }
+        ServiceApi::logDebug("CID %y: got remote chunk: %d bytes (type: %s queue size: %d to: %dms)", cx.id,
+            h.data.size(), h.data.type(), queue.size(), io_timeout_ms);
+        queue.push(h.data, io_timeout_ms + 1);
+    }
+
+    auto sendRemoteData() {
+        return recv_queue.get();
+    }
+
+    # ignore data sent in the request, if any
+    nothing recvImpl(hash<auto> h) {
+        UserApi::logDebug("CID %y: recvImpl() h: %N", cx.id, h);
+        if (h."data") {
+            recv_queue.push(h."data");
+            return;
+        }
+        recv_queue.push(h.hdr);
+        return;
+    }
+
+    # the callback for chunked data to send
+    auto sendImpl() {
+        *data d = queue.get();
+        UserApi::logDebug("got %d bytes from queue (%s queue size: %d)", d.size(), d.type(), queue.size());
+        return d;
+    }
+
+    private hash<HttpHandlerResponseInfo> sendResponse() {
+        try {
+            return AbstractStreamRequest::sendResponse();
+        } catch (hash<ExceptionInfo> ex) {
+            UserApi::logError("error forwarding response to client: %s: %s: %s; disconnecting", get_ex_pos(ex),
+                ex.err, ex.desc);
+            # disconnect the proxy connection to the server, or we will get a deadlock when trying to push to the queue
+            # in recvRemoteData() due to the lack of a queue consumer
+            client.disconnect();
+            rethrow;
+        }
+    }
+}
+
+class SocketProxyConnection {
+    private {
+        hash<auto> cx;
+        Socket client;
+        Socket server;
+
+        const PollInterval = 250ms;
+
+        const SendTimeout = 5s;
+    }
+
+    constructor(hash<auto> cx, Socket client, Socket server) {
+        self.cx = cx;
+        self.client = client;
+        self.server = server;
+    }
+
+    #! proxy socket traffic from each end until one end closes the connection
+    proxyTraffic() {
+        Socket sock;
+        try {
+            list<hash<SocketPollInfo>> poll_list = (
+                <SocketPollInfo>{
+                    "events": SOCK_POLLIN,
+                    "socket": client,
+                },
+                <SocketPollInfo>{
+                    "events": SOCK_POLLIN,
+                    "socket": server,
+                },
+            );
+            while (True) {
+                list<hash<SocketPollInfo>> new_list = Socket::poll(poll_list, PollInterval);
+                foreach hash<SocketPollInfo> info in (new_list) {
+                    sock = info.socket;
+                    binary sock_data = sock.recvBinary(0);
+                    if (info.socket == client) {
+                        sock = server;
+                    } else {
+                        sock = client;
+                    }
+                    sock.send(sock_data, SendTimeout);
+                }
+            }
+        } catch (hash<ExceptionInfo> ex) {
+            if (ex.err == "SOCKET-NOT-OPEN") {
+                string name = sock == client ? "client" : "server";
+                UserApi::logInfo("cid %d: socket proxy: %s closed the connection", cx.id, name);
+                return;
+            }
+            UserApi::logError("SocketProxyConnection error: %s", get_exception_string(ex));
+        }
+    }
+
+    terminate() {
+        try {
+            # terminate connections
+            client.close();
+            server.close();
+        } catch (hash<ExceptionInfo> ex) {
+            UserApi::logError("%s", get_exception_string(ex));
+            rethrow;
+        }
+    }
+}
+
+#! HTTP proxy handler class
+class BBM_HttpReverseProxyHandler inherits AbstractServiceHttpHandler, AbstractHttpSocketHandlerInterface,
+        BBM_HttpAuthenticatorBase, BBM_CorsBase {
+    private {
+        ProxyCache cache();
+    }
+
+    constructor(AbstractAuthenticator auth = BBM_HttpAuthenticatorBase::getAuthenticator("http-auth-name",
+            "http-auth-cookie", "http-auth-redirect"))
+            : AbstractServiceHttpHandler(
+                ServiceApi::getConfigItemValue("http-root-uri"),
+                ServiceApi::getConfigItemValue("http-match-content-types"),
+                ServiceApi::getConfigItemValue("http-match-headers"),
+                auth,
+                ServiceApi::getConfigItemValue("http-root-uri-is-regex")
+            ),
+            BBM_CorsBase("http") {
+        stream = True;
+    }
+
+    stop() {
+        cache.stop();
+    }
+
+    #! returns the AbstractStreamRequest object for handling chunked requests
+    private AbstractStreamRequest getStreamRequestImpl(HttpListenerInterface listener, Socket s, hash<auto> cx, hash<auto> hdr, *data body) {
+        return new BBM_HttpReverseProxyRequestHandler(listener, self, s, cx, hdr, body);
+    }
+
+    private startImpl(softstring lid, hash<auto> cx, hash<auto> hdr, Socket s) {
+        setThreadContext(cx);
+        UserApi::logInfo("cid %d: opening raw socket proxy for WebSocket data forwarding", cx.id);
+        #UserApi::logDebug("BBM_HttpReverseProxyHandler::startImpl() lid: %y cx: %y hdr: %y", lid, cx, hdr);
+        SocketProxyConnection spc(cx, cx.user_state.proxy_client, s);
+
+        cache.register(spc);
+        on_exit cache.deregister(spc);
+
+        spc.proxyTraffic();
+    }
+}
+
+class BBM_HttpReverseProxyService inherits BBM_HttpServiceGenericBase {
+    private AbstractServiceHttpHandler getHandlerImpl() {
+        return new BBM_HttpReverseProxyHandler();
+    }
+
+    stop() {
+    }
+}
+
+class ProxyCache {
+    private {
+        RWLock rwl();
+        bool stopped;
+
+        hash<string, SocketProxyConnection> pmap;
+    }
+
+    register(SocketProxyConnection spc) {
+        string hcode = spc.uniqueHash();
+
+        rwl.readLock();
+        on_exit rwl.readUnlock();
+
+        if (stopped) {
+            throw "PROXY-ERROR", "service shutting down; cannot open a new proxy session";
+        }
+        pmap{hcode} := spc;
+    }
+
+    stop() {
+        rwl.writeLock();
+        on_exit rwl.writeUnlock();
+
+        UserApi::logInfo("terminating %d active proxy connection%s", pmap.size(), pmap.size() == 1 ? "" : "s");
+
+        stopped = True;
+        foreach SocketProxyConnection spc in (pmap.iterator()) {
+            try {
+                spc.terminate();
+            } catch (hash<ExceptionInfo> ex) {
+                if (ex.err != "OBJECT-ALREADY-DELETED") {
+                    rethrow;
+                }
+            }
+        }
+    }
+
+    deregister(SocketProxyConnection spc) {
+        rwl.readLock();
+        on_exit rwl.readUnlock();
+
+        remove pmap{spc.uniqueHash()};
+    }
+}

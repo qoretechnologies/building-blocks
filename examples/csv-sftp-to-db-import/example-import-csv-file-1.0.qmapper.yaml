@@ -1,0 +1,61 @@
+# This is a generated file, don't edit!
+type: mapper
+name: example-import-csv-file
+desc: Import a CSV file into our target table
+author:
+  - Qore Technologies, s.r.o.
+mappertype: Mapper
+version: '1.0'
+fields:
+    store_code:
+        name: StoreCode
+    product_code:
+        name: ProductCode
+    product_desc:
+        name: ProductDescription
+    ordered:
+        name: Ordered
+    available:
+        name: Available
+    in_transit:
+        name: InTransit
+    id:
+        sequence: seq_inventory_example
+    filename:
+        context: '$keys:filename'
+    uuid:
+        context: '$static:uuid'
+    total:
+        context: '$qore-expr:{$local:input.Ordered + $local:input.InTransit}'
+    qorus_wfiid:
+        context: '$local:workflow_instanceid'
+    report_date:
+        name: ReportDate
+options:
+    mapper-input:
+        type: factory
+        name: csvread
+        path: ''
+        options:
+            path:
+                type: string
+                value: '$static:filename'
+            header_names:
+                type: softbool
+                value: true
+            fields:
+                type: hash<auto>
+                value:
+                    StoreCode: string
+                    ProductCode: string
+                    ProductDescription: string
+                    Available: int
+                    Ordered: int
+                    InTransit: int
+                    ReportDate: date
+        custom-fields: {}
+    mapper-output:
+        type: datasource
+        name: omquser
+        path: /inventory_example
+        custom-fields: {}

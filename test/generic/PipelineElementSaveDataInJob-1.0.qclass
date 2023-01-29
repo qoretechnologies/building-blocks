@@ -1,0 +1,29 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class PipelineElementSaveDataInJob inherits AbstractDataProcessor {
+    private {
+        list<auto> pdata;
+    }
+
+    private submitImpl(code enqueue, auto _data) {
+        # perform bulk processing
+        if (_data.typeCode() == NT_HASH && _data.firstValue().typeCode() == NT_LIST) {
+            map pdata += $1, _data.contextIterator();
+        } else {
+            pdata += _data;
+        }
+        enqueue(_data);
+    }
+
+    private bool supportsBulkApiImpl() {
+        return True;
+    }
+
+    private flushImpl(code enqueue) {
+        UserApi::logInfo("saving data: %N", pdata);
+        JobApi::saveInfo({"pdata": pdata});
+    }
+}

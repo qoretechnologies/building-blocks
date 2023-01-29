@@ -1,0 +1,33 @@
+# This is a generated file, don't edit!
+type: job
+name: bbm-data-provider-create-processor-test
+desc: test for the BBM_DataProviderRecordCreateProcessor building block
+lang: qore
+active: false
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusJob
+class-name: BBM_DataProviderCreateProcessorTest
+fsm:
+    [
+        {
+            "name": "bbm-data-provider-create-processor-test",
+            "triggers": [
+                {
+                    "method": "run"
+                }
+            ]
+        }
+    ]
+groups:
+  - bb-test
+  - test
+remote: true
+schedule:
+    minutes: "0"
+    hours: "0"
+    days: "1"
+    months: "1"
+    dow: "*"
+version: '1.0'
+code: bbm-data-provider-create-processor-test-1.0.qjob

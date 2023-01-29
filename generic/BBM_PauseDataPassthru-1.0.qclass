@@ -1,0 +1,37 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_PauseDataPassthru {
+    #! Pause connector with input-output data passthru
+    /** Any data is passed through
+
+        @param input available in the \a input key of local context data (i.e. <tt>$local:input</tt> when looking up
+        config item values)
+
+        @return the input data is returned as-is
+
+        @throw RETRY-ERROR if the interface is shut down during the pause
+    */
+    auto pause(auto input) {
+        hash<auto> local_context = {"input": input};
+        bool do_pause = UserApi::getConfigItemValue("pause-criterion", local_context);
+        if (do_pause) {
+            # get pause delay in milliseconds
+            int ms = UserApi::getConfigItemValue("pause-delay-ms", local_context);
+            UserApi::logInfo("BBM_PauseDataPassthru: pause %d ms executing", ms);
+            try {
+                UserApi::omqusleep(ms * 1000);
+            } catch (hash<ExceptionInfo> ex) {
+                if (ex.err == "STOP-ERROR") {
+                    throw "RETRY-ERROR", sprintf("%y received while pausing: %s", ex.err, ex.desc);
+                }
+                rethrow;
+            }
+        } else {
+            UserApi::logInfo("BBM_PauseDataPassthru: pause not executed; \"pause-criterion\" is False");
+        }
+        return input;
+    }
+}

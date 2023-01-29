@@ -1,0 +1,59 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_DataProviderSearchRecordIterator
+desc: >
+    ## Summary
+
+
+    Provides a building block that outputs a record iterator suitable for use as
+    an input element in a data pipeline.
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector getIterator()
+
+
+    Performs the search and returns a bulk record iterator for use as input to a
+    data pipeline, for example.
+
+
+    Input data is available as `$local:input` when resolving config items with
+    this connector.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: getIterator
+    type: input-output
+    method: getIterator
+version: '1.0'
+code: BBM_DataProviderSearchRecordIterator-1.0.qclass
+config-items:
+  - name: search-processor-provider-path
+    description: the path to the data provider to use for the search
+    config_group: Data Provider Search Processor Config
+    strictly_local: true
+    type: data-provider
+  - name: search-processor-criteria
+    default_value:
+        null
+    description: The search criteria for the data provider
+    config_group: Data Provider Search Processor Config
+    strictly_local: true
+    type: "*hash"
+  - name: search-processor-options
+    default_value:
+        null
+    description: Search options
+    config_group: Data Provider Search Processor Config
+    strictly_local: true
+    type: "*hash"
+  - name: search-processor-block-size
+    default_value:
+        1000
+    description: The block size for record sets to be returned
+    config_group: Data Provider Search Processor Config
+    type: int
+    strictly_local: true

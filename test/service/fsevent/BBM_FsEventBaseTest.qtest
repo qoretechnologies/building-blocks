@@ -1,0 +1,108 @@
+#!/usr/bin/env qore
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%require-types
+%strict-args
+%new-style
+%enable-all-warnings
+
+%exec-class BBM_FsEventBaseTest
+
+%requires QorusInterfaceTest
+%requires FsUtil
+
+class BBM_FsEventBaseTest inherits QorusServiceTest {
+    private {
+        const ServiceName = "BBM_FsEventBaseTest";
+    }
+
+    constructor() : QorusServiceTest(ServiceName, "1.0", \ARGV, Opts) {
+        addTestCase("test", \test());
+        set_return_value(main());
+    }
+
+    private usageIntern(int offset = OffsetColumn) {
+        TestReporter::usageIntern(OffsetColumn);
+    }
+
+    test() {
+        qrest.put("services/" + ServiceName + "/unload");
+        qrest.put("services/" + ServiceName + "/setRemote", {"remote": False});
+
+        # NOTE: fsevent does not appear to work on NFS filesystems, test must be run only on a local FS
+        TmpDir tmpdir(ServiceName + "-");
+
+        # configure service
+        qrest.put("services/" + ServiceName + "/config/fsevent-root-path", {"value": tmpdir.path});
+        qrest.put("services/" + ServiceName + "/config/fsevent-mask-type", {"value": "GLOB"});
+        qrest.put("services/" + ServiceName + "/config/fsevent-mask", {"value": "*.txt"});
+        qrest.put("services/" + ServiceName + "/config/fsevent-min-age-secs", {"value": 0});
+
+        qrest.put("services/" + ServiceName + "/load");
+        on_exit {
+            qrest.put("services/" + ServiceName + "/unload");
+        }
+
+        # store a file to be ignored in the directory
+        writeFileAtomic(tmpdir.path, "ignore.csv");
+
+        assertEq(0, qrest.put("services/" + ServiceName + "/get?action=call").size());
+
+        # wait for background polling operation to start
+        sleep(1);
+
+        # store a file to be captured in the directory
+        writeFileAtomic(tmpdir.path, "process-1.txt");
+
+        waitForCount(1);
+
+        writeFileAtomic(tmpdir.path, "process-2.txt");
+
+        waitForCount(2);
+
+        qrest.put("services/" + ServiceName + "/clear/call");
+
+        waitForCount(0);
+    }
+
+    private waitForCount(int count, timeout timeout_ms = 5s) {
+        date now = now_us();
+
+        while (True) {
+            int svc_count = qrest.put("services/" + ServiceName + "/get/call").size();
+            if (svc_count != count) {
+                int ms_diff = (now_us() - now).durationMilliseconds();
+                #printf("target count: %d svc count: %d ms_diff: %y max: %y\n", count, svc_count, ms_diff, timeout_ms);
+                if (ms_diff > timeout_ms) {
+                    throw "TIMEOUT-ERROR", sprintf("service event count is %y; timeout waiting for count to reach %y",
+                        svc_count, count);
+                }
+                usleep(250ms);
+            } else {
+                break;
+            }
+        }
+    }
+
+    private writeFileAtomic(string path, string name) {
+        string source = tmp_location() + DirSep + name;
+
+        # write to a temporary location
+        string target = path + DirSep + name;
+        File f();
+        f.open2(source, O_CREAT | O_TRUNC | O_WRONLY);
+        f.write("hello");
+
+        printf("creating %y\n", target);
+
+        # move the file to the target location atomically
+        try {
+            rename(source, target);
+        } catch (hash<ExceptionInfo> ex) {
+            if (ex.err != "RENAME-ERROR") {
+                rethrow;
+            }
+            copy_file(source, target);
+        }
+    }
+}

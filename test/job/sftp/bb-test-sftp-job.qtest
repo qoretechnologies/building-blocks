@@ -1,0 +1,398 @@
+#!/usr/bin/env qore
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%require-types
+%strict-args
+%new-style
+%enable-all-warnings
+
+%exec-class BBM_TestSftpJob
+
+%requires QorusInterfaceTest
+%requires Util
+%requires FsUtil
+%requires ssh2
+
+class BBM_TestSftpJob inherits QorusJobTest {
+    private {
+        #! for local files
+        TmpDir local_tmpdir(NOTHING, NOTHING, ENV.OMQ_DIR + "/user");
+
+        #! for SFTP files
+        TmpDir sftp_tmpdir(NOTHING, NOTHING, ENV.OMQ_DIR + "/user");
+
+        string sftp_conn_name = get_random_string(20);
+
+        # set of files must be pushed to a remote SFTP server
+        string sftp_url;
+
+         #! command-line options
+        const MyOpts = Opts + {
+            "privkey": "k,privkey=s",
+        };
+
+        const JobName = "bb-test-sftp-job";
+
+        const WorkflowName = "BB-TEST-SFTP-WORKFLOW";
+
+        const TestData = "testing - " + get_random_string();
+    }
+
+    constructor() : QorusJobTest(JobName, "1.0", \ARGV, MyOpts) {
+        addTestCase("SFTP job move test", \sftpJobMoveTest());
+        addTestCase("SFTP job FS test", \sftpJobFsTest());
+        addTestCase("SFTP job transfer test", \sftpJobTransferTest());
+        set_return_value(main());
+    }
+
+    private usageIntern(int offset = OffsetColumn) {
+        TestReporter::usageIntern(OffsetColumn);
+        printOption("-k,--privkey", "the private key to use for the local SFTP connection", offset);
+    }
+
+    globalSetUp() {
+        # create SFTP connection
+        {
+            # SFTP connection URL
+            string url = "sftp://";
+            hash<auto> opts = {};
+            bool has_user;
+            if (m_options.privkey) {
+                opts += {
+                    "keyfile": m_options.privkey,
+                };
+            } else if (is_file(ENV.HOME + "/.ssh/id_ed25519")) {
+                opts += {
+                    "keyfile": ENV.HOME + "/.ssh/id_ed25519",
+                };
+            } else if (is_file(ENV.HOME + "/.ssh/id_rsa.old")) {
+                opts += {
+                    "keyfile": ENV.HOME + "/.ssh/id_rsa.old",
+                };
+            } else if (is_file(ENV.HOME + "/.ssh/id_rsa")) {
+                opts += {
+                    "keyfile": ENV.HOME + "/.ssh/id_rsa",
+                };
+            } else if (ENV.SFTP_USER && ENV.SFTP_PASS) {
+                url += sprintf("%s:%s@", ENV.SFTP_USER, ENV.SFTP_PASS);
+                has_user = True;
+            }
+            if (!has_user && ENV.SFTP_USER) {
+                url += sprintf("%s@", ENV.SFTP_USER);
+            }
+
+            url += ENV.SFTP_HOST ?? "localhost";
+            {
+                string remote_path = ENV.SFTP_DIR ?? sftp_tmpdir.path;
+                remote_path =~ s/^\///;
+                url += "/" + remote_path;
+            }
+            if (ENV.SFTP_HOST) {
+                sftp_url = url;
+            }
+
+            printf("creating sftp connection %y with URL %y (opts: %y)\n", sftp_conn_name, url, opts);
+            qrest.post("remote/user", {
+                "name": sftp_conn_name,
+                "desc": "test connection for SFTP test job",
+                "url": url,
+                "options": opts,
+            });
+        }
+
+        # configure job
+        hash<auto> job_config = {
+            "sftp-polling-connection-name": sftp_conn_name,
+            "sftp-polling-mask": "*.txt",
+            "create-workflow-name": WorkflowName,
+            "create-workflow-staticdata": "$local:input",
+            "create-workflow-unique-key": {
+                "filename": "$local:input.name",
+            },
+        };
+        map qrest.put("jobs/" + JobName + "/config/" + $1.key, {"value": $1.value}), job_config.pairIterator();
+
+        # ensure default configuration
+        map qrest.del("jobs/" + JobName + "/config/" + $1.name), qrest.get("jobs/bb-test-sftp-job/config"),
+            !job_config{$1.name} && ((exists $1.default_value && $1.default_value != $1.value)
+                                     || (!exists $1.default_value && exists $1.value));
+
+        # start test workflow
+        qrest.put("workflows/" + WorkflowName + "/setAutostart", {"autostart": 1});
+    }
+
+    globalTearDown() {
+        # stop test workflow
+        qrest.put("workflows/" + WorkflowName + "/setAutostart", {"autostart": 0});
+
+        # unconfigure job
+        qrest.del("jobs/" + JobName + "/config/create-workflow-name");
+        qrest.del("jobs/" + JobName + "/config/sftp-polling-file-connection");
+        qrest.del("jobs/" + JobName + "/config/sftp-polling-mask");
+        qrest.del("jobs/" + JobName + "/config/sftp-polling-connection-name");
+
+        # delete sftp connection
+        qrest.del("remote/user/" + sftp_conn_name);
+    }
+
+    sftpJobMoveTest() {
+        # setup move directory
+        makeMoveDirectory();
+        hash<auto> job_config = {
+            "sftp-polling-delete-file": False,
+            "sftp-polling-move-target": "move/$local:{name}",
+        };
+        map qrest.put("jobs/" + JobName + "/config/" + $1.key, {"value": $1.value}), job_config.pairIterator();
+        on_exit {
+            map qrest.del("jobs/" + JobName + "/config/" + $1), keys job_config;
+        }
+
+        # create example file
+        string file_path = writeSftpFile();
+        string filename = basename(file_path);
+
+        # make sure files that don't match the mask are not polled
+        TmpFile ignore_file("test-", ".ignore", sftp_tmpdir.path);
+
+        RunJobResult job(OMQ::StatComplete);
+        exec(job);
+
+        int jiid = job.getJobResult().job_instanceid;
+        hash<auto> results = qrest.get("jobresults/" + jiid).info[0];
+        assertEq("MOVED", results.remote_status);
+        assertEq(OMQ::StatBlocked, results.order_status);
+        int wfiid = results.workflow_instanceid;
+        # wait for workflow order to be COMPLETE
+        WaitForWfiid wait(wfiid, NOTHING, 5s);
+        wait.run(self);
+        hash<auto> order = qrest.get("orders/" + wfiid);
+        assertEq(filename, order.keys.filename);
+        assertEq(filename, order.staticdata.name);
+        assertEq(filename, order.staticdata.filepath);
+        assertEq(Type::Date, order.staticdata.transfer_time.type());
+        assertEq(Type::Date, order.staticdata.atime.type());
+        assertEq(Type::Date, order.staticdata.mtime.type());
+        assertEq("REGULAR", order.staticdata.type);
+        assertEq(TestData, order.staticdata."data".toString());
+
+        assertTrue(is_file(ignore_file.path));
+
+        # verify that the file was moved
+        if (sftp_url) {
+            SFTPClient sftp = getClient();
+            assertEq(filename, sftp.list("move").files[0]);
+        } else {
+            assertTrue(is_file(sftp_tmpdir.path + DirSep + "move" + DirSep + filename));
+        }
+
+        # run the job again to ensure that no file is polled
+        exec(job);
+        jiid = job.getJobResult().job_instanceid;
+        results = qrest.get("jobresults/" + jiid);
+        assertEq((), results.info);
+    }
+
+    sftpJobFsTest() {
+        string file_conn_name = get_random_string(20);
+
+        # create file connection
+        qrest.post("remote/user", {
+            "name": file_conn_name,
+            "desc": "test connection for SFTP test job",
+            "url": "file://" + local_tmpdir.path,
+        });
+        on_exit {
+            # delete connection
+            qrest.del("remote/user/" + file_conn_name);
+        }
+
+        hash<auto> job_config = {
+            "sftp-polling-file-connection": file_conn_name,
+        };
+        map qrest.put("jobs/" + JobName + "/config/" + $1.key, {"value": $1.value}), job_config.pairIterator();
+        on_exit {
+            map qrest.del("jobs/" + JobName + "/config/" + $1), keys job_config;
+        }
+
+        # create example file
+        string file_path = writeSftpFile();
+        string filename = basename(file_path);
+
+        # make sure files that don't match the mask are not polled
+        TmpFile ignore_file("test-", ".ignore", sftp_tmpdir.path);
+
+        RunJobResult job(OMQ::StatComplete);
+        exec(job);
+
+        int jiid = job.getJobResult().job_instanceid;
+        hash<auto> results = qrest.get("jobresults/" + jiid).info[0];
+        assertEq("DELETED", results.remote_status);
+        assertEq(OMQ::StatBlocked, results.order_status);
+        int wfiid = results.workflow_instanceid;
+        # wait for workflow order to be COMPLETE
+        WaitForWfiid wait(wfiid, NOTHING, 5s);
+        wait.run(self);
+        hash<auto> order = qrest.get("orders/" + wfiid);
+        assertEq(filename, order.keys.filename);
+        assertEq(filename, order.staticdata.name);
+        assertEq(filename, order.staticdata.filepath);
+        assertEq(Type::Date, order.staticdata.transfer_time.type());
+        assertEq(Type::Date, order.staticdata.atime.type());
+        assertEq(Type::Date, order.staticdata.mtime.type());
+        assertEq("REGULAR", order.staticdata.type);
+        assertEq(TestData, order.dynamicdata."data");
+
+        assertTrue(is_file(ignore_file.path));
+
+        # test complex duplicate handling
+        {
+            # for duplicate files
+            TmpDir dup_tmpdir(NOTHING, NOTHING, ENV.OMQ_DIR + "/user");
+            string dup_file_conn_name = get_random_string(20);
+
+            # create file connection
+            qrest.post("remote/user", {
+                "name": dup_file_conn_name,
+                "desc": "test connection for SFTP test job",
+                "url": "file://" + dup_tmpdir.path,
+            });
+            on_exit {
+                # delete connection
+                qrest.del("remote/user/" + dup_file_conn_name);
+            }
+
+            hash<auto> dup_config = {
+                "sftp-polling-duplicate-file-connection": dup_file_conn_name,
+                "sftp-polling-duplicate-workflow-name": "BB-TEST-SFTP-WORKFLOW-DUP",
+                "sftp-polling-duplicate-staticdata": "$local:input",
+                "sftp-polling-duplicate-unique-key": {
+                    "filename": "$local:input.name",
+                },
+            };
+            map qrest.put("jobs/" + JobName + "/config/" + $1.key, {"value": $1.value}), dup_config.pairIterator();
+            on_exit {
+                # ensure default configuration
+                map qrest.del("jobs/" + JobName + "/config/" + $1), keys dup_config;
+            }
+
+            writeSftpFile(file_path);
+            exec(job);
+            int jiid2 = job.getJobResult().job_instanceid;
+            assertNeq(jiid, jiid2);
+            results = qrest.get("jobresults/" + jiid2).info[0];
+            int wfiid2 = results.workflow_instanceid;
+            assertEq(wfiid, wfiid2);
+            assertTrue(results.duplicate);
+            assertEq("DELETED", results.remote_status);
+            assertEq(OMQ::StatComplete, results.order_status);
+        }
+
+        # run the job again to ensure that no file is polled
+        exec(job);
+        jiid = job.getJobResult().job_instanceid;
+        results = qrest.get("jobresults/" + jiid);
+        assertEq((), results.info);
+    }
+
+    private makeMoveDirectory() {
+        if (sftp_url) {
+            SFTPClient sftp = getClient();
+            sftp.mkdir("move");
+        } else {
+            mkdir(sftp_tmpdir.path + DirSep + "move");
+        }
+    }
+
+    private SFTPClient getClient() {
+        SFTPClient sftp(sftp_url);
+        if (is_file(ENV.HOME + "/.ssh/id_rsa.old")) {
+            sftp.setKeys(ENV.HOME + "/.ssh/id_rsa.old");
+        } else if (is_file(ENV.HOME + "/.ssh/id_rsa")) {
+            sftp.setKeys(ENV.HOME + "/.ssh/id_rsa");
+        }
+        # change to target directory
+        hash<UrlInfo> url_info = parse_url(sftp_url);
+        if (url_info.path) {
+            sftp.chdir(url_info.path);
+        }
+        return sftp;
+    }
+
+    private string writeSftpFile(*string file_path) {
+        if (sftp_url) {
+            SFTPClient sftp = getClient();
+            if (!file_path) {
+                file_path = sprintf("test-%s.txt", get_random_string());
+            }
+            int bytes = sftp.putFile(TestData, file_path);
+            if (m_options.verbose > 2) {
+                printf("wrote %d bytes of %y to %y\n", bytes, file_path, sftp_url);
+            }
+            return file_path;
+        }
+
+        if (!file_path) {
+            hash<TmpFileHash> tmp_file = make_tmp_file("test-", ".txt", sftp_tmpdir.path);
+            tmp_file.file.write(TestData);
+            tmp_file.file.close();
+            if (m_options.verbose > 2) {
+                printf("wrote %d bytes of %y to %y\n", TestData.size(), file_path, tmp_file.path);
+            }
+            return tmp_file.path;
+        }
+        File f();
+        f.open2(file_path, O_CREAT | O_WRONLY | O_TRUNC);
+        f.write(TestData);
+        return file_path;
+    }
+
+    sftpJobTransferTest() {
+        # create example file
+        string file_path = writeSftpFile();
+        string filename = basename(file_path);
+
+        # make sure files that don't match the mask are not polled
+        TmpFile ignore_file("test-", ".ignore", sftp_tmpdir.path);
+
+        RunJobResult job(OMQ::StatComplete);
+        exec(job);
+
+        int jiid = job.getJobResult().job_instanceid;
+        hash<auto> results = qrest.get("jobresults/" + jiid).info[0];
+        assertEq("DELETED", results.remote_status);
+        assertEq(OMQ::StatBlocked, results.order_status);
+        int wfiid = results.workflow_instanceid;
+        # wait for workflow order to be COMPLETE
+        WaitForWfiid wait(wfiid, NOTHING, 5s);
+        wait.run(self);
+        hash<auto> order = qrest.get("orders/" + wfiid);
+        assertEq(filename, order.keys.filename);
+        assertEq(filename, order.staticdata.name);
+        assertEq(filename, order.staticdata.filepath);
+        assertEq(Type::Date, order.staticdata.transfer_time.type());
+        assertEq(Type::Date, order.staticdata.atime.type());
+        assertEq(Type::Date, order.staticdata.mtime.type());
+        assertEq("REGULAR", order.staticdata.type);
+        assertEq(TestData, order.staticdata."data".toString());
+
+        assertTrue(is_file(ignore_file.path));
+
+        # test simple duplicate handling; make sure the same workflow_instanceid is returned for a file with the same name
+        writeSftpFile(file_path);
+        exec(job);
+        int jiid2 = job.getJobResult().job_instanceid;
+        assertNeq(jiid, jiid2);
+        results = qrest.get("jobresults/" + jiid2).info[0];
+        int wfiid2 = results.workflow_instanceid;
+        assertEq(wfiid, wfiid2);
+        assertTrue(results.duplicate);
+        assertEq("DELETED", results.remote_status);
+        assertEq(OMQ::StatComplete, results.order_status);
+
+        # run the job again to ensure that no file is polled
+        exec(job);
+        jiid = job.getJobResult().job_instanceid;
+        results = qrest.get("jobresults/" + jiid);
+        assertEq((), results.info);
+    }
+}

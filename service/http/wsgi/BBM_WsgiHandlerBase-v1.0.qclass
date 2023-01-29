@@ -1,0 +1,170 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+%module-cmd(python) add-module-path $OMQ_DIR/user/python/lib/python3.8/site-packages
+%module-cmd(python) import builtins.bytes
+
+class BBM_WsgiHandlerBase inherits AbstractHttpRequestHandler {
+    public {
+        object app;
+
+        hash<auto> wsgi_static_hdr = {
+            "wsgi.version": (1, 0),
+            "wsgi.multithread": True,
+            "wsgi.multiprocess": True,
+            "wsgi.run_once": False,
+        };
+    }
+
+    constructor() {
+        # create the app
+        app = WsgiAppHelper::importApp(UserApi::getConfigItemValue("wsgi-app"));
+        UserApi::logInfo("initialized WSGi app of class: %y", app.className());
+
+        wsgi_static_hdr."wsgi.errors" = new WsgiErrorStream();
+    }
+
+    hash<HttpResponseInfo> handleRequest(HttpListenerInterface listener, Socket s, hash<auto> cx, hash<auto> hdr,
+            *data body) {
+        string root_path;
+        if (cx.root_path) {
+            root_path = cx.root_path;
+            if (root_path !~ /^\//) {
+                root_path = "/" + root_path;
+            }
+        } else {
+            root_path = "";
+        }
+        string path = "/" + hdr.path;
+        *string query = (path =~ x/\?(.*)$/)[0];
+        if (exists query) {
+            path =~ s/\?.*//g;
+        }
+
+        string server_name = cx."socket-info".hostname;
+        if (server_name == "::") {
+            server_name = "localhost";
+        }
+
+        # create environ
+        hash<auto> environ = {
+            'REQUEST_METHOD': hdr.method,
+            'SCRIPT_NAME': root_path,
+            'PATH_INFO': path,
+            'QUERY_STRING': query ?? "",
+            'CONTENT_TYPE': hdr._qore_orig_content_type,
+            'CONTENT_LENGTH': hdr."content-length",
+            'SERVER_PROTOCOL': 'HTTP/' + hdr.http_version,
+            'SERVER_NAME': server_name,
+            'SERVER_PORT': cx."socket-info".port ?? "0",
+            "wsgi.url_scheme": (cx.ssl ? "https" : "http"),
+            "wsgi.input": new WsgiInputStream(body),
+        } + wsgi_static_hdr + (map {
+            ("HTTP_" + replace($1.key.upr(), "-", "_")): $1.value,
+        }, cx."header-info"."headers-raw".pairIterator());
+
+        UserApi::logDebug("environ: %N", environ);
+
+        try {
+            hash<HttpResponseInfo> rv;
+            code start_response = sub (softint status, list<auto> resp_hdr, *list<auto> exc_info) {
+                hash<auto> resp_hdr_hash = map {
+                    $1[0]: $1[1],
+                }, resp_hdr;
+                rv = <HttpResponseInfo>{
+                    "code": status,
+                    "hdr": resp_hdr_hash,
+                };
+            };
+
+            auto resp = app.__call__(environ, start_response);
+            try {
+                while (exists (auto v = resp.__next__())) {
+                    rv.body += v;
+                }
+            } catch (hash<ExceptionInfo> ex) {
+                if (ex.err != "builtins.StopIteration") {
+                    rethrow;
+                }
+            }
+
+            # we do not yet support chunked responses from WSGi servers
+            remove rv.hdr."Transfer-Encoding";
+            #UserApi::logDebug("response: %d: %N", rv."code", rv.hdr);
+            #UserApi::logDebug("rv: %N", rv);
+
+            return rv;
+        } catch (hash<ExceptionInfo> ex) {
+            UserApi::logError("%s", get_exception_string(ex));
+            rethrow;
+        }
+    }
+}
+
+class WsgiErrorStream {
+    flush() {
+    }
+
+    write(softstring str) {
+        ServiceApi::logError("%s", str);
+    }
+
+    writelines(*list<auto> seq) {
+        map ServiceApi::logError("%s", $1), seq;
+    }
+}
+
+class WsgiInputStream {
+    private {
+        data body;
+    }
+
+    constructor(data body = "") {
+        self.body = body;
+    }
+
+    *bytes read(softint size = -1) {
+        if (body && size) {
+            return body.typeCode() == NT_STRING
+                ? new bytes((extract body, 0, size), "iso-8859-1")
+                : new bytes((extract body, 0, size));
+        }
+    }
+
+    *string readline() {
+        if (!body) {
+            return;
+        }
+
+        return readline_intern();
+    }
+
+    *list<string> readlines(softint hint = -1) {
+        if (!body) {
+            return;
+        }
+        list<string> rv;
+        int total;
+        while (body) {
+            string l = readline_intern();
+            rv += l;
+            if (hint > 0) {
+                total += l.size();
+                if (total >= hint) {
+                    break;
+                }
+            }
+        }
+        return rv;
+    }
+
+    private string readline_intern() {
+        int nl = body.find("\n");
+        if (nl >= 0) {
+            return (extract body, 0, nl + 1).toString();
+        }
+        return (remove body).toString();
+    }
+}

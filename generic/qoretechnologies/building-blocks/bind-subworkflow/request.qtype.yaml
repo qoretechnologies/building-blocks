@@ -1,0 +1,384 @@
+# This is a generated file, don't edit!
+type: type
+path: qoretechnologies/building-blocks/bind-subworkflow/request
+typeinfo:
+    base_type: hash<auto>
+    name: hash<auto>
+    can_manage_fields: true
+    fields:
+        dynamicdata:
+            canBeNull: true
+            desc: the initial dynamic data for the order
+            name: dynamicdata
+            parentPath: false
+            path: dynamicdata
+            type:
+                base_type: hash<auto>
+                can_manage_fields: true
+                fields: {}
+                mandatory: false
+                name: '*hash<auto>'
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: '*hash'
+                types_accepted:
+                    - hash<auto>
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - hash<auto>
+                    - nothing
+        external_order_instanceid:
+            name: external_order_instanceid
+            canBeNull: true
+            desc: the external order instance ID for the workflow data
+            firstCustomInHierarchy: true
+            isChild: false
+            isCustom: true
+            level: 0
+            parentPath: false
+            path: external_order_instanceid
+            type:
+                base_type: string
+                can_manage_fields: false
+                fields: {}
+                mandatory: false
+                name: '*string'
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: '*string'
+                types_accepted:
+                    - string
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - string
+                    - nothing
+        global_unique_key:
+            canBeNull: true
+            desc: >-
+                a hash giving one or more unique order keys for the order (across
+                all workflows regardless of workflowid, name, or version); keys are
+                order key names and values are the string key values; if this key
+                already exists for any order in the system, then the order creation
+                will fail with a `DUPLICATE-ORDER-KEY` error; the hash key must be a
+                valid order key, and the value is the unique key value; this value
+                will also be created as an order key
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: global_unique_key
+            type:
+                base_type: hash<auto>
+                can_manage_fields: true
+                fields: {}
+                mandatory: false
+                name: '*hash<auto>'
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: '*hash'
+                types_accepted:
+                    - hash<auto>
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - hash<auto>
+                    - nothing
+        orderkeys:
+            canBeNull: true
+            desc: >-
+                a hash of order keys for the order; no uniqueness checks are
+                performed on values in this hash
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: orderkeys
+            type:
+                base_type: hash<auto>
+                can_manage_fields: true
+                fields: {}
+                mandatory: false
+                name: '*hash<auto>'
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: '*hash'
+                types_accepted:
+                    - hash<auto>
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - hash<auto>
+                    - nothing
+        priority:
+            canBeNull: true
+            desc: >-
+                the order priority from `0` - `999`; priority `0` is the highest;
+                `999` is the lowest (default if not present: `500`)
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: priority
+            type:
+                base_type: int
+                can_manage_fields: false
+                fields: {}
+                mandatory: false
+                name: '*int'
+                options: null
+                supported_options: null
+                typename: '*int'
+                types_accepted:
+                    - int
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - int
+                    - nothing
+        scheduled:
+            canBeNull: true
+            desc: >-
+                the earliest date and time the order can be processed; if this date
+                is given as a future  date/time value and a `READY` status is given,
+                then the initial status of the workflow order data instance will be
+                automatically changed to `SCHEDULED` instead of `READY`
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: scheduled
+            type:
+                base_type: date
+                can_manage_fields: false
+                fields: {}
+                mandatory: false
+                name: '*date'
+                options: null
+                supported_options: null
+                typename: '*date'
+                types_accepted:
+                    - date
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - date
+                    - nothing
+        sensitive_data:
+            canBeNull: true
+            desc: >-
+                hash of sensitive data information for the workflow; this key can
+                only be used when submitting the data over a secure (encrypted)
+                connection; the keys are sensitive data key types, values are hashes
+                keyed by sensitive data values, and the hash values have the
+                following keys:
+
+                - `aliases`: (optional list of strings) zero or more string aliases
+                for the sensitive data
+
+                - `data`: (hash) the sensitive data hash itself
+
+                - `meta`: (optional hash) a hash of metadata for the sensitive data
+                with the following recommended keys (recommended keys are not
+                enforced by the API itself):
+                  - `PURPOSE`: free-form information about the purpose of the sensitive data
+                  - `CATEGORIES`: free-form information about the categories of sensitive data
+                  - `RECIPIENTS`: free-form information about the recipients or recipient catories of sensitive data
+                  - `STORAGE`: free-form information about the storage time or rules for sensitive data
+            isCustom: true
+            name: sensitive_data
+            type:
+                base_type: hash<auto>
+                can_manage_fields: true
+                fields: {}
+                mandatory: false
+                name: '*hash<auto>'
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: '*hash'
+                types_accepted:
+                    - hash<auto>
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - hash<auto>
+                    - nothing
+        skip:
+            name: skip
+            canBeNull: true
+            desc: >-
+                if `true`, then the workflow bind operation is skipped and all other
+                data is ignored
+            firstCustomInHierarchy: true
+            isChild: false
+            isCustom: true
+            level: 0
+            parentPath: false
+            path: skip
+            type:
+                typename: '*bool'
+                name: '*bool'
+                supported_options: null
+                options: null
+                base_type: bool
+                mandatory: false
+                types_accepted:
+                    - bool
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - bool
+                    - nothing
+                fields: {}
+                can_manage_fields: false
+        staticdata:
+            canBeNull: false
+            desc: the initial static data for the order; required if `skip` and `external_order_instanceid` are not present
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: staticdata
+            type:
+                base_type: hash<auto>
+                can_manage_fields: true
+                fields: {}
+                mandatory: false
+                name: '*hash<auto>'
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: '*hash'
+                types_accepted:
+                    - hash<auto>
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - hash<auto>
+                    - nothing
+        tempdata:
+            canBeNull: false
+            desc: the initial temporary data for the order
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: tempdata
+            type:
+                base_type: hash<auto>
+                can_manage_fields: true
+                fields: {}
+                mandatory: false
+                name: '*hash<auto>'
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: '*hash'
+                types_accepted:
+                    - hash<auto>
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - hash<auto>
+                    - nothing
+        workflow_specific_unique_key:
+            canBeNull: true
+            desc: >-
+                a hash giving one or more unique order keys for the particular
+                workflowid (which matches a unique name and workflow version); keys
+                are order key names and values are the string key values; if any of
+                the keys given already exists for an order with the target
+                workflowid, then the order creation will fail with a
+                `DUPLICATE-ORDER-KEY` error; the hash key must be a valid order key,
+                and the value is the unique key value; this value will also be
+                created as an order key
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: workflow_specific_unique_key
+            type:
+                base_type: hash<auto>
+                can_manage_fields: true
+                fields: {}
+                mandatory: false
+                name: '*hash<auto>'
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: '*hash'
+                types_accepted:
+                    - hash<auto>
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - hash<auto>
+                    - nothing
+        workflow_unique_key:
+            canBeNull: true
+            desc: >-
+                a hash giving one or more unique order keys for the particular
+                workflow by name only (across all workflows with the same name
+                regardless of version); keys are order key names and values are the
+                string key values; if this key already exists for a workflow order
+                with the same name, then the order creation will fail with a
+                `DUPLICATE-ORDER-KEY` error; the hash key must be a valid order key,
+                and the value is the unique key value; this value will also be
+                created as an order key
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: workflow_unique_key
+            type:
+                base_type: hash<auto>
+                can_manage_fields: true
+                fields: {}
+                mandatory: false
+                name: '*hash<auto>'
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: '*hash'
+                types_accepted:
+                    - hash<auto>
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - hash<auto>
+                    - nothing

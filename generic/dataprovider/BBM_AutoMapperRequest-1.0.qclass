@@ -1,0 +1,36 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! Auto-mapper building block with request/response-based recovery logic
+class BBM_AutoMapperRequest inherits BBM_AutoMapper, BBM_DataProviderRequestBase {
+    public {
+        const RecoveryProviderPathItem = "automapper-request-recovery-provider-path";
+        const RecoveryRemoveNullsItem = "automapper-request-recovery-body-remove-nulls";
+        const RecoveryRequestOptionsItem = "automapper-request-recovery-options";
+        const RecoveryInputItem = "automapper-request-recovery-input";
+        const RecoveryMapperNameItem = "automapper-request-recovery-mapper-name";
+        const RecoveryLogItem = "automapper-request-recovery-id-log-msg";
+        const RecoveryIdLocItem = "automapper-request-recovery-id-location";
+        const RecoveryOutputItem = "automapper-request-recovery-output-data";
+    }
+
+    #! Returns True if output data is present, False if not
+    bool checkOutput(auto input) {
+        return checkRequestIntern(NOTHING, RecoveryProviderPathItem, RecoveryRemoveNullsItem, RecoveryRequestOptionsItem,
+            RecoveryInputItem, RecoveryMapperNameItem, RecoveryLogItem, RecoveryIdLocItem, RecoveryOutputItem, input);
+    }
+
+    #! Connector usable as step validation logic
+    /** @param input used as local data when looking up config item values; available as <tt>$local:input</tt> when
+        resolving config item values
+
+        @return the string validation status, either:
+        - \c RETRY (@ref OMQ::StatRetry): no output data found; the step should be retried
+        - \c COMPLETE (@ref OMQ::StatComplete): output data found; the step is complete
+    */
+    string validate(auto input) {
+        return checkOutput(input) ? OMQ::StatComplete : OMQ::StatRetry;
+    }
+}

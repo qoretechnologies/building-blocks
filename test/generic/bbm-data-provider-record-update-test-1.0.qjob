@@ -1,0 +1,45 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BbmDataProviderRecordUpdateTest inherits QorusJob {
+    private {
+        ####### GENERATED SECTION! DON'T EDIT! ########
+        ClassConnections_BbmDataProviderRecordUpdateTest class_connections();
+        ############ GENERATED SECTION END ############
+    }
+
+    ####### GENERATED SECTION! DON'T EDIT! ########
+    run() {
+        class_connections.Connection_1();
+    }
+    ############ GENERATED SECTION END ############
+}
+
+####### GENERATED SECTION! DON'T EDIT! ########
+class ClassConnections_BbmDataProviderRecordUpdateTest {
+    private {
+        # map of prefixed class names to class instances
+        hash<auto> class_map;
+    }
+
+    constructor() {
+        class_map = {
+            "BBM_DataProviderRecordUpdate": new BBM_DataProviderRecordUpdate(),
+        };
+    }
+
+    auto callClassWithPrefixMethod(string prefixed_class, string method) {
+        UserApi::logDebug("ClassConnections_BbmDataProviderRecordUpdateTest: callClassWithPrefixMethod: method: %s class: %y", method, prefixed_class);
+        return call_object_method_args(class_map{prefixed_class}, method, argv);
+    }
+
+    auto Connection_1(auto params) {
+        UserApi::logDebug("Connection_1 called with data: %y", params);
+
+        UserApi::logDebug("calling DataProvider Record Update: %y", params);
+        return callClassWithPrefixMethod("BBM_DataProviderRecordUpdate", "updateDataProviderRecord", params);
+    }
+}
+############ GENERATED SECTION END ############

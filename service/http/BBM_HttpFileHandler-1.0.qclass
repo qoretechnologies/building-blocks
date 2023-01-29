@@ -1,0 +1,63 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+%requires Util
+
+#! The base HTTP handler class
+class BBM_HttpFileHandlerBase inherits ServiceFileHandler, BBM_HttpAuthenticatorBase, BBM_CorsBase {
+    public {
+        const ErrorMap = {
+            "NONE": 0,
+            "BRIEF": 1,
+            "VERBOSE": 2,
+        };
+    }
+
+    #! Creates the object
+    constructor() :
+        ServiceFileHandler(
+            substitute_env_vars(ServiceApi::getConfigItemValue("http-file-handler-file-root")),
+            BBM_HttpFileHandlerBase::getRootUriPath(),
+            BBM_HttpFileHandlerBase::getOptions(),
+        ),
+        BBM_CorsBase("http") {
+    }
+
+    static string getRootUriPath() {
+        string uri_path = ServiceApi::getConfigItemValue("http-root-uri");
+        if (uri_path != "/") {
+            uri_path =~ s/^\///;
+        }
+        return uri_path;
+    }
+
+    static *hash<auto> getOptions() {
+        # return constructor options
+        return {
+            "default_target": ServiceApi::getConfigItemValue("http-file-handler-default-target"),
+            #"po": ServiceApi::getConfigItemValue("http-file-handler-template-parse-options"),
+            "auth": BBM_HttpAuthenticatorBase::getAuthenticator("http-auth-name", "http-auth-cookie",
+                "http-auth-redirect"),
+            "error_level": ErrorMap{ServiceApi::getConfigItemValue("http-file-handler-error-level")},
+        };
+    }
+
+    #! top-level request handling method
+    hash<HttpResponseInfo> handleRequest(HttpListenerInterface listener, Socket s, hash<auto> cx, hash<auto> hdr, *data body) {
+        if (hdr.method == "OPTIONS") {
+            return handleOptions(cx);
+        }
+        hash<HttpResponseInfo> rv = ServiceFileHandler::handleRequest(listener, s, cx, hdr, body);
+        rv.hdr += getCorsResponseHeaders(cx);
+        return rv;
+    }
+}
+
+#! The HTTP service base class; includes a parametrized handler class as well
+class BBM_HttpFileHandler inherits BBM_HttpServiceGenericBase {
+    private AbstractServiceHttpHandler getHandlerImpl() {
+        return new BBM_HttpFileHandlerBase();
+    }
+}

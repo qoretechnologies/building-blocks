@@ -1,0 +1,245 @@
+swagger: "2.0"
+info:
+  description: "This is an example API for creating a CRM customer"
+  version: "1.0"
+  title: "Customer API Demo"
+  contact:
+    email: "info@qoretechnologies.com"
+host: "localhost"
+basePath: "/"
+tags:
+- name: "customers"
+  description: "Everything about customers customers"
+schemes:
+- "https"
+- "http"
+paths:
+  /customers:
+    post:
+      tags:
+      - "customers"
+      summary: "Create a new customer"
+      description: ""
+      operationId: "createCustomer"
+      consumes:
+      - "text/x-yaml"
+      - "application/json"
+      produces:
+      - "text/x-yaml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Customer object to be created in the CRM system; returns the unique internal customer ID for the customer"
+        required: true
+        schema:
+          $ref: "#/definitions/Customer"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: object
+            properties:
+              Id:
+                type: "integer"
+                format: "int64"
+        400:
+          description: "invalid request"
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      tags:
+      - "customers"
+      summary: "Retrieve / search customers"
+      description: "Returns customer records"
+      operationId: "getCustomers"
+      produces:
+      - "text/x-yaml"
+      - "application/json"
+      parameters:
+      - name: "limit"
+        in: "query"
+        description: "number of customers to return"
+        required: false
+        type: "integer"
+        format: "int64"
+      - name: "Name"
+        in: "query"
+        description: "customer name (with like,'%' = wildcard)"
+        required: false
+        type: "string"
+      - name: "Type"
+        in: "query"
+        description: "customer type (with like,'%' = wildcard)"
+        required: false
+        type: "string"
+      - name: "TaxId"
+        in: "query"
+        description: "customer tax ID (with like,'%' = wildcard)"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Customer"
+  /customers/{customerId}:
+    get:
+      tags:
+      - "customers"
+      summary: "Find customer by ID"
+      description: "Returns a single customer"
+      operationId: "getCustomerById"
+      produces:
+      - "text/x-yaml"
+      - "application/json"
+      parameters:
+      - name: "customerId"
+        in: "path"
+        description: "ID of customer to return"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Customer"
+        404:
+          description: "customer not found"
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+      - "customers"
+      summary: "Updates a customer"
+      description: "Updates a customer"
+      operationId: "updateCustomer"
+      consumes:
+      - "text/x-yaml"
+      - "application/json"
+      produces:
+      - "text/x-yaml"
+      - "application/json"
+      parameters:
+      - name: "customerId"
+        in: "path"
+        description: "ID of customer to update"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "customers"
+        in: "body"
+        description: "Customer attributes to update"
+        required: true
+        schema:
+          $ref: "#/definitions/OptionalCustomer"
+      responses:
+        200:
+          description: "successful operation"
+        400:
+          description: "invalid request"
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: "customer not found"
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+      - "customers"
+      summary: "Deletes a customer"
+      description: "Deletes a customer"
+      operationId: "deleteCustomer"
+      produces:
+      - "text/x-yaml"
+      - "application/json"
+      parameters:
+      - name: "customerId"
+        in: "path"
+        description: "Customer id to delete"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+        404:
+          description: "customer not found"
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  Address:
+    type: "object"
+    required:
+    - "Name"
+    - "AddressLine1"
+    - "City"
+    - "Country"
+    properties:
+      Name:
+        type: "string"
+      AddressLine1:
+        type: "string"
+      AddressLine2:
+        type: "string"
+        x-nullable: true
+      AddressLine3:
+        type: "string"
+        x-nullable: true
+      City:
+        type: "string"
+      PostalCode:
+        type: "string"
+        x-nullable: true
+      Region:
+        type: "string"
+        x-nullable: true
+      Country:
+        type: "string"
+  OptionalCustomer:
+    type: "object"
+    properties:
+      Name:
+        type: "string"
+        x-nullable: true
+      Type:
+        type: "string"
+        x-nullable: true
+      TaxId:
+        type: "string"
+        x-nullable: true
+      Address:
+        $ref: "#/definitions/Address"
+        x-nullable: true
+  Customer:
+    type: "object"
+    required:
+    - "Name"
+    - "Type"
+    - "TaxId"
+    - "Address"
+    properties:
+      Id:
+        type: "integer"
+        format: "int64"
+      Name:
+        type: "string"
+      Type:
+        type: "string"
+      TaxId:
+        type: "string"
+      Address:
+        $ref: "#/definitions/Address"
+  Error:
+    type: "object"
+    requires:
+    - "err"
+    - "desc"
+    properties:
+      err:
+        type: "string"
+      desc:
+        type: "string"

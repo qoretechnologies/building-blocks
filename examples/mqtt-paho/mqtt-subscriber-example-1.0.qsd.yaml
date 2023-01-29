@@ -1,0 +1,81 @@
+# This is a generated file, don't edit!
+type: service
+name: mqtt-subscriber-example
+desc: MQTT Subscriber example
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusService
+class-name: MqttSubscriberExample
+classes:
+  - BBM_MqttPahoSubscriber
+  - BBM_LogMessage
+version: '1.0'
+servicetype: USER
+code: mqtt-subscriber-example-1.0.qsd
+class-connections:
+    Subscribe:
+      - class: BBM_MqttPahoSubscriber
+        connector: messageArrived
+        trigger: null
+      - class: BBM_LogMessage
+        connector: logMessage
+    Stop:
+      - class: BBM_MqttPahoSubscriber
+        connector: stop
+        trigger: stop
+    Start:
+      - class: BBM_MqttPahoSubscriber
+        connector: start
+        trigger: start
+config-items:
+  - name: mqtt-paho-message-topics
+    value:
+      - Qorus Example
+    parent:
+        interface-type: class
+        interface-name: BBM_MqttPahoSubscriber
+        interface-version: '1.0'
+  - name: mqtt-paho-message-format
+    parent:
+        interface-type: class
+        interface-name: BBM_MqttPahoSubscriber
+        interface-version: '1.0'
+  - name: mqtt-paho-message-string-encoding
+    parent:
+        interface-type: class
+        interface-name: BBM_MqttPahoSubscriber
+        interface-version: '1.0'
+  - name: log-message-level
+    parent:
+        interface-type: class
+        interface-name: BBM_LogMessage
+        interface-version: '1.0'
+  - name: log-message-string
+    value:
+        "message: %y"
+    parent:
+        interface-type: class
+        interface-name: BBM_LogMessage
+        interface-version: '1.0'
+  - name: log-message-args
+    value:
+        "$local:*"
+    parent:
+        interface-type: class
+        interface-name: BBM_LogMessage
+        interface-version: '1.0'
+    is_value_templated_string: true
+    value_true_type: string
+  - name: mqtt-paho-connection-name
+    value:
+        "mqttpaho-test"
+    parent:
+        interface-type: class
+        interface-name: BBM_MqttPahoSubscriber
+        interface-version: '1.0'
+methods:
+  - name: stop
+    desc: stops listening
+  - name: start
+    desc: start method

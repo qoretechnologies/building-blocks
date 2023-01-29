@@ -1,0 +1,68 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_SimpleFilterPipelineData
+desc: >
+    ## Summary
+
+
+    This building block provides a pipeline processor element that does simple
+    record filtering.  It supports bulk processing.
+
+
+    ## Pipeline Processor
+
+
+    This building block's pipeline processor uses each data record as local
+    context and then evaluates `simple-filter-criteria` on each record.  If the
+    result of the evaluation is boolean `true`, then the record is accepted and
+    passed on for further processing.  If not, the record is ignored.
+
+
+    Ex: If the input record is `{key1: value, type: 2}`,
+    `simple-filter-criteria` = `$qore-expr:{$local:type == 1}`, then the filter
+    criteria config item will result in `False` which will result in the record
+    being rejected.  The example filter criteria only accepts records where
+    `type == 1` (if you want to also reject records without a type, then you
+    could use `$qore-expr:{$local:type??{0} == 1}`).
+
+
+    Bulk processing is supported in the same manner, and the "hash of lists" is
+    rebuilt without references to the discarded records.
+
+
+    **Boolean Evaluation Table**
+
+
+    |**Data**|**Example Values**|**Description**|
+
+    |:---|:---|:---
+
+    |`True` or `False`|True|direct interpretation
+
+    |empty string, hash, list, or binary value|`""`, `{}`, `[]`|`False`
+
+    |int, float, number, or string 0|`0`, `0.0`, `"0"`|`False`
+
+    |non-empty string and not `"0"`|`"string"`|`True`
+
+    |non-empty hash, list, or binary value|`{key: value}`|`True`
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: AbstractDataProcessor
+processor:
+    {}
+version: '1.0'
+code: BBM_SimpleFilterPipelineData-1.0.qclass
+config-items:
+  - name: simple-filter-criteria
+    description: >-
+        This should be a template with each current data used as the local context;
+        if the current data is not a hash, then it will be placed in the `data` key
+        of the local context hash.
+    
+        A return value of `true` means "process the data onwards", `false` means
+        "ignore".
+    config_group: Filter Pipeline Data
+    strictly_local: true
+    type: bool

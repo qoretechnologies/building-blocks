@@ -1,0 +1,86 @@
+#!/usr/bin/env qore
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%require-types
+%strict-args
+%new-style
+%enable-all-warnings
+
+%exec-class BBM_RestServiceBaseTest
+
+%requires QorusInterfaceTest
+
+class BBM_RestServiceBaseTest inherits QorusServiceTest {
+    private {
+        const ServiceName = "BBM_RestServiceBaseTest";
+    }
+
+    constructor() : QorusServiceTest(ServiceName, "1.0", \ARGV, Opts) {
+        addTestCase("test", \test());
+        set_return_value(main());
+    }
+
+    private usageIntern(int offset = OffsetColumn) {
+        TestReporter::usageIntern(OffsetColumn);
+    }
+
+    test() {
+        qrest.put("services/" + ServiceName + "/load");
+        on_exit {
+            qrest.put("services/" + ServiceName + "/unload");
+        }
+
+        RestClient rest = getRestClient();
+
+        qrest.put("services/" + ServiceName + "/config/rest-cors-enable", {"value": False});
+
+        hash<auto> h = rest.get("/");
+        on_error printf("response: %N\n", h);
+        assertEq(200, h.status_code);
+        assertEq("OK", h.status_message);
+        assertFalse(h.hasKey("access-control-allow-origin"));
+
+        qrest.put("services/" + ServiceName + "/config/rest-cors-enable", {"value": True});
+        qrest.put("services/" + ServiceName + "/config/rest-cors-credentials", {"value": False});
+        qrest.put("services/" + ServiceName + "/reset");
+        rest = getRestClient();
+
+        h = rest.get("/");
+        assertEq(200, h.status_code);
+        assertEq("OK", h.status_message);
+        assertEq("*", h."access-control-allow-origin");
+        assertEq("9999999", h."access-control-max-age");
+        assertEq("GET, POST, PUT, PATCH, DELETE, OPTIONS", h."access-control-allow-methods");
+        assertEq("Content-Type, content-type, Content-Language, content-language, Accept, Accept-Language, "
+            "Authorization", h."access-control-allow-headers");
+        assertFalse(h.hasKey("access-control-allow-credentials"));
+        assertEq("Origin", h.vary);
+
+        qrest.put("services/" + ServiceName + "/config/rest-cors-credentials", {"value": True});
+        on_exit {
+            qrest.put("services/" + ServiceName + "/config/rest-cors-credentials", {"value": False});
+        }
+        qrest.put("services/" + ServiceName + "/reset");
+        rest = getRestClient();
+
+        h = rest.get("/");
+        assertEq(200, h.status_code);
+        assertEq("OK", h.status_message);
+        assertEq("true", h."access-control-allow-credentials");
+    }
+
+    RestClient getRestClient() {
+        int port = qrest.put("services/" + ServiceName + "/getPort/call");
+        string url = qorus_get_local_url();
+        {
+            hash<auto> url_hash = parse_url(url);
+            url = sprintf("http://%s:%d", url_hash.host, port);
+        }
+        if (m_options.verbose > 2) {
+            printf("using URL %y\n", url);
+        }
+        return new RestClient({
+            "url": url,
+        });
+    }
+}

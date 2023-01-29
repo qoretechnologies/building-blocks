@@ -1,0 +1,84 @@
+# This is a generated file, don't edit!
+type: type
+path: qoretechnologies/building-blocks/text-analysis/output-event
+typeinfo:
+    base_type: hash<auto>
+    name: hash<auto>
+    can_manage_fields: true
+    fields:
+        msg:
+            name: msg
+            desc: input message that was analyzed
+            type:
+                typename: string
+                name: string
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                    string.encoding:
+                        type: string
+                        desc: the output encoding when writing to the type
+                    string.max_size_chars:
+                        type: integer
+                        desc: the maximum length of the string in characters
+                options:
+                    qore.no_null: true
+                base_type: string
+                mandatory: true
+                types_accepted:
+                    - string
+                types_returned:
+                    - string
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+        id:
+            name: id
+            desc: an optionbal ID passed in the input data
+            type:
+                typename: any
+                name: auto
+                supported_options: null
+                options: null
+                base_type: auto
+                mandatory: false
+                types_accepted:
+                    - any
+                types_returned:
+                    - any
+                fields: {}
+                can_manage_fields: true
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+            isChild: false
+            level: 0
+            path: id
+            parentPath: false
+        result:
+            name: result
+            desc: the result of processing the input data
+            type:
+                typename: any
+                name: auto
+                supported_options: null
+                options: null
+                base_type: auto
+                mandatory: false
+                types_accepted:
+                    - any
+                types_returned:
+                    - any
+                fields: {}
+                can_manage_fields: true
+            isCustom: true
+            canBeNull: false
+            isChild: false
+            level: 0
+            path: result
+            parentPath: false

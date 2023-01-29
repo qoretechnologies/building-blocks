@@ -1,0 +1,11 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BbExcelReadBaseJob inherits QorusJob {
+    run() {
+        BBM_ExcelReadDataProvider excel();
+        saveInfo({"excel": map $1, excel.searchRecords()});
+    }
+}

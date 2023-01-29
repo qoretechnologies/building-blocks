@@ -1,0 +1,13 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_ThrowException {
+    static throwException(auto input) {
+        hash<auto> local_context = {"input": input};
+        throw UserApi::getConfigItemValue("throw-exception-err", local_context),
+            UserApi::getConfigItemValue("throw-exception-desc", local_context),
+            UserApi::getConfigItemValue("throw-exception-arg", local_context);
+    }
+}

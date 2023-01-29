@@ -1,0 +1,16 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_OndewoNluClient
+desc: >-
+    Building block that returns an ONDEWO NLU / Conversational AI client from an
+    `ondewonlu://` Qorus connection
+lang: python
+author:
+  - Qore Technologies, s.r.o.
+version: '1.0'
+code: BBM_OndewoNluClient-1.0.qclass.py
+config-items:
+  - name: ondewo-nlu-connection
+    description: ONDEWO NLU / Conversational AI Qorus connection name
+    config_group: ONDEWO NLU Client Main
+    type: connection

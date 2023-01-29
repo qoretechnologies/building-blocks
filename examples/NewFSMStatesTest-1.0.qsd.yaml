@@ -1,0 +1,24 @@
+# This is a generated file, don't edit!
+type: service
+name: NewFSMStatesTest
+desc: Test
+lang: qore
+base-class-name: QorusService
+class-name: NewFsmStatesTest
+version: '1.0'
+fsm:
+    [
+        {
+            "name": "VariousNewStatesTest",
+            "triggers": [
+                {
+                    "method": "init"
+                }
+            ]
+        }
+    ]
+servicetype: USER
+code: NewFSMStatesTest-1.0.qsd
+methods:
+  - name: init
+    desc: init

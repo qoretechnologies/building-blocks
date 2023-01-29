@@ -1,0 +1,89 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_AutoMapper
+desc: >-
+    ## Summary
+
+
+    Base class for running a mapper in autonomous mode, meaning that the input
+    and output data are provided by data providers configured in the mapper.
+
+
+    This building block is not suitable for mapping input data and returning
+    output data, for that use `BBM_GenericMapper` or a mapper in an FSM, a data
+    pipeline, or in a class connection in an interface.
+
+
+    Use this object's configuration to provide input or search filtering as well
+    as to tune the output data handling.
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `runMapper`
+
+
+    This connector runs the mapper in autonomous mode.
+
+
+    The input data is available as `$local:input` for all config items resolved
+    with this connector (in internal calls to
+    `UserApi::expandTemplatedValue()`).
+
+
+    ## References
+
+
+    See `BBM_GenericMapper`
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: runMapper
+    method: runMapper
+    type: input-output
+version: '1.0'
+code: BBM_AutoMapper-v1.0.qclass
+config-items:
+  - name: automapper-mapper-name
+    description: the name of the mapper
+    config_group: Auto Mapper Config
+    strictly_local: true
+    type: mapper
+  - name: automapper-input-request
+    default_value:
+        null
+    config_group: Auto Mapper Input Options
+    description: the arguments for input providers using the request/response API
+    type: "*hash"
+  - name: automapper-input-request-options
+    default_value:
+        null
+    config_group: Auto Mapper Input Options
+    description: any options to input providers using the request/response API
+    type: "*hash"
+  - name: automapper-input-search
+    default_value:
+        null
+    config_group: Auto Mapper Input Options
+    description: a hash of search options for the input provider
+    type: "*hash"
+  - name: automapper-input-search-options
+    default_value:
+        null
+    config_group: Auto Mapper Input Options
+    description: input provider search options
+    type: "*hash"
+  - name: automapper-output-upsert
+    default_value:
+        false
+    config_group: Auto Mapper Output Options
+    description: a flag to enable upserting instead of creating records
+    type: bool
+  - name: automapper-output-request-options
+    default_value:
+        null
+    config_group: Auto Mapper Output Options
+    description: any options to output providers using the request/response API
+    type: "*hash"

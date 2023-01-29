@@ -1,0 +1,36 @@
+#!/usr/bin/env qore
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%require-types
+%strict-args
+%new-style
+%enable-all-warnings
+
+%exec-class BBM_OutputData
+
+%requires QorusInterfaceTest
+
+class BBM_OutputData inherits QorusJobTest {
+    private {
+        const JobName = "bbm-pause-data-passthru-test";
+    }
+
+    constructor() : QorusJobTest(JobName, "1.0", \ARGV, Opts) {
+        addTestCase("pause test", \pauseTest());
+        set_return_value(main());
+    }
+
+    private usageIntern(int offset = OffsetColumn) {
+        TestReporter::usageIntern(OffsetColumn);
+    }
+
+    pauseTest() {
+        qrest.put("jobs/bbm-pause-data-passthru-test/config/pause-criterion", {"value": True});
+        qrest.put("jobs/bbm-pause-data-passthru-test/config/pause-delay-ms", {"value": 1000});
+
+        date start = now_us();
+        RunJobResult job(OMQ::StatComplete);
+        exec(job);
+        assertGt(1s, now_us() - start);
+    }
+}

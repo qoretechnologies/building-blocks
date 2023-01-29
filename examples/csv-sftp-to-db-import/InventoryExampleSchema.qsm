@@ -1,0 +1,145 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+# @file InventoryExampleSchema.qsm Qorus Integration System inventory example user schema description module
+
+/*  InventoryExampleSchema.qsm Copyright 2022 Qore Technologies, s.r.o.
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+*/
+
+%requires qore >= 1.0
+
+module InventoryExampleSchema {
+    version = "1.0";
+    desc = "Qorus inventory example user schema module";
+    author = "Qore Technologies <info@qoretechnologies.com>";
+    url = "https://qoretechnologies.com";
+}
+
+# here we add fallback paths to the QORE_MODULE_DIR search path,
+# in case QORE_MODULE_DIR is not set properly for Qorus
+%append-module-path /var/opt/qorus/qlib:$OMQ_DIR/qlib:/opt/qorus/qlib
+
+%requires Schema
+%requires SqlUtil
+
+%new-style
+%strict-args
+%require-types
+%strict-args
+%enable-all-warnings
+
+# private namespace for private schema declarations
+namespace Private {
+    const GenericOptions = {
+        "replace": True,
+    };
+
+    const IndexOptions = {
+        "driver": {
+            "oracle": {
+                "compute_statistics": True,
+            },
+        },
+    };
+
+    const ColumnOptions = {
+        "driver": {
+            "oracle": {"character_semantics": True,},
+        },
+    };
+
+    const T_InventoryExample = {
+        "columns": {
+            "id": c_int(True, "PK ID field"),
+            "filename": c_varchar(200, True, "input filename"),
+            "uuid": c_varchar(40, True, "system-supplied UUID for the file"),
+            "store_code": c_varchar(200, True, "input store code"),
+            "product_code": c_varchar(50, True, "input product code / EAN"),
+            "product_desc": c_varchar(200, True, "input product description"),
+            "ordered": c_int(True),
+            "available": c_int(True),
+            "in_transit": c_int(True),
+            "total": c_int(True),
+            "report_date": c_timestamp(True),
+            "qorus_wfiid": c_int(True),
+        },
+        "primary_key": {"name": "pk_inventory_example", "columns": ("id")},
+        "indexes": {
+            "sk_inventory_example_filename": {"columns": ("filename")},
+            "sk_inventory_example_uuid": {"columns": ("uuid")},
+            "sk_inventory_example_q_wfiid": {"columns": ("qorus_wfiid")},
+        },
+    };
+
+    const Tables = {
+        "inventory_example": T_InventoryExample,
+    };
+
+    const Sequences = {
+        "seq_inventory_example": {},
+    };
+}
+
+public namespace InventoryExampleSchema {
+    public string sub get_datasource_name() {
+        return "omquser";
+    }
+
+    public InventoryExampleSchema sub get_user_schema(AbstractDatasource ds, *string dts, *string its) {
+        return new InventoryExampleSchema(ds, dts, its);
+    }
+
+    public class InventoryExampleSchema inherits AbstractSchema {
+        public {
+            const SchemaName = "InventoryExampleSchema";
+            const SchemaVersion = "1.0";
+        }
+
+        constructor(AbstractDatasource ds, *string dts, *string its) : AbstractSchema(ds, dts, its) {
+        }
+
+        private string getNameImpl() {
+            return SchemaName;
+        }
+
+        private string getVersionImpl() {
+            return SchemaVersion;
+        }
+
+        private *hash<auto> getTablesImpl() {
+            return Tables;
+        }
+
+        private *hash<auto> getSequencesImpl() {
+            return Sequences;
+        }
+
+        private *hash<auto> getIndexOptionsImpl() {
+            return IndexOptions;
+        }
+
+        private *hash<auto> getGenericOptionsImpl() {
+            return GenericOptions;
+        }
+
+        private *hash<auto> getColumnOptionsImpl() {
+            return ColumnOptions;
+        }
+    }
+}

@@ -1,0 +1,39 @@
+# This is a generated file, don't edit!
+type: job
+name: bbm-pause-data-passthru-test
+desc: Test for the `BBM_PauseDataPassthru` building block
+lang: qore
+active: false
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusJob
+class-name: BBM_PauseDataPassthruTest
+classes:
+  - BBM_PauseDataPassthru
+groups:
+  - bb-test
+  - test
+schedule:
+    minutes: "0"
+    hours: "0"
+    days: "1"
+    months: "1"
+    dow: "*"
+version: '1.0'
+code: bbm-pause-data-passthru-test-1.0.qjob
+class-connections:
+    Connection_1:
+      - class: BBM_PauseDataPassthru
+        connector: pause
+        trigger: run
+config-items:
+  - name: pause-criterion
+    parent:
+        interface-type: class
+        interface-name: BBM_PauseDataPassthru
+        interface-version: '1.0'
+  - name: pause-delay-ms
+    parent:
+        interface-type: class
+        interface-name: BBM_PauseDataPassthru
+        interface-version: '1.0'

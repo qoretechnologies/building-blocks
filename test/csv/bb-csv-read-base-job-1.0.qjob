@@ -1,0 +1,49 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BbCsvReadBaseJob inherits QorusJob {
+    private {
+        ####### GENERATED SECTION! DON'T EDIT! ########
+        ClassConnections_BbCsvReadBaseJob class_connections();
+        ############ GENERATED SECTION END ############
+    }
+
+    ####### GENERATED SECTION! DON'T EDIT! ########
+    run() {
+        class_connections.run();
+    }
+    ############ GENERATED SECTION END ############
+}
+
+####### GENERATED SECTION! DON'T EDIT! ########
+class ClassConnections_BbCsvReadBaseJob {
+    private {
+        # map of prefixed class names to class instances
+        hash<auto> class_map;
+    }
+
+    constructor() {
+        class_map = {
+            "BBM_CsvReadDataProvider": new BBM_CsvReadDataProvider(),
+            "BBM_OutputData": new BBM_OutputData(),
+        };
+    }
+
+    auto callClassWithPrefixMethod(string prefixed_class, string method) {
+        UserApi::logDebug("ClassConnections_BbCsvReadBaseJob: callClassWithPrefixMethod: method: %s class: %y", method, prefixed_class);
+        return call_object_method_args(class_map{prefixed_class}, method, argv);
+    }
+
+    auto run(auto params) {
+        UserApi::logDebug("run called with data: %y", params);
+
+        UserApi::logDebug("calling searchRecordsConnector: %y", params);
+        params = callClassWithPrefixMethod("BBM_CsvReadDataProvider", "searchRecordsConnector", params);
+
+        UserApi::logDebug("calling writeOutput: %y", params);
+        return callClassWithPrefixMethod("BBM_OutputData", "writeOutput", params);
+    }
+}
+############ GENERATED SECTION END ############

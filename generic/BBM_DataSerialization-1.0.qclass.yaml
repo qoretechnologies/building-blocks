@@ -1,0 +1,95 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_DataSerialization
+desc: >
+    ## Summary
+
+
+    Serializes data to a specific format according to the
+    `data-serialization-format` configuration item:
+
+    - **JSON**: serialize to a JSON string
+
+    - **XML**: serialize to an XML string
+
+    - **XML-RPC**: serialize to an XML string in
+    [XML-RPC](https://en.wikipedia.org/wiki/XML-RPC) format
+
+    - **YAML**: serialize to a YAML string
+
+
+    Use the `data-serialization-verbose-output` config item to use multi-line
+    serialization for more human-readable results for complex data structures if
+    necessary.
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `serialize`
+
+
+    Input data is available as local context data during the resolution of all
+    config item as `$local:input`.  
+
+
+    The output data includes the serialized data in the `output` key of the hash
+    returned.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: serialize
+    type: input-output
+    method: serialize
+    output-provider:
+        type: type
+        name: qoretechnologies
+        can_manage_fields: false
+        path: /building-blocks/dataserialization/output
+version: '1.0'
+code: BBM_DataSerialization-1.0.qclass
+config-items:
+  - name: data-serialization-format
+    description: >-
+        Serializes data to a specific format according to the following values:
+    
+        - **JSON**: serialize to a JSON string
+    
+        - **XML**: serialize to an XML string
+    
+        - **XML-RPC**: serialize to an XML string in
+        [XML-RPC](https://en.wikipedia.org/wiki/XML-RPC) format
+    
+        - **YAML**: serialize to a YAML string
+    config_group: Data Serialization Config
+    strictly_local: true
+    allowed_values:
+      - "JSON"
+      - "XML"
+      - "XML-RPC"
+      - "YAML"
+  - name: data-serialization-input
+    default_value:
+        "$local:input"
+    type: any
+    description: >-
+        The input data for serialization; the default value processes the data
+        passed in as an argument to the connector method
+    config_group: Data Serialization Config
+    strictly_local: true
+    default_value_true_type: string
+  - name: data-serialization-verbose-output
+    default_value:
+        false
+    type: bool
+    description: If `true` then the output has multi-line formatting for easier readability
+    config_group: Data Serialization Config
+    strictly_local: true
+  - name: data-serialization-xml-key
+    default_value:
+        null
+    description: The top-level XML key when `data-serialization-format` is `XML`
+    config_group: Data Serialization Config
+    strictly_local: true
+    type: "*string"

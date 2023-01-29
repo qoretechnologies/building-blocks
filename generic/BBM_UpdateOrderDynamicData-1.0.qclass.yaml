@@ -1,0 +1,60 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_UpdateOrderDynamicData
+desc: >-
+    ## Summary
+
+
+    Updates the dynamic data of a workflow order based on configuration.
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the
+    `util/write-output` API data provider in the `qorus-api` factory instead
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `update`
+
+
+    Performs the update of dynamic data according to configuration.
+
+
+    Input data is available as `$local:input` when resolving config items with
+    this connector.
+
+
+    Provides the hash data updated in the given order as output data.
+
+
+    **NOTE**: the update performed uses `UserApi::updateDynamicOrderData()` and
+    therefore is atomic
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: update
+    type: input-output
+    method: update
+    output-provider:
+        type: type
+        name: qore
+        can_manage_fields: true
+        path: /hash
+version: '1.0'
+code: BBM_UpdateOrderDynamicData-1.0.qclass
+config-items:
+  - name: update-dynamic-instance-id
+    description: The `workflow_instanceid` of the order to update
+    config_group: Update Order Dynamic Data
+    type: int
+    strictly_local: true
+  - name: update-dynamic-data
+    description: >-
+        The data to update in the order given by `update-dynamic-instance-id` in
+        hash format.
+    config_group: Update Order Dynamic Data
+    type: hash
+    strictly_local: true

@@ -1,0 +1,33 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_GetPipelineData inherits AbstractDataProcessor {
+    #! Uses input data only for resolving config item values
+    /** @param enqueue the enqueuing code object for records to be passed for onwards processing
+        @param input the input data to this processor; available in the \a input key of local context data
+        (i.e. <tt>$local:input</tt> when looking up config item values
+    */
+    private submitImpl(code enqueue, auto input) {
+        hash<auto> local_context = {"input": input};
+        auto rv = UserApi::getConfigItemValue("get-pipeline-data", local_context);
+        UserApi::logInfo("get pipeline data connector returning: %y", rv);
+        if (exists rv) {
+            if (rv.typeCode() == NT_LIST) {
+                map enqueue($1), rv;
+            } else {
+                enqueue(rv);
+            }
+        }
+    }
+
+    #! Returns @ref True if the data processor supports bulk operation
+    /** @return @ref True if the data processor supports bulk operation
+
+        @see dataprovider_pipeline_bulk_processing
+    */
+    private bool supportsBulkApiImpl() {
+        return True;
+    }
+}

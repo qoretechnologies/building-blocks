@@ -1,0 +1,54 @@
+#!/usr/bin/env qore
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%require-types
+%strict-args
+%new-style
+%enable-all-warnings
+
+%exec-class BBM_DataProviderRecordCreateProcessorTest
+
+%requires QorusInterfaceTest
+%requires SqlUtil
+
+class BBM_DataProviderRecordCreateProcessorTest inherits QorusJobTest {
+    private {
+        const JobName = "bbm-data-provider-create-processor-test";
+    }
+
+    constructor() : QorusJobTest(JobName, "1.0", \ARGV, Opts) {
+        addTestCase("record create test", \recordCreateTest());
+        set_return_value(main());
+    }
+
+    private usageIntern(int offset = OffsetColumn) {
+        TestReporter::usageIntern(OffsetColumn);
+    }
+
+    recordCreateTest() {
+        AbstractTable bb_remote = (new Table(omquser, "bb_remote")).getTable();
+        {
+            on_error bb_remote.rollback();
+            on_success bb_remote.commit();
+
+            bb_remote.del();
+        }
+
+        qrest.put("pipelines/bbm-data-provider-create-processor-test/config/T1w5s6wjx:record-create-processor-upsert",
+            {"value": False});
+
+        RunJobResult job(OMQ::StatComplete);
+        exec(job);
+        assertEq("one", bb_remote.selectRow({"where": {"id": "1"}}).batch_id);
+
+        qrest.put("pipelines/bbm-data-provider-create-processor-test/config/T1w5s6wjx:record-create-processor-upsert",
+            {"value": True});
+
+        job = new RunJobResult(OMQ::StatComplete);
+        exec(job);
+
+        hash<auto> h = qrest.put("jobs/bbm-data-provider-create-processor-test/run");
+        assertEq(OMQ::StatComplete, h.status);
+        assertEq("one", bb_remote.selectRow({"where": {"id": "1"}}).batch_id);
+    }
+}

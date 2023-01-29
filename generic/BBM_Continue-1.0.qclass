@@ -1,0 +1,10 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_Continue {
+    static nothing doContinue(auto input) {
+        throw "FSM-CONTINUE";
+    }
+}

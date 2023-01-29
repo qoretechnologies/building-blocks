@@ -1,0 +1,36 @@
+# This is a generated file, don't edit!
+type: pipeline
+name: bbm-simple-filter-pipeline-data-test-2
+desc: test
+groups:
+  - bb-test
+  - test
+children:
+  - type: processor
+    name: BBM_GetPipelineData
+    pid: gc_wFTIjY
+    config-items:
+      - name: get-pipeline-data
+        parent:
+            interface-type: class
+            interface-name: BBM_GetPipelineData
+            interface-version: '1.0'
+    children:
+      - type: processor
+        name: BBM_SimpleFilterPipelineData
+        pid: NEF3L8hSZ
+        config-items:
+          - name: simple-filter-criteria
+            value:
+                true
+            parent:
+                interface-type: class
+                interface-name: BBM_SimpleFilterPipelineData
+                interface-version: '1.0'
+        children:
+          - type: mapper
+            name: bbm-simple-filter-pipeline-data-test-2:1.0
+            children:
+              - type: processor
+                name: PipelineElementSaveDataInJob
+                pid: 8heYLpGMm

@@ -1,0 +1,45 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_WebSocketServiceEventSourceTest inherits QorusService {
+    public {
+        hash<WebSocketReceivedEventInfo> last_event;
+    }
+
+    private {
+        EventSource event_source;
+    }
+
+    init() {
+        event_source = new EventSource(self);
+    }
+
+    *hash<WebSocketReceivedEventInfo> getLastEvent() {
+        UserApi::logInfo("getLastEvent(): %y", last_event - "cx");
+        return last_event;
+    }
+}
+
+class EventSource inherits BBM_WebSocketServiceEventSource {
+    public {
+    }
+
+    private {
+        BBM_WebSocketServiceEventSourceTest service;
+    }
+
+    constructor(BBM_WebSocketServiceEventSourceTest service) {
+        self.service = service;
+    }
+
+    notifyObservers(string event_id, hash<WebSocketReceivedEventInfo> event) {
+        service.last_event = event;
+        BBM_WebSocketServiceEventSource::notifyObservers(event_id, event);
+        UserApi::logInfo("got event: %y", event - "cx");
+
+        # confirm message
+        handler.sendOne(event.cx.id, "OK");
+    }
+}

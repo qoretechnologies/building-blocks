@@ -1,0 +1,42 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_QorusServiceMethodCaller
+desc: >-
+    This building block allows for Qorus service methods to be called based on
+    configuration
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the
+    `services/call-method` API data provider in the `qorus-api` factory instead
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: callServiceMethod
+    type: input-output
+    method: callServiceMethod
+    output-provider:
+        type: type
+        name: qoretechnologies
+        can_manage_fields: false
+        path: /building-blocks/service-method-caller/output
+version: '1.0'
+code: BBM_QorusServiceMethodCaller-1.0.qclass
+config-items:
+  - name: service-method-call-service-name
+    description: The service name for the call
+    config_group: Qorus Service Method Caller Config
+    strictly_local: true
+    type: service
+  - name: service-method-call-service-method
+    description: The method to call
+    config_group: Qorus Service Method Caller Config
+    strictly_local: true
+  - name: service-method-call-service-args
+    default_value:
+        null
+    description: The arguments for the call
+    config_group: Qorus Service Method Caller Config
+    type: any
+    strictly_local: true

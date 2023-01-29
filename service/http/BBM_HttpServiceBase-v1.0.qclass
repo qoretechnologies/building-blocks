@@ -1,0 +1,34 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+#! The base HTTP handler class
+class BBM_HttpHandlerBase inherits AbstractServiceHttpHandler, BBM_HttpAuthenticatorBase, BBM_CorsBase {
+    #! Creates the object
+    constructor(AbstractAuthenticator auth = BBM_HttpAuthenticatorBase::getAuthenticator("http-auth-name",
+            "http-auth-cookie", "http-auth-redirect"))
+            : AbstractServiceHttpHandler(
+            ServiceApi::getConfigItemValue("http-root-uri"),
+            ServiceApi::getConfigItemValue("http-match-content-types"),
+            ServiceApi::getConfigItemValue("http-match-headers"),
+            auth,
+            ServiceApi::getConfigItemValue("http-root-uri-is-regex")), BBM_CorsBase("http") {
+    }
+
+    #! top-level request handling method
+    hash<HttpResponseInfo> handleRequest(HttpListenerInterface listener, Socket s, hash<auto> cx, hash<auto> hdr, *data body) {
+        if (hdr.method == "OPTIONS") {
+            return handleOptions(cx);
+        }
+        hash<HttpResponseInfo> rv = AbstractServiceHttpHandler::handleRequest(listener, s, cx, hdr, body);
+        rv.hdr += getCorsResponseHeaders(cx);
+        return rv;
+    }
+}
+
+#! The HTTP service base class; includes a parametrized handler class as well
+class BBM_HttpServiceBase inherits BBM_HttpServiceGenericBase {
+}

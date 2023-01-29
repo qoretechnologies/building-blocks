@@ -1,0 +1,25 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_DataProviderSearchBase
+desc: >
+    ## Summary
+
+
+    Base class for using the data provider search API; no configuration or
+    connectors
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the
+    `data-provider/search` API data provider in the `qorus-api` factory instead
+
+
+    ## References
+
+
+    See `BBM_DataProviderSearch`
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+version: '1.0'
+code: BBM_DataProviderSearchBase-1.0.qclass

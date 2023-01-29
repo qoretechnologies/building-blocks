@@ -1,0 +1,157 @@
+# name: BBM_RemoteDb2LocalDbImportBase
+# version: 1.0
+# desc: building block base class for high-performance remote DB -> local DB data transfers
+# author: Qore Technologies, s.r.o.
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+%requires TableMapper
+
+#! transfers data from a remote DB to a local DB
+class BBM_RemoteDb2LocalDbImportBase {
+    private {
+        #! prefix string for configuration items
+        /** to be used when multiple objects of this class are combined in one building block
+        */
+        *string item_pfx;
+    }
+
+    #! constructor providing an optional item prefix
+    constructor(*string label) {
+        self.item_pfx = label;
+    }
+
+    #! performs the import action
+    import() {
+        *string item_pfx_str;
+        if (item_pfx) {
+            item_pfx_str = item_pfx + "-";
+        }
+
+        # get mapper name
+        string mapper_name = UserApi::getConfigItemValue(item_pfx_str + "remote2local-db-mapper-name");
+        # get mapper for data conversions
+        InboundTableMapper mapper = UserApi::getMapper(mapper_name);
+
+        # get remote instance
+        string remote = UserApi::getConfigItemValue(item_pfx_str + "remote2local-db-remote-instance");
+
+        # get remote datasource name
+        string datasource = UserApi::getConfigItemValue(item_pfx_str + "remote2local-db-remote-datasource");
+
+        # get remote table name
+        string table = UserApi::getConfigItemValue(item_pfx_str + "remote2local-db-remote-table");
+
+        # get select stream options
+        hash<auto> opts;
+        # we use += to maintain the hash<auto> type
+        opts += UserApi::getConfigItemValue(item_pfx_str + "remote2local-db-remote-options");
+
+        *string column_name = UserApi::getConfigItemValue(item_pfx_str + "remote2local-db-remote-select-column");
+        auto value = UserApi::getConfigItemValue(item_pfx_str + "remote2local-db-remote-select-value-template");
+        if (exists column_name) {
+            opts."select"."where"{column_name} = value;
+        } else if (exists value) {
+            doWarning("CONFIG-ERROR", "the \"%sremote2local-db-remote-select-value-template\" config item value %y "
+                "has been ignored because config item \"%sremote2local-db-remote-select-column\" is not set",
+                item_pfx_str, value, item_pfx_str);
+        }
+
+        UserApi::logInfo("opening select stream %s:%s:%s -> mapper %y", remote, datasource, table, mapper_name);
+        UserApi::logDebug("select options: %N", opts);
+
+        # get remote instance for remote communication
+        DbRemoteReceive recv(remote,
+            datasource,
+            "select",
+            table,
+            opts,
+        );
+
+        on_error {
+            recv.disconnect();
+            mapper.discard();
+            mapper.rollback();
+        }
+        on_success {
+            mapper.flush();
+            mapper.commit();
+        }
+
+        hash<auto> ctx = getMapperConstantInput();
+
+        while (*hash<auto> h = recv.getData()) {
+            UserApi::logInfo("received block: %d rows", h.firstValue().lsize());
+            UserApi::logInfo("DEBUG: ctx: %y h: %y", ctx, h);
+            mapper.queueData(ctx + h);
+        }
+    }
+
+    private hash<auto> getMapperConstantInput() {
+        return {
+            "context": UserApi::getUserContextInfo(),
+        };
+    }
+
+    private doWarning(string err, string fmt) {
+        UserApi::logInfo("%s: %s", err, vsprintf(fmt, argv));
+    }
+
+    #! returns the config items as documented in the class documentation
+    hash<string, hash<ConfigItemInfo>> getConfigItems() {
+        *string item_pfx_str;
+        *string desc_pfx_str;
+        if (item_pfx) {
+            item_pfx_str = item_pfx + "-";
+            desc_pfx_str = item_pfx[0].upr() + item_pfx[1..] + ": ";
+        }
+
+        return {
+            # main configuration items
+            item_pfx_str + "remote2local-db-mapper-name": <ConfigItemInfo>{
+                "description": "the name of the mapper for the DB translations",
+                "strictly_local": True,
+                "config_group": desc_pfx_str + "Remote DB Import",
+            },
+            item_pfx_str + "remote2local-db-remote-instance": <ConfigItemInfo>{
+                "description": "the name of the remote qorus instance hosting the remote table",
+                "strictly_local": True,
+                "config_group": desc_pfx_str + "Remote DB Import",
+            },
+            item_pfx_str + "remote2local-db-remote-datasource": <ConfigItemInfo>{
+                "description": "the name of the datasource in the remote instance",
+                "strictly_local": True,
+                "config_group": desc_pfx_str + "Remote DB Import",
+            },
+            item_pfx_str + "remote2local-db-remote-table": <ConfigItemInfo>{
+                "description": "the name of the table in the remote datasource",
+                "strictly_local": True,
+                "config_group": desc_pfx_str + "Remote DB Import",
+            },
+            item_pfx_str + "remote2local-db-remote-options": <ConfigItemInfo>{
+                "type": "hash",
+                "default_value": {},
+                "description": "options for the DbRemoteReceive object",
+                "strictly_local": True,
+                "config_group": desc_pfx_str + "Remote DB Import",
+            },
+            item_pfx_str + "remote2local-db-remote-select-column": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "the name of the column for the select criteria in the remote datasource",
+                "strictly_local": True,
+                "config_group": desc_pfx_str + "Remote DB Import",
+            },
+            item_pfx_str + "remote2local-db-remote-select-value-template": <ConfigItemInfo>{
+                "type": "*string",
+                "default_value": NOTHING,
+                "description": "the column value for the select criteria in the remote table",
+                "strictly_local": True,
+                "config_group": desc_pfx_str + "Remote DB Import",
+            },
+        };
+    }
+}
+# END

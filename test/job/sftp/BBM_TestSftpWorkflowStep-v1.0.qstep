@@ -1,0 +1,23 @@
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+class BBM_TestSftpWorkflowStep inherits QorusNormalStep {
+    primary() {
+        # get path
+        *string path = getStaticData("local_path");
+        if (path) {
+            # read in file data to dynamic data
+            string data = File::readTextFile(path);
+            # log path
+            logInfo("got path: %y (%d bytes)", path, data.size());
+            # update dynamic data
+            updateDynamicData({"data": data});
+            # unlink file
+            unlink(path);
+        } else {
+            logInfo("file data: %d bytes", getStaticData("data").size());
+        }
+    }
+}

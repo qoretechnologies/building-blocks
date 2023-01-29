@@ -1,0 +1,143 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! Base class for creating a record with a data provider using the record API
+class BBM_DataProviderRecordCreateBase {
+    #! the primary record action logic: create the record
+    /** @return the record written to the data provider
+
+        @throw INVALID-OPERATION the data provider does not support record creation
+    */
+    auto makeRecordIntern(
+        string provider_path_item,
+        string create_options_item,
+        string duplicate_handling_item,
+        string input_item,
+        string mapper_name_item,
+        string output_item,
+        string upsert_item,
+        auto input,
+    ) {
+        hash<auto> local_context = {"input": input};
+        # the message body for the record
+        auto input_data = UserApi::getConfigItemValue(input_item, local_context);
+        return doRecordIntern(input_data, provider_path_item, create_options_item, duplicate_handling_item,
+            mapper_name_item, output_item, upsert_item, local_context);
+    }
+
+    #! the primary record action logic: make the record
+    /** @return the record written to the data provider
+
+        @throw INVALID-OPERATION the data provider does not support the required operation (create or upsert)
+        @throw INVALID-INPUT the input data is not in list of hash or hash format
+    */
+    hash<auto> doRecordIntern(
+        auto input_data,
+        string provider_path_item,
+        string create_options_item,
+        string duplicate_handling_item,
+        string mapper_name_item,
+        string output_item,
+        string upsert_item,
+        *hash<auto> local_context,
+    ) {
+        string provider_path = UserApi::getConfigItemValue(provider_path_item, local_context);
+        bool upsert = UserApi::getConfigItemValue(upsert_item, local_context);
+        UserApi::logDebug("provider: %y (upsert: %y) input record data: %y", provider_path, upsert, input_data);
+
+        bool output_list;
+
+        # check input_data type
+        if (input_data.typeCode() == NT_LIST) {
+            if (input_data) {
+                if (input_data[0].typeCode() != NT_HASH) {
+                    inputTypeError(input_data);
+                }
+                if (input_data.lsize() == 1) {
+                    input_data = input_data[0];
+                } else {
+                    UserApi::logInfo("BBM_DataProviderRecordCreateBase: processing %d elements in the input data",
+                        input_data.lsize());
+                    output_list = True;
+                }
+            }
+        } else if (input_data instanceof AbstractIterator) {
+            UserApi::logInfo("BBM_DataProviderRecordCreateBase: processing an iterator for input data");
+            output_list = True;
+        } else if (input_data.typeCode() != NT_HASH) {
+            inputTypeError(input_data);
+        }
+
+        # get the data provider
+        AbstractDataProvider provider = UserApi::getDataProvider(provider_path);
+        # ensure that it supports the appropriate API
+        if (upsert) {
+            provider.checkUpsert();
+        } else {
+            provider.checkCreate();
+        }
+
+        auto output_record_data;
+        foreach hash<auto> input_record in (input_data) {
+            hash<auto> record;
+
+            # get mapper name
+            *string mapper_name = UserApi::getConfigItemValue(mapper_name_item, local_context);
+            if (mapper_name) {
+                Mapper mapper = UserApi::getMapper(mapper_name);
+                record = mapper.mapData(input_record ?? {});
+            } else {
+                record = input_record ?? {};
+            }
+
+            *hash<auto> create_options = UserApi::getConfigItemValue(create_options_item, local_context);
+
+            UserApi::logDebug("provider %y: RECORD: %y options: %y", provider.getName(), record, create_options);
+            *hash<auto> output_record;
+            try {
+                if (upsert) {
+                    string result = provider.upsertRecord(record, create_options);
+                    UserApi::logDebug("upsert result: %y rec: %y", result, record);
+                    output_record = record;
+                } else {
+                    output_record = provider.createRecord(record, create_options);
+                }
+            } catch (hash<ExceptionInfo> ex) {
+                if (ex.err == "DUPLICATE-RECORD" &&
+                    UserApi::getConfigItemValue(duplicate_handling_item, local_context) == "SUCCESS" && ex.arg) {
+                    UserApi::logInfo("duplicate record found; arg: %y", ex.arg);
+                    output_record = ex.arg;
+                } else {
+                    UserApi::logError("BBM_DataProviderRecordCreateBase error inserting record: %y", record);
+                    rethrow;
+                }
+            }
+            UserApi::logDebug("OUTPUT RECORD: %N", output_record);
+            if (output_list) {
+                if (!output_record_data) {
+                    output_record_data = {
+                        "data": (),
+                    };
+                }
+                output_record_data."data" += output_record;
+            } else {
+                output_record_data = output_record;
+            }
+        }
+
+        # save output data
+        *hash<auto> output_data = UserApi::getConfigItemValue(output_item, NOTHING, False);
+        if (output_data) {
+            UserApi::updateOutputData(output_record_data, output_data);
+        }
+
+        return output_record_data;
+    }
+
+    static private inputTypeError(auto input_data) {
+        throw "INVALID-INPUT", sprintf("input data has type %y; must have \"list of hash\" or \"hash\" format",
+            input_data.type());
+    }
+}

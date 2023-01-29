@@ -1,0 +1,37 @@
+# This is a generated file, don't edit!
+type: job
+name: bbm-update-order-dynamic-data-test
+desc: Tests the `BBM_UpdateOrderDynamicData` building block
+lang: qore
+active: false
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusJob
+class-name: BbmUpdateOrderDynamicDataTest
+classes:
+  - BBM_UpdateOrderDynamicData
+remote: false
+schedule:
+    minutes: "0"
+    hours: "0"
+    days: "1"
+    months: "1"
+    dow: "*"
+version: '1.0'
+code: bbm-update-order-dynamic-data-test-1.0.qjob
+class-connections:
+    Connection_1:
+      - class: BBM_UpdateOrderDynamicData
+        connector: update
+        trigger: run
+config-items:
+  - name: update-dynamic-instance-id
+    parent:
+        interface-type: class
+        interface-name: BBM_UpdateOrderDynamicData
+        interface-version: '1.0'
+  - name: update-dynamic-data
+    parent:
+        interface-type: class
+        interface-name: BBM_UpdateOrderDynamicData
+        interface-version: '1.0'

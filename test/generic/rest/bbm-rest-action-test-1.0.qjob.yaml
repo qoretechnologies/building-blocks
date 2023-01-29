@@ -1,0 +1,103 @@
+# This is a generated file, don't edit!
+type: job
+name: bbm-rest-action-test
+desc: '`BBM_RestAction` test'
+lang: qore
+active: false
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusJob
+class-name: BBM_RestActionTest
+classes:
+  - BBM_RestAction
+remote: false
+schedule:
+    minutes: "0"
+    hours: "0"
+    days: "1"
+    months: "1"
+    dow: "*"
+version: '1.0'
+code: bbm-rest-action-test-1.0.qjob
+class-connections:
+    Connection_1:
+      - class: BBM_RestAction
+        connector: restAction
+        trigger: run
+config-items:
+  - name: rest-connection-name
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-method
+    value:
+        "GET"
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-api-mapper-name
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-uri-path
+    value:
+        "/api/public/info"
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-id-location
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-headers
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-swagger-schema-location
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-body-remove-nulls
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-output-data
+    value:
+        body: '$jinfo:rest'
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-id-log-msg
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-body
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-action-retries
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-action-retry-delay
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-action-retry-errors
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'

@@ -1,0 +1,9 @@
+# This is a generated file, don't edit!
+type: connection
+name: sftp-example-csv
+desc: CSV import SFTP server connection
+options:
+    keyfile:
+        type: string
+        value: $OMQ_DIR/user/ssh-config/id_ed25519
+url: sftp://sftptest@hq.qoretechnologies.com/home/sftptest/sftp_root/processing

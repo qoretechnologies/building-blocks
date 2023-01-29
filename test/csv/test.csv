@@ -1,0 +1,5 @@
+Country,SerialNo,Product,Date,Stocked
+UK,1234567890,"Sony, Xperia S",31052012,true
+UK,1234567891,"Sony, Xperia S",31052012,true
+UK,1234567892,"Sony, Xperia S",31052012,false
+UK,1234567893,"Sony, Xperia S",31052012,true

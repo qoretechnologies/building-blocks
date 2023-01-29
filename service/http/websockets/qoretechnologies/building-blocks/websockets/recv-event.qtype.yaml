@@ -1,0 +1,369 @@
+# This is a generated file, don't edit!
+type: type
+path: qoretechnologies/building-blocks/websockets/recv-event
+typeinfo:
+    base_type: hash<auto>
+    name: hash<auto>
+    can_manage_fields: true
+    fields:
+        event_id:
+            name: event_id
+            desc: the unique event ID
+            type:
+                typename: int
+                name: int
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                options:
+                    qore.no_null: true
+                base_type: int
+                mandatory: true
+                types_accepted:
+                    - int
+                    - integer
+                types_returned:
+                    - int
+                    - integer
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+            isChild: false
+            level: 0
+            path: event_id
+            parentPath: false
+        cx:
+            name: cx
+            desc: the connection context hash
+            type:
+                typename: hash
+                name: hash<auto>
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                options:
+                    qore.no_null: true
+                base_type: hash<auto>
+                mandatory: true
+                types_accepted:
+                    - hash<auto>
+                types_returned:
+                    - hash<auto>
+                fields:
+                    socket:
+                        name: socket
+                        desc: >-
+                            the bind address used to bind the listener in
+                            `qorus-core`
+                        type:
+                            typename: string
+                            name: string
+                            supported_options:
+                                qore.no_null:
+                                    type: bool
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                string.encoding:
+                                    type: string
+                                    desc: the output encoding when writing to the type
+                                string.max_size_chars:
+                                    type: integer
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                            options:
+                                qore.no_null: true
+                            base_type: string
+                            mandatory: true
+                            types_accepted:
+                                - string
+                            types_returned:
+                                - string
+                            fields: {}
+                            can_manage_fields: false
+                        isCustom: true
+                        canBeNull: false
+                    socket-info:
+                        name: socket-info
+                        desc: >
+                            a hash of socket information for the listening socket
+                            (as returned by `Qore::Socket::getSocketInfo()`)
+                        type:
+                            typename: hash
+                            name: hash<auto>
+                            supported_options:
+                                qore.no_null:
+                                    type: bool
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                            options:
+                                qore.no_null: true
+                            base_type: hash<auto>
+                            mandatory: true
+                            types_accepted:
+                                - hash<auto>
+                            types_returned:
+                                - hash<auto>
+                            fields: {}
+                            can_manage_fields: true
+                        isCustom: true
+                        canBeNull: false
+                    peer-info:
+                        name: peer-info
+                        desc: >-
+                            a hash of socket information for the remote socket (as
+                            returned by `Qore::Socket::getPeerInfo()`)
+                        type:
+                            typename: hash
+                            name: hash<auto>
+                            supported_options:
+                                qore.no_null:
+                                    type: bool
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                            options:
+                                qore.no_null: true
+                            base_type: hash<auto>
+                            mandatory: true
+                            types_accepted:
+                                - hash<auto>
+                            types_returned:
+                                - hash<auto>
+                            fields: {}
+                            can_manage_fields: true
+                        isCustom: true
+                        canBeNull: false
+                    url:
+                        name: url
+                        desc: >-
+                            a hash of broken-down URL information (as returned from
+                            `parse_url()`)
+                        type:
+                            typename: hash
+                            name: hash<auto>
+                            supported_options:
+                                qore.no_null:
+                                    type: bool
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                            options:
+                                qore.no_null: true
+                            base_type: hash<auto>
+                            mandatory: true
+                            types_accepted:
+                                - hash<auto>
+                            types_returned:
+                                - hash<auto>
+                            fields: {}
+                            can_manage_fields: true
+                        isCustom: true
+                        canBeNull: false
+                    id:
+                        name: id
+                        desc: The unique connection ID assigned by the HTTP server
+                        type:
+                            typename: int
+                            name: int
+                            supported_options:
+                                qore.no_null:
+                                    type: bool
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                            options:
+                                qore.no_null: true
+                            base_type: int
+                            mandatory: true
+                            types_accepted:
+                                - int
+                                - integer
+                            types_returned:
+                                - int
+                                - integer
+                            fields: {}
+                            can_manage_fields: false
+                        isCustom: true
+                        canBeNull: false
+                    listener-id:
+                        name: listener-id
+                        desc: >-
+                            the HTTP server listener ID (see
+                            `HttpServer::HttpServer::getListenerInfo()`)
+                        type:
+                            typename: string
+                            name: string
+                            supported_options:
+                                qore.no_null:
+                                    type: bool
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                string.encoding:
+                                    type: string
+                                    desc: the output encoding when writing to the type
+                                string.max_size_chars:
+                                    type: integer
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                            options:
+                                qore.no_null: true
+                            base_type: string
+                            mandatory: true
+                            types_accepted:
+                                - string
+                            types_returned:
+                                - string
+                            fields: {}
+                            can_manage_fields: false
+                        isCustom: true
+                        canBeNull: false
+                    user:
+                        name: user
+                        desc: 'The Qorus username for the connection user, if any'
+                        type:
+                            typename: '*string'
+                            name: '*string'
+                            supported_options:
+                                qore.no_null:
+                                    type: bool
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                string.encoding:
+                                    type: string
+                                    desc: the output encoding when writing to the type
+                                string.max_size_chars:
+                                    type: integer
+                                    desc: >-
+                                        the maximum length of the string in
+                                        characters
+                                string.empty_to_nothing:
+                                    type: bool
+                                    desc: >-
+                                        if an empty string should be converted to no
+                                        value
+                            options: null
+                            base_type: string
+                            mandatory: false
+                            types_accepted:
+                                - string
+                                - nothing
+                                - 'null'
+                            types_returned:
+                                - string
+                                - nothing
+                            fields: {}
+                            can_manage_fields: false
+                        isCustom: true
+                        canBeNull: true
+                can_manage_fields: true
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+        type:
+            name: type
+            desc: |-
+                the message payload type:
+                - `STRING`
+                - `BINARY`
+    
+                This determines the type of the `msg` key
+            type:
+                typename: string
+                name: string
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                    string.encoding:
+                        type: string
+                        desc: the output encoding when writing to the type
+                    string.max_size_chars:
+                        type: integer
+                        desc: the maximum length of the string in characters
+                options:
+                    qore.no_null: true
+                base_type: string
+                mandatory: true
+                types_accepted:
+                    - string
+                types_returned:
+                    - string
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+        msg:
+            name: msg
+            desc: >-
+                The actual message from the remote WebSocket client - either
+                `string` or `binary` depending on the `type` value
+            type:
+                typename: any
+                name: auto
+                supported_options: null
+                options: null
+                base_type: auto
+                mandatory: false
+                types_accepted:
+                    - any
+                types_returned:
+                    - any
+                fields: {}
+                can_manage_fields: true
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+            isChild: false
+            level: 0
+            path: msg
+            parentPath: false
+        cid:
+            name: cid
+            desc: >-
+                the string connection ID; this ID must be used to send messages to
+                the same connection
+            type:
+                typename: string
+                name: string
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                    string.encoding:
+                        type: string
+                        desc: the output encoding when writing to the type
+                    string.max_size_chars:
+                        type: integer
+                        desc: the maximum length of the string in characters
+                options:
+                    qore.no_null: true
+                base_type: string
+                mandatory: true
+                types_accepted:
+                    - string
+                types_returned:
+                    - string
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true

@@ -1,0 +1,20 @@
+# This is a generated file, don't edit!
+type: job
+name: example-hello-world-code
+desc: 'Example Hello, World! job with coding'
+lang: qore
+base-class-name: QorusJob
+class-name: ExampleHelloWorldCode
+schedule:
+    minutes: "0"
+    hours: "1"
+    days: "1"
+    months: "1"
+    dow: "*"
+version: '1.0'
+active: false
+author:
+  - Qore Technologies, s.r.o.
+groups:
+  - EXAMPLES
+code: example-hello-world-code-1.0.qjob

@@ -1,0 +1,39 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_InternalIterator
+desc: >
+    ## Summary
+
+
+    Building block that allows for iteration of internal data; converts a hash
+    with an internal list into a list of hashes having common top-level data
+    with the interior element repeated 
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `internalIterator`
+
+
+    Accepts the input data and returns a list of records according to the
+    `internal-iterator-key-path` config item, designating the position in the
+    input data to iterate.
+
+
+    Input data is furthermore available as `$local:input` when resolving config
+    items with this connector.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: internalIterator
+    method: internalIterator
+    type: input-output
+version: '1.0'
+code: BBM_InternalIterator-1.0.qclass
+config-items:
+  - name: internal-iterator-key-path
+    config_group: Internal Iterator
+    description: A dotted path to an internal element that will be iterated
+    strictly_local: true

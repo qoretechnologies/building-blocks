@@ -1,0 +1,94 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+#! creates a workflow order from the input data according to the configuration
+/** supports atomic workflow order creation through handling \c DUPLICATE-ORDER-KEY exceptions thrown by
+    @ref UserApi::createOrder()
+
+    Configuration items:
+    - \c create-workflow-order-mapper: the mapper used to create the static order data for the order; the mapper
+      returns the value used for the @ref UserApi::createOrder() \a params option giving the new workflow order
+      information
+    - \c create-workflow-name: the name of the workflow to create the order for
+    - \c create-workflow-version: the optional version of the workflow, if not set, then an order will be created for
+      the latest version of the workflow
+    - \c create-workflow-duplicate-handling: set to determine how duplicate errors are handled; set to \c "SUCCESS" to
+      enable the @ref BBM_CreateOrder::createWorkflowOrder() method to return the workflow_instanceid in case a single
+      workflow_instanceid matches, set to \c "DUPLICATE" to throw a \c DUPLICATE-ORDER-KEY exception in all cases if
+      duplicates are found
+
+    @note No comparison of the order data is made in case of duplications; it is assumed that the data is identical
+
+    Connector types:
+    - \c input: \c qoretechnologies/qorus-api/workflows/create-order/request
+    - \c output: \c qoretechnologies/qorus-api/workflows/create-order/response
+*/
+class BBM_CreateOrderStatic inherits BBM_CreateOrder {
+    public {
+        const StaticDataItem = "create-workflow-staticdata";
+        const SensitiveDataItem = "create-workflow-sensitivedata";
+        const DynamicDataItem = "create-workflow-dynamicdata";
+        const TempDataItem = "create-workflow-tempdata";
+        const ExternalOrderIdItem = "create-workflow-external-id";
+
+        const OrderKeysItem = "create-workflow-order-keys";
+        const WorkflowSpecificUniqueKeyItem = "create-workflow-specific-unique-key";
+        const WorkflowUniqueKeyItem = "create-workflow-unique-key";
+        const GlobalUniqueKeyItem = "create-workflow-global-unique-key";
+
+        const ParentWorkflowIdItem = "create-workflow-parent-workflow-id";
+        const PriorityItem = "create-workflow-priority";
+        const ScheduledItem = "create-workflow-scheduled";
+
+        const OrderMap = {
+            "staticdata": StaticDataItem,
+            "sensitive_data": SensitiveDataItem,
+            "dynamicdata": DynamicDataItem,
+            "tempdata": TempDataItem,
+            "external_order_instanceid": ExternalOrderIdItem,
+
+            "parent_workflow_instanceid": ParentWorkflowIdItem,
+            "priority": PriorityItem,
+            "scheduled": ScheduledItem,
+
+            "global_unique_key": GlobalUniqueKeyItem,
+            "orderkeys": OrderKeysItem,
+            "workflow_specific_unique_key": WorkflowSpecificUniqueKeyItem,
+            "workflow_unique_key": WorkflowUniqueKeyItem,
+        };
+    }
+
+    #! create order method suitable for use as an input/output connector, independent of input data
+    /** @param input this argument is used as input data when resolving configuration item values; if the input data
+        is not a hash, then it is stored in the \c input key of the local context argument to
+        @ref OMQ::UserApi::UserApi::getConfigItemValue() "UserApi::getConfigItemValue()"
+
+        @return a single hash with connector output type \c qoretechnologies/qorus-api/workflows/create-order/response;
+        the hash has the following keys:
+        - \c workflow_instanceid the workflow instance ID of the order created
+        - \c duplicate: a boolean flag: \c True if the order already existed (config item
+          \c create-workflow-duplicate-handling = \c SUCCESS), \c False if not
+    */
+    static hash<auto> createOrderStatic(auto input,
+            hash<CreateOrderOptionInfo> create_options = <CreateOrderOptionInfo>{}, hash<auto> ordermap = OrderMap) {
+        hash<auto> local_context = {"input": input};
+        hash<auto> order_data = map {$1.key: UserApi::getConfigItemValue($1.value, local_context)},
+            OrderMap.pairIterator();
+        map remove order_data{$1.key}, order_data.pairIterator(), !exists $1.value;
+        # create empty order data if not present
+        if (!order_data.staticdata) {
+            order_data.staticdata = {};
+        }
+        # request and order data are logged in BBM_CreateOrder::createWorkflowOrderIntern()
+        bool dup = False;
+        int wfiid = BBM_CreateOrder::createWorkflowOrderIntern(order_data, create_options, \dup);
+        return {
+            "workflow_instanceid": wfiid,
+            "duplicate": dup,
+        };
+    }
+}

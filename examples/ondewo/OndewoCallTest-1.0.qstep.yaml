@@ -1,0 +1,87 @@
+# This is a generated file, don't edit!
+type: step
+name: OndewoCallTest
+desc: ONDEWO VTSI call test
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusNormalStep
+class-name: OndewoCallTest
+classes:
+  - BBM_OndewoVtsiClient
+version: '1.0'
+steptype: NORMAL
+code: OndewoCallTest-1.0.qstep
+class-connections:
+    makeCall:
+      - class: BBM_OndewoVtsiClient
+        connector: startCaller
+        trigger: primary
+config-items:
+  - name: ondewo-vtsi-connection
+    value:
+        "ondewo-vtsi"
+    parent:
+        interface-type: class
+        interface-name: BBM_OndewoVtsiClient
+        interface-version: '1.0'
+  - name: vtsi-client-phone-number
+    value:
+        "+43316231257"
+    parent:
+        interface-type: class
+        interface-name: BBM_OndewoVtsiClient
+        interface-version: '1.0'
+  - name: vtsi-client-call-parameter
+    value:
+        first_name: David
+        last_name: Nichols
+        Ticket_Number: one zero zero zero two
+        Customer_Problem: an Unreliable Internet Connection
+    parent:
+        interface-type: class
+        interface-name: BBM_OndewoVtsiClient
+        interface-version: '1.0'
+  - name: vtsi-client-output-data
+    parent:
+        interface-type: class
+        interface-name: BBM_OndewoVtsiClient
+        interface-version: '1.0'
+  - name: ondewo-sip-sim-version
+    parent:
+        interface-type: class
+        interface-name: BBM_OndewoVtsiClient
+        interface-version: '1.0'
+  - name: ondewo-project-id
+    value:
+        "250a059b-cb74-4d14-9610-8d1e59b0770a"
+    parent:
+        interface-type: class
+        interface-name: BBM_OndewoVtsiClient
+        interface-version: '1.0'
+  - name: ondewo-project-initial-intent
+    parent:
+        interface-type: class
+        interface-name: BBM_OndewoVtsiClient
+        interface-version: '1.0'
+  - name: ondewo-project-voice
+    value:
+        "changyee"
+    parent:
+        interface-type: class
+        interface-name: BBM_OndewoVtsiClient
+        interface-version: '1.0'
+  - name: ondewo-project-language-model
+    value:
+        "general_english"
+    parent:
+        interface-type: class
+        interface-name: BBM_OndewoVtsiClient
+        interface-version: '1.0'
+  - name: ondewo-cai-language
+    value:
+        "en"
+    parent:
+        interface-type: class
+        interface-name: BBM_OndewoVtsiClient
+        interface-version: '1.0'

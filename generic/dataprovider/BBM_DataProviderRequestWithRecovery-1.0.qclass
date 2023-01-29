@@ -1,0 +1,37 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! Makes a request with a data provider using the request/response API
+class BBM_DataProviderRequestWithRecovery inherits BBM_DataProviderRequest {
+    public {
+        const ProviderPathItem = "dataprovider-request-recovery-provider-path";
+        const RemoveNullsItem = "dataprovider-request-recovery-body-remove-nulls";
+        const RequestOptionsItem = "dataprovider-request-recovery-options";
+        const InputItem = "dataprovider-request-recovery-input";
+        const MapperItem = "dataprovider-request-recovery-mapper";
+        const LogItem = "dataprovider-request-recovery-id-log-msg";
+        const IdLocItem = "dataprovider-request-recovery-id-location";
+        const OutputItem = "dataprovider-request-recovery-output-data";
+    }
+
+    #! Connector usable as step validation logic
+    /** @param input used as local data when looking up config item values; available as <tt>$local:input</tt> when
+        resolving config item values
+
+        @return the string validation status, either:
+        - \c RETRY (@ref OMQ::StatRetry): no output data found; the step should be retried
+        - \c COMPLETE (@ref OMQ::StatComplete): output data found; the step is complete
+    */
+    string makeDataProviderRequestValidationConnector(auto input) {
+        return checkRequestIntern(NOTHING, ProviderPathItem, RemoveNullsItem, RequestOptionsItem, InputItem,
+            MapperItem, LogItem, IdLocItem, OutputItem, input) ? OMQ::StatComplete : OMQ::StatRetry;
+    }
+
+    #! returns True if output data is present, False if not
+    private bool checkRequest(auto request) {
+        return checkRequestIntern(request, ProviderPathItem, RemoveNullsItem, RequestOptionsItem, InputItem,
+            MapperItem, LogItem, IdLocItem, OutputItem);
+    }
+}

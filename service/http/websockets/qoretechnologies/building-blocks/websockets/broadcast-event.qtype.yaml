@@ -1,0 +1,27 @@
+# This is a generated file, don't edit!
+type: type
+path: qoretechnologies/building-blocks/websockets/broadcast-event
+typeinfo:
+    base_type: hash<auto>
+    name: hash<auto>
+    can_manage_fields: true
+    fields:
+        msg:
+            name: msg
+            desc: The message to broadcast; must be either a `string` or a `binary` type
+            type:
+                typename: any
+                name: auto
+                supported_options: null
+                options: null
+                base_type: auto
+                mandatory: false
+                types_accepted:
+                    - any
+                types_returned:
+                    - any
+                fields: {}
+                can_manage_fields: true
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true

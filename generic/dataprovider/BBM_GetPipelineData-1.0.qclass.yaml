@@ -1,0 +1,45 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_GetPipelineData
+desc: >-
+    ## Summary
+
+
+    Provides input data to a data pipeline; note that this class ignores input
+    data passed to it but rather only provides data to the next element based on
+    its configuration.
+
+
+    This class is suitable for using as the first step in a pipeline to pass
+    existing data into a pipeline for processing.
+
+
+    ## Processor Description
+
+
+    Uses input data only for resolving the output data from config item
+    `get-pipeline-data`; the input data is not passed through to the next
+    element in the pipeline unless it's referenced in the `get-pipeline-data`
+    config item.
+
+
+    Local data (in this case, the processor's input data) for the call to
+    `UserApi::expandTemplatedValue()` is the input argument data for the
+    connector available as `$local:input.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: AbstractDataProcessor
+processor:
+    {}
+version: '1.0'
+code: BBM_GetPipelineData-1.0.qclass
+config-items:
+  - name: get-pipeline-data
+    description: >-
+        This value will be passed to `UserApi::expandTemplatedValue()`, and that
+        value will be returned; the value returned will be the data fed to the
+        pipeline
+    config_group: Get Pipeline Data
+    strictly_local: true
+    type: any

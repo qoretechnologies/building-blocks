@@ -1,0 +1,25 @@
+# This is a generated file, don't edit!
+type: step
+name: ExampleImportCsvFile
+desc: Import a CSV file into our target table
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusNormalStep
+class-name: ExampleImportCsvFile
+fsm:
+    [
+        {
+            "name": "example-import-csv-file",
+            "triggers": [
+                {
+                    "method": "primary"
+                }
+            ]
+        }
+    ]
+mappers:
+  - example-import-csv-file:1.0
+version: '1.0'
+steptype: NORMAL
+code: ExampleImportCsvFile-1.0.qstep

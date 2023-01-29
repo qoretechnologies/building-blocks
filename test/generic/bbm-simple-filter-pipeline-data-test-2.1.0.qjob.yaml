@@ -1,0 +1,32 @@
+# This is a generated file, don't edit!
+type: job
+name: bbm-simple-filter-pipeline-data-test-2
+desc: >-
+    Tests the `BBM_GetPipelineData` and `BBM_SimpleFileterPipelineData` building
+    blocks
+lang: qore
+active: false
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusJob
+class-name: BbmSimpleFilterPipelineDataTest
+fsm:
+    [
+        {
+            "name": "bbm-simple-filter-pipeline-data-test-2",
+            "triggers": [
+                {
+                    "method": "run"
+                }
+            ]
+        }
+    ]
+remote: false
+schedule:
+    minutes: "0"
+    hours: "0"
+    days: "1"
+    months: "1"
+    dow: "*"
+version: '1.0'
+code: bbm-simple-filter-pipeline-data-test-2.1.0.qjob

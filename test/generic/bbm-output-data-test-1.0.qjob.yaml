@@ -1,0 +1,37 @@
+# This is a generated file, don't edit!
+type: job
+name: bbm-output-data-test
+desc: test the BBM_OutputData bujilding block
+active: false
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusJob
+class-name: BBM_OutputDataTest
+classes:
+  - BBM_OutputData
+groups:
+  - bb-test
+  - test
+lang: qore
+schedule:
+    minutes: "0"
+    hours: "0"
+    days: "1"
+    months: "1"
+    dow: "*"
+version: "1.0"
+code: bbm-output-data-test-1.0.qjob
+class-connections:
+    Connection_1:
+      - class: BBM_OutputData
+        connector: writeOutputData
+        trigger: run
+config-items:
+  - name: output-data-hash
+    value:
+        '$info:started': '$pstate:started'
+    parent:
+        interface-type: class
+        interface-name: BBM_OutputData
+        interface-version: "1.0"
+    value_true_type: hash

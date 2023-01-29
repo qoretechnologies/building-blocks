@@ -1,0 +1,33 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_DeleteFilePath {
+    #! Connector to delete a file on the filesystem
+    /** @param input available in the \a input key of local context data (i.e. <tt>$local:input</tt> when looking up
+        config item values)
+
+        @return the path deleted (if any) or @ref NOTHING if no file was deleted
+    */
+    *string deleteFilePath(auto input) {
+        hash<auto> local_context = {"input": input};
+        string path = UserApi::getConfigItemValue("delete-file-path", local_context);
+        *hash<StatInfo> info = hstat(path);
+        if (!info) {
+            if (UserApi::getConfigItemValue("delete-file-ignore-missing", local_context)) {
+                UserApi::logInfo("delete path %y: path does not exist; ignoring and continuing", path);
+                return;
+            }
+            UserApi::logInfo("delete path %y: path does not exist; raising an error", path);
+            throw "FILE-DELETE-ERROR", sprintf("%s: no such file or directory", path);
+        }
+        if (unlink(path)) {
+            UserApi::logInfo("delete path %y: %s", path, strerror());
+            throw "FILE-DELETE-ERROR", sprintf("delete path %y: %s", path, strerror());
+        } else {
+            UserApi::logInfo("delete path %y: OK", path);
+        }
+        return path;
+    }
+}

@@ -1,0 +1,219 @@
+# Qorus Integration Engine® Building Blocks
+
+This repository contains building blocks or components for Qorus Integration Engine®
+
+building blocks in any supported language can be used by code in other languages, so just because you are working with a code in Python, you don't have to restrict yourself to Python-based building blocks, Java, Python, and Qore-based building blocks can be mixed in any solution.
+
+Building blocks are meant to provide reusable elements to solve technical challenges in a generic way to reduce development effort - ideally to eliminate development and transform the delivery of complex functionality to simply configuration.
+
+**NOTE: Building blocks here require Qorus 5.1.25+ for full functionality**
+
+**NOTE: The building blocks here are made available under the Apache license 2.0:**
+>
+> Copyright 2021 Qore Technologies, s.r.o.
+>
+> Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+>
+>     http://www.apache.org/licenses/LICENSE-2.0
+>
+> Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the License for the specific language governing permissions and limitations under the License.
+
+Contact Qore Technologies (info@qoretechnologies.com) if you need support for these building blocks.
+
+## Installation
+
+Qorus must be installed, and the command-line environment must be set up for Qorus as well; also GNU make should be available in the `PATH`.
+
+After cloning the repository, type `make load-bb`
+
+## Building Blocks Index
+
+**NOTE: Some building blocks have dependencies in other building blocks, modules, and/or data types; when deploying
+single building blocks, ensure that all dependencies are deployed at the same time.  Keep in mind that modules often
+require system option changes in `$OMQ_DIR/etc/options` (ex: `qorus.dataprovider-modules`) which require a Qorus
+restart to take effect.**
+
+**NOTE: Qorus must be restarted after installing the full building block release or any release with module dependencies
+where the `qorus.dataprovider-module` option was updated for the first time in order for system option changes to take
+effect.**
+
+**NOTE: Qorus types must be deployed first in Qorus before they can be used in the IDE in mappers or workflow static
+data types, etc.**
+
+**NOTE: If step building blocks are subclassed, make sure and either remove the `primary()` or `validation()` method
+or override it and make an explicit call to the parent class method in the child class
+
+**NOTE: Qorus implements a significant quantity of powerful generic functionality in data provider factories; the
+`qorus-api` factory implements Qorus-specific functionality
+(see https://qoretechnologies.com/manual/qorus/current/qorus/finite_state_machines.html#fsm_qorus_api_calls), and Qore
+and modules implement other generic functionality as well.  These APIs can be browsed and used in Qorus flows (Finite
+State Machines) in API call states where documentation for each API call (request - response data provider) is also
+displayed.
+
+The following building blocks are available:
+
+### AI / NLU / ONDEWO Building Blocks
+
+|Building Block|Description|
+|---|---|
+|[BBM_OndewoBpiServer](./ondewo/BBM_OndewoBpiServer-1.0.qclass.yaml)|ONDEWO Business Process Integration server building block with event-based connectors for intent handling
+|[BBM_OndewoIntentHandler](./ondewo/BBM_OndewoIntentHandler-1.0.qclass.yaml)|ONDEWO intent handler helper class
+|[BBM_OndewoNluClient](./ondewo/BBM_OndewoNluClient-1.0.qclass.yaml)|ONDEWO Natural Language Understanding client class
+|[BBM_OndewoVtsiClient](./ondewo/BBM_OndewoVtsiClient-1.0.qclass.yaml)|ONDEWO VTSI client class
+
+### Data Provider / Mapper Building Blocks
+
+|Building Block|Description|
+|---|---|
+|[BBM_AutoMapper](./generic/dataprovider/BBM_AutoMapper-v1.0.qclass.yaml)|base building block for running a mapper in autonomous mode; includes an input/output connector
+|[BBM_AutoMapperRecord](./generic/dataprovider/BBM_AutoMapperRecord-1.0.qclass.yaml)|base building block for running a mapper in autonomous mode with request/record-based recovery logic
+|[BBM_AutoMapperRecordStep](./step/dataprovider/BBM_AutoMapperRecordStep-1.0.qclass.yaml)|step building block to map record-based data from an output provider to an input provider with config-based error recovery support; runs a mapper in autonomous mode
+|[BBM_AutoMapperRequest](./generic/dataprovider/BBM_AutoMapperRequest-1.0.qclass.yaml)|base building block for running a mapper in autonomous mode with request/response-based recovery logic
+|[BBM_CsvReadDataProvider](./generic/dataprovider/BBM_CsvReadDataProvider-1.0.qclass.yaml)|base building block for processing CSV data as input; implements an output connector
+|[BBM_DataProviderRecordCreateProcessor](./generic/dataprovider/BBM_DataProviderRecordCreateProcessor-1.0.qclass.yaml)|building block for a data provider output pipeline processor
+|[BBM_DataProviderSearchRecordIterator](./generic/dataprovider/BBM_DataProviderSearchRecordIterator-1.0.qclass.yaml)|building block class with a connector returning a record iterator that can be used to populate a pipeline
+|[BBM_ExcelReadDataProvider](./generic/dataprovider/BBM_ExcelReadDataProvider-1.0.qclass.yaml)|base building block for processing Excel spreadsheet data as input; implements an output connector
+|[BBM_GenericMapper](./generic/dataprovider/BBM_GenericMapper-1.0.qclass.yaml)|building block for generic data transformation support based on a mapper; includes an input/output connector; use this building block to use a mapper that will **not** run in autonomous mode (for example where input data can be used directly)
+
+### Data Provider / Pipeline Blocks
+
+|Building Block|Description|
+|---|---|
+|[BBM_GetPipelineData](./generic/dataprovider/BBM_GetPipelineData-1.0.qclass.yaml)|building block for providing a data pipeline with initial processing data from configuration
+|[BBM_SimpleFilterPipelineData](./generic/dataprovider/BBM_SimpleFilterPipelineData-1.0.qclass.yaml)|building block for filtering records in a data pipeline
+
+### Filesystem Event Building Blocks
+
+|Building Block|Description|
+|---|---|
+|[BBM_FsEventBase](./service/fsevent/BBM_FsEventBase-1.0.qclass.yaml)|generic class for services for event-driven file actions on the local filesystem
+
+### FTP Building Blocks
+
+|Building Block|Description|
+|---|---|
+|[BBM_FtpPollerBase](./generic/ftp/BBM_FtpPollerBase-v1.0.qclass.yaml)|generic base class for polling for files from an FTP server with a polling connector
+|[BBM_FtpPollerCreateOrder](./generic/ftp/BBM_FtpPollerCreateOrder-v1.0.qclass.yaml)|class for polling for files from an FTP server and creating a workflow order from them
+|[BBM_FtpPollerCreateOrderJob](./job/ftp/BBM_FtpPollerCreateOrderJob-v1.0.qclass.yaml)|base class for FTP polling jobs that create workflow orders for files received
+
+### Generic / Utility Building Blocks
+
+|Building Block|Description|
+|---|---|
+|[BBM_DataSerialization](./generic/BBM_DataSerialization-1.0.qclass.yaml)|transforms input data into a serialized string, includes an input/output connector
+|[BBM_GetArray](./generic/BBM_GetArray-1.0.qclass.yaml)|returns a list of data based on configuration, meant to be used to provide array input for an array step, provides an input/output connector
+|[BBM_InternalIterator](./generic/BBM_InternalIterator-1.0.qclass.yaml)|allows for iteration of internal data; converts a hash with an internal list into a list of hashes having common top-level data with the interior element repeated
+|[BBM_JavaConfig](./generic/BBM_JavaConfig-1.0.qclass.yaml)|sets Java configuration based on configuration items
+|[BBM_ListCache](./generic/BBM_ListCache-1.0.qclass.yaml)|a simple cache class holding a list of data items with connectors to control the cache
+|[BBM_PauseDataPassthru](./generic/BBM_PauseDataPassthru-1.0.qclass.yaml)|executes a configurable and optionally skippable pause or delay, includes an input/output connector
+|[BBM_RegularExpressions](./generic/BBM_RegularExpressions-v1.0.qclass.yaml)|helper building block used by other building blocks for for regular expression configuration item handling
+
+### HTTP Server Building Blocks
+
+|Building Block|Description|
+|---|---|
+|[BBM_AwsSnsServiceBase](./service/http/rest/aws/BBM_AwsSnsServiceBase-v1.0.qclass.yaml)|Base AWS Simple Notification Service abstract class building block
+|[BBM_AwsSnsServiceEventSource](./service/http/rest/aws/BBM_AwsSnsServiceEventSource-1.0.qclass.yaml)|AWS Simple Notification Service class building block with an event-based connection
+|[BBM_CorsBase](./service/http/BBM_CorsBase-v1.0.qclass.yaml)|base class for CORS functionality used by other building blocks
+|[BBM_HttpAuthenticatorBase](./generic/lib/BBM_HttpAuthenticatorBase-1.0.qclass.yaml)|base class for HTTP authentication used by other building blocks
+|[BBM_HttpFileHandler](./service/http/BBM_HttpFileHandler-1.0.qclass.yaml)|generic building block for serving files from the filesystem via HTTP/S
+|[BBM_HttpServiceGenericBase](./service/http/BBM_HttpServiceGenericBase-v1.0.qclass.yaml)|base class for HTTP handler services; meant as a base class for higher-level HTTP-based server building blocks
+|[BBM_HttpReverseProxyService](./service/http/BBM_HttpReverseProxyService-v1.0.qclass.yaml)|a reverse proxy building block supporting 1:1 forwarding of chunked transfer encoding and protocol handlers such as WebSockets
+|[BBM_HttpServiceBase](./service/http/BBM_HttpServiceBase-v1.0.qclass.yaml)|base class for HTTP handler services; can be used directly
+|[BBM_QorusUiExtension](./service/http/BBM_QorusUiExtension-1.0.qclass.yaml)|building block for Qorus UI extension server services
+
+### Kafka Building Blocks
+
+|Building Block|Description|
+|---|---|
+|[BBM_KafkaConsumer](./kafka/BBM_KafkaConsumer-1.0.qclass.yaml)|**[Kafka](https://kafka.apache.org/)** message consumer building block, includes input/output connectors
+|[BBM_KafkaProducer](./kafka/BBM_KafkaProducer-1.0.qclass.yaml)|**[Kafka](https://kafka.apache.org/)** message producer building block, includes input/output connectors
+
+### MQTT Building Blocks
+
+|Building Block|Description|
+|---|---|
+|[BBM_MqttPahoClient](./mqtt-paho/BBM_MqttPahoClient-v1.0.qclass.yaml)|**[MQTT Paho](https://www.eclipse.org/paho/)** client base building block
+|[BBM_MqttPahoPublisher](./mqtt-paho/BBM_MqttPahoPublisher-v1.0.qclass.yaml)|**[MQTT Paho](https://www.eclipse.org/paho/)** client publisher building block with connectors for publishing MQTT messages
+|[BBM_MqttPahoSubscriber](./mqtt-paho/BBM_MqttPahoSubscriber-v1.0.qclass.yaml)|**[MQTT Paho](https://www.eclipse.org/paho/)** client subscriber building block with an event-based connector for listening to MQTT messages / topics
+
+### REST Building Blocks
+
+|Building Block|Description|
+|---|---|
+|[BBM_RestAction](./generic/rest/BBM_RestAction-v1.0.qclass.yaml)|generic class for making a REST request, includes input/output connectors
+|[BBM_RestActionStep](./step/rest/BBM_RestActionStep-v1.0.qclass.yaml)|generic step class for making a REST request, includes input/output connectors
+|[BBM_RestActionWithRecovery](./generic/rest/BBM_RestActionWithRecovery-v1.0.qclass.yaml)|generic class for making a REST request, includes recovery logic and config as well as input/output connectors
+|[BBM_RestServiceBase](./service/http/rest/BBM_RestServiceBase-v1.0.qclass.yaml)|base class for REST handler services
+
+### Salesforce Building Blocks
+
+|Building Block|Description|
+|---|---|
+|[BBM_SalesforceStreamBase](./service/salesforce/BBM_SalesforceStreamBase-v1.0.qclass.yaml)|base class for **Salesforce** streaming API support, provides an event source connector
+|[BBM_SalesforceStreamCreateOrder](./service/salesforce/BBM_SalesforceStreamCreateOrder-v1.0.qclass.yaml)|base class for creating workflow orders based on **Salesforce** events
+
+### SFTP Building Blocks
+
+|Building Block|Description|
+|---|---|
+|[BBM_SftpPollerBase](./generic/sftp/BBM_SftpPollerBase-v1.0.qclass.yaml)|generic base class for polling for files from an SFTP server with a polling connector
+|[BBM_SftpPollerCreateOrder](./generic/sftp/BBM_SftpPollerCreateOrder-v1.0.qclass.yaml)|class for polling for files from an SFTP server and creating a workflow order from them
+|[BBM_SftpPollerCreateOrderJob](./job/sftp/BBM_SftpPollerCreateOrderJob-v1.0.qclass.yaml)|base class for SFTP polling jobs that create workflow orders for files received
+
+### SNMP Building Blocks
+
+|Building Block|Description|
+|---|---|
+|[BBM_SnmpServiceTrapEventSource](./snmp/BBM_SnmpServiceTrapEventSource-1.0.qclass.yaml)|SNMP trap event source with an event connector
+
+### WebSocket Server Building Blocks
+
+|Building Block|Description|
+|---|---|
+|[BBM_WebSocketServiceBase](service/http/websockets/BBM_WebSocketServiceBase-v1.0.qclass.yaml)|base class for WebSocket handler services
+|[BBM_WebSocketServiceEventSource](service/http/websockets/BBM_WebSocketServiceEventSource-v1.0.qclass.yaml)|base class for WebSocket handler services with an event connector
+
+### WSGi Server Building Blocks
+
+|Building Block|Description|
+|---|---|
+|[BBM_WsgiHandlerBase](./service/http/wsgi/BBM_WsgiHandlerBase-v1.0.qclass.yaml)|WSGi HTTP server handler base building block; serves any Python-based WSGi server service from a Qorus service, also providing the Qorus API to the WSGi server as well as dynamic Java imports
+|[BBM_WsgiServer](./service/http/wsgi/BBM_WsgiServer-v1.0.qclass.yaml)|WSGi HTTP server building block; serves any Python-based WSGi server service from a Qorus service, also providing the Qorus API to the WSGi server as well as dynamic Java imports
+|[BBM_WsgiUiExtension](./service/http/wsgi/BBM_WsgiUiExtension-v1.0.qclass.yaml)|Allows for serving a WSGi server as a Qorus UI extension based on configuration
+
+### Building Blocks Replaced By Server functionality
+
+These building blocks are deprecated as their functionality has been replaced with functionality implemented directly
+in the Qorus server using the `qorus-api` data provider factory.
+
+|Building Block|Description|
+|---|---|
+|[BBM_BindSubworkflow](./generic/BBM_BindSubworkflow-1.0.qclass.yaml)|binds a subworkflow in a subworkflow step; the subworkflow data is provided as input data, includes input/output connectors; use the `util/workflow/bind-subworkflow` API data provider in the `qorus-api` factory instead
+|[BBM_BindSubworkflowStatic](./generic/BBM_BindSubworkflowStatic-1.0.qclass.yaml)|binds a subworkflow in a workflow step based on configuration in the building block, includes input/output connectors; use the `util/workflow/bind-subworkflow` API data provider in the `qorus-api` factory instead
+|[BBM_Break](./generic/BBM_Break-1.0.qclass.yaml)|building block that throws an `FSM-BREAK` exception for flow control in FSMs; includes an input connector; use the `util/break` API data provider in the `qorus-api` factory instead
+|[BBM_Continue](./generic/BBM_Continue-1.0.qclass.yaml)|building block that throws an `FSM-CONTINUE` exception for flow control in FSMs; includes an input connector; use the `util/continue` API data provider in the `qorus-api` factory instead
+|[BBM_CreateOrder](./generic/BBM_CreateOrder-v1.0.qclass.yaml)|creates a new workflow order; the workflow order data is provided as input data, includes input/output connectors; use the `workflows/create-order` API data provider in the `qorus-api` factory instead
+|[BBM_CreateOrderStatic](./generic/BBM_CreateOrderStatic-v1.0.qclass.yaml)|creates a new workflow order based on configuration in the building block, includes input/output connectors; use the `workflows/create-order` API data provider in the `qorus-api` factory instead
+|[BBM_DataProviderRecordCreate](./generic/dataprovider/BBM_DataProviderRecordCreate-1.0.qclass.yaml)|building block for record-based data providers for creating records, includes an input/output connector; use the `data-provider/create` API data provider in the `qorus-api` factory instead
+|[BBM_DataProviderRecordCreateBase](./generic/dataprovider/BBM_DataProviderRecordCreateBase-1.0.qclass.yaml)|base building block for record-based data providers for record creation; use the `data-provider/create` API data provider in the `qorus-api` factory instead
+|[BBM_DataProviderRecordUpdate](./generic/dataprovider/BBM_DataProviderRecordUpdate-1.0.qclass.yaml)|building block for record-based data providers for updating records, includes an input/output connector; use the `data-provider/update` API data provider in the `qorus-api` factory instead
+|[BBM_DataProviderRecordUpdateBase](./generic/dataprovider/BBM_DataProviderRecordUpdateBase-1.0.qclass.yaml)|base base class for record-based data providers for creating records; use the `data-provider/update` API data provider in the `qorus-api` factory instead
+|[BBM_DataProviderRequest](./generic/dataprovider/BBM_DataProviderRequest-1.0.qclass.yaml)|building block for request-based data providers; the request message body is created from config, includes an input/output connector; use the `data-provider/do-request` API data provider in the `qorus-api` factory instead
+|[BBM_DataProviderRequestBase](./generic/dataprovider/BBM_DataProviderRequestBase-1.0.qclass.yaml)|base class for using the data-provider request API to make requests; use the `data-provider/do-request` API data provider in the `qorus-api` factory instead
+|[BBM_DataProviderRequestWithRecovery](./generic/dataprovider/BBM_DataProviderRequestWithRecovery-1.0.qclass.yaml)|building block for request-based data providers with recovery logic; supports recovery with a single value, includes connectors for using in workflow steps for fault-tolerant operation; use the `data-provider/do-request` API data provider in the `qorus-api` factory instead
+|[BBM_DataProviderRequestWithRecoveryStep](./step/dataprovider/BBM_DataProviderRequestWithRecoveryStep-1.0.qstep.yaml)|step building block for request-reply data providers with config-based error recovery support; use the `data-provider/do-request` API data provider in the `qorus-api` factory instead
+|[BBM_DataProviderSearch](./generic/dataprovider/BBM_DataProviderSearch-1.0.qclass.yaml)|performs a search in a record-based data provider and returns the result, includes input/output connectors; use the `data-provider/search` API data provider in the `qorus-api` factory instead
+|[BBM_DataProviderSearchBase](./generic/dataprovider/BBM_DataProviderSearchBase-1.0.qclass.yaml)|base class for using the data provider search API; use the `data-provider/search` API data provider in the `qorus-api` factory instead
+|[BBM_DeleteFilePath](./generic/BBM_DeleteFilePath-1.0.qclass.yaml)|deletes a file based on configuration, includes an input/output connector; includes an input connector; use the `delete` API data provider in the `file` factory instead
+|[BBM_ExecSyncWorkflow](./generic/BBM_ExecSyncWorkflow-1.0.qclass.yaml)|executes a workflow synchronously; the workflow order data is provided as input data, includes input/output connectors; use the `workflows/exec-sync` API data provider in the `qorus-api` factory instead
+|[BBM_ExecSyncWorkflowStatic](./generic/BBM_ExecSyncWorkflowStatic-v1.0.qclass.yaml)|executes a workflow synchronously based on configuration in the building block, includes input/output connectors; use the `workflows/exec-sync` API data provider in the `qorus-api` factory instead
+|[BBM_GetData](./generic/BBM_GetData-1.0.qclass.yaml)|returns arbitrary data based on configuration, provides an input/output connector; includes an input connector; use the `util/get-data` API data provider in the `qorus-api` factory instead
+|[BBM_LogMessage](./generic/BBM_LogMessage-1.0.qclass.yaml)|logs a message based on configuration; use the `util/log-message` API data provider in the `qorus-api` factory instead
+|[BBM_OutputData](./generic/BBM_OutputData-1.0.qclass.yaml)|writes data to output location according to configuration giving the data to write and the output locations, includes an input/output connector; use the `util/write-output` API data provider in the `qorus-api` factory instead
+|[BBM_QorusServiceMethodCaller](./generic/BBM_QorusServiceMethodCaller-1.0.qclass.yaml)|calls a Qorus service method and returns the result, includes an input/output connector; use the `services/call-method` API data provider in the `qorus-api` factory instead
+|[BBM_SmtpEmailSender](./generic/BBM_SmtpEmailSender-1.0.qclass.yaml)|building block class with a connector for sending emails; use the `send-email` API data provider in the `smtpclient` factory instead
+|[BBM_ThrowException](./generic/BBM_ThrowException-1.0.qclass.yaml)|building block that throws an exception according to configuration; includes an input connector; use the `util/throw-exception` API data provider in the `qorus-api` factory instead
+|[BBM_UpdateOrderDynamicData](./generic/BBM_UpdateOrderDynamicData-1.0.qclass.yaml)|building block that can be used to write data to a workflow order's dynamic data hash, includes an input/output connector; use the `util/write-output` API data provider in the `qorus-api` factory instead
+
+__Building Block Documentation Details__

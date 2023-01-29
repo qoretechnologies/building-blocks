@@ -1,0 +1,212 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_RestAction
+desc: >-
+    ## Summary
+
+
+    Building block class for making a REST request.
+
+
+    Use the `rest-output-data` config item to write the results of the REST call
+    to an output location; ex: `body: $dynamic:rest_results` would write the
+    response body to the `rest_results` key of the dynamic data hash in a
+    workflow order.
+
+
+    Note that there is inline retry configuration for I/O errors; by default
+    this object will make 3 retries spaced 5 seconds apart if configured socket
+    errors are encountered; see config items for more information.
+
+
+    ## Connectors
+
+
+    Output data for all connectors is a hash with the following keys:
+
+    - `body`: the response message body, if any
+
+    - `request-uri`: the request URI string sent (ex: `GET
+    /services/async/38.0/job HTTP/1.1`)
+
+    - `request-headers`: hash of outgoing HTTP request headers
+
+    - `request-serialization`: message serialization used in the request body
+
+    - `response-code`: the HTTP response code
+
+    - `response-uri`: the HTTP response URI
+
+    - `response-headers`:  a hash of processed incoming HTTP headers in the
+    response with keys converted to lower case and with additional information
+    added
+
+    - `response-serialization`: message serialization used in the response body
+
+    - `response-chunked`: `true` if the response body was sent chunked
+
+
+    ### Input/Output Connector `restAction`
+
+
+    This connector uses the input data as a hash to provide the following values
+    for the REST call:
+
+    - `body`: the request message body (note that requests with `GET` and `HEAD`
+    methods should not contain a message body)
+
+    - `uri_path` the request URI path
+
+    - `hdr`: any headers to include in the request
+
+
+    ### Input/Output Connector `restActionFromConfig`
+
+
+    This connector takes all configuration for the REST call from config items.
+
+    The input data is available as `$local:input` for all config items resolved
+    with this connector (in internal calls to
+    `UserApi::expandTemplatedValue()`).
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: restAction
+    input-provider:
+        name: qoretechnologies
+        path: /building-blocks/rest-action/request
+        type: type
+    method: makeRestRequestConnector
+    output-provider:
+        name: qoretechnologies
+        path: /building-blocks/rest-action/response
+        type: type
+    type: input-output
+  - name: restActionFromConfig
+    method: makeRestRequestConnectorFromConfig
+    output-provider:
+        name: qoretechnologies
+        path: /building-blocks/rest-action/response
+        type: type
+    type: input-output
+version: '1.0'
+code: BBM_RestAction-v1.0.qclass
+config-items:
+  - name: rest-connection-name
+    description: the name of the REST connection
+    config_group: Rest Action
+    strictly_local: true
+    type: connection
+  - name: rest-method
+    default_value:
+        "POST"
+    description: the REST method to use
+    strictly_local: true
+    config_group: Rest Action
+  - name: rest-api-mapper-name
+    default_value:
+        null
+    description: >-
+        the name of the mapper for the REST call; if no value is set, then no
+        payload will be included; do not set with a GET request
+    config_group: Rest Action
+    strictly_local: true
+    type: "*mapper"
+  - name: rest-uri-path
+    description: the URI path for creating the request(s) in the REST server
+    strictly_local: true
+    config_group: Rest Action
+  - name: rest-id-location
+    default_value:
+        null
+    type: "*string"
+    description: >-
+        location in the response for the unique ID; if this config item is set and
+        no value is found in the response at the location given here, then an
+        exception is thrown
+    strictly_local: true
+    config_group: Rest Action
+  - name: rest-headers
+    default_value:
+        {}
+    type: hash
+    description: additional headers to send with each REST request
+    strictly_local: true
+    config_group: Rest Action
+  - name: rest-swagger-schema-location
+    default_value:
+        null
+    type: "*string"
+    description: >-
+        the location of the Swagger schema for the REST connection; this will be
+        resolved by calling `UserApi::getTextFileFromLocation()`
+    strictly_local: true
+    config_group: Rest Action
+  - name: rest-body-remove-nulls
+    default_value:
+        false
+    type: bool
+    description: >-
+        if true then any empty key values returned by the mapper will be removed
+        before sending the request to the server
+    strictly_local: true
+    config_group: Rest Action
+  - name: rest-output-data
+    default_value:
+        null
+    type: "*hash"
+    description: >-
+        the configuration of output data; the REST response hash is passed as input
+        to the `UserApi::updateOutputData()` method; the deserialized REST response
+        body is located in the `body` key of this hash; if *rest-id-location* is
+        configured, then the value retrieved can be referenced with key `rest-id` in
+        the output data hash
+    strictly_local: true
+    config_group: Rest Action Post Processing
+  - name: rest-id-log-msg
+    default_value:
+        "REST response retrieved ID: $local:{rest-id}"
+    description: >-
+        a string giving a log message for successful retrieval of the ID identified
+        by *rest-id-location*; this ID can be referred to as `$local:{rest-id}` in
+        the template string
+    strictly_local: true
+    config_group: Rest Action Cosmetic
+  - name: rest-body
+    default_value:
+        null
+    config_group: Rest Action
+    description: >-
+        The message body for the request; if a mapper is also set, this will be used
+        as the input for the mapper.
+    strictly_local: true
+    type: "*hash"
+  - name: rest-action-retries
+    default_value:
+        3
+    description: >-
+        Number of times a REST action will be retried if a connection error is
+        encountered; if this number is <=0, then no retries are made
+    config_group: Rest Action Retry
+    strictly_local: true
+    type: int
+  - name: rest-action-retry-delay
+    default_value:
+        5
+    description: >-
+        The retry delay in number of seconds; only takes effect if
+        `rest-action-retries` is > 0
+    config_group: Rest Action Retry
+    type: int
+    strictly_local: true
+  - name: rest-action-retry-errors
+    default_value:
+      - SOCKET-CONNECT-ERROR
+      - SOCKET-CLOSED
+    description: >-
+        The list of error codes that result in a retry of the REST operation if
+        `rest-action-retries` > 0
+    config_group: Rest Action Retry
+    type: list
+    strictly_local: true

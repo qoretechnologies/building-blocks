@@ -1,0 +1,81 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_ExecSyncWorkflow
+desc: >-
+    ## Summary
+
+
+    Executes a synchronous workflow order and returns the results.
+
+
+    This building block is useful only in limited use
+    cases;`BBM_ExecSyncWorkflowStatic` can do everything this building block can
+    do and more; it's recommended to use `BBM_ExecSyncWorkflowStatic` instead.
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the
+    `workflows/exec-sync` API data provider in the `qorus-api` factory instead
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `execSyncWorkflow`
+
+
+    Creates a new workflow order based on the input data; configuration is only
+    used to identify the workflow and to specify output data handling.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: BBM_CreateOrder
+class-connectors:
+  - name: execSyncWorkflow
+    input-provider:
+        can_manage_fields: false
+        name: qoretechnologies
+        path: /qorus-api/workflows/create-order/request
+        type: type
+    output-provider:
+        can_manage_fields: false
+        name: qoretechnologies
+        path: /building-blocks/exec-sync-workflow/response
+        type: type
+    method: execSyncWorkflow
+    type: input-output
+requires:
+  - BBM_CreateOrder
+version: '1.0'
+code: BBM_ExecSyncWorkflow-1.0.qclass
+config-items:
+  - name: create-workflow-order-mapper
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-name
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-version
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-duplicate-handling
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-output-data
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: '1.0'
+  - name: create-workflow-order-status
+    parent:
+        interface-type: class
+        interface-name: BBM_CreateOrder
+        interface-version: '1.0'

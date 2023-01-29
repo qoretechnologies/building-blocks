@@ -1,0 +1,32 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_GetData {
+    #! Connector to return arbitrary data in connectors
+    /** @param input available in the \a input key of local context data (i.e. <tt>$local:input</tt> when looking up
+        config item values)
+
+        @return the value of the `get-data` config item
+    */
+    auto getData(auto input) {
+        hash<auto> local_context = {"input": input};
+        auto rv = UserApi::getConfigItemValue("get-data", local_context);
+        UserApi::logInfo("get data connector returning: %y", rv);
+        return rv;
+    }
+
+    #! Connector to return arbitrary data as a list in connectors
+    /** @param input available in the \a input key of local context data (i.e. <tt>$local:input</tt> when looking up
+        config item values)
+
+        @return the value of the `get-data` config item, converted to a single=-element list if necessary
+    */
+    list<auto> getDataAsList(auto input) {
+        hash<auto> local_context = {"input": input};
+        softlist<auto> rv = UserApi::getConfigItemValue("get-data", local_context);
+        UserApi::logInfo("get data connector returning: %y", rv);
+        return rv;
+    }
+}

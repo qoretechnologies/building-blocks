@@ -1,0 +1,36 @@
+# This is a generated file, don't edit!
+type: pipeline
+name: bbm-data-provider-create-processor-test
+desc: test for the BBM_DataProviderRecordCreateProcessor building block
+groups:
+  - bb-test
+  - test
+children:
+  - type: processor
+    name: BBM_GetPipelineData
+    pid: U3eP3jeIV
+    config-items:
+      - name: get-pipeline-data
+        value:
+            {"id":["1","2"],"batch_id":["one","two"]}
+        parent:
+            interface-type: class
+            interface-name: BBM_GetPipelineData
+            interface-version: '1.0'
+    children:
+      - type: processor
+        name: BBM_DataProviderRecordCreateProcessor
+        pid: T1w5s6wjx
+        config-items:
+          - name: record-create-processor-data-provider
+            value:
+                "datasource/omquser/bb_remote"
+            parent:
+                interface-type: class
+                interface-name: BBM_DataProviderRecordCreateProcessor
+                interface-version: '1.0'
+          - name: record-create-processor-upsert
+            parent:
+                interface-type: class
+                interface-name: BBM_DataProviderRecordCreateProcessor
+                interface-version: '1.0'

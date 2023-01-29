@@ -1,0 +1,77 @@
+# This is a generated file, don't edit!
+type: job
+name: bbm-data-provider-record-update-test
+desc: tests the `BBM_DataProviderRecordUpdate` buillding block
+lang: qore
+active: false
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusJob
+class-name: BbmDataProviderRecordUpdateTest
+classes:
+  - BBM_DataProviderRecordUpdate
+schedule:
+    minutes: "0"
+    hours: "0"
+    days: "*"
+    months: "*"
+    dow: "*"
+version: '1.0'
+code: bbm-data-provider-record-update-test-1.0.qjob
+class-connections:
+    Connection_1:
+      - class: BBM_DataProviderRecordUpdate
+        connector: DataProvider Record Update
+        trigger: run
+config-items:
+  - name: dataprovider-update-provider-path
+    value:
+        "datasource/omquser/bb_local"
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRecordUpdate
+        interface-version: '1.0'
+  - name: dataprovider-update-set
+    value:
+        remote_id: a3
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRecordUpdate
+        interface-version: '1.0'
+  - name: dataprovider-update-where
+    value:
+        qorus_wfiid: 1
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRecordUpdate
+        interface-version: '1.0'
+  - name: dataprovider-update-search-options
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRecordUpdate
+        interface-version: '1.0'
+  - name: dataprovider-update-mapper
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRecordUpdate
+        interface-version: '1.0'
+  - name: dataprovider-update-output-data
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRecordUpdate
+        interface-version: '1.0'
+  - name: dataprovider-update-retries
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRecordUpdate
+        interface-version: '1.0'
+  - name: dataprovider-update-retry-delay
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRecordUpdate
+        interface-version: '1.0'
+  - name: dataprovider-update-retry-errors
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRecordUpdate
+        interface-version: '1.0'

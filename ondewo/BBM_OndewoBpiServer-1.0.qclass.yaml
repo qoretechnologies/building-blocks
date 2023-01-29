@@ -1,0 +1,34 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_OndewoBpiServer
+desc: >-
+    Building block for an ONDEWO Business Process Integration server service in
+    Qorus
+lang: python
+class-connectors:
+  - name: start
+    type: input-output
+    method: start
+  - name: stop
+    type: input-output
+    method: stop
+  - name: intentEvent
+    type: event
+    method: intentEvent
+requires:
+  - BBM_OndewoNluClient
+version: '1.0'
+code: BBM_OndewoBpiServer-1.0.qclass.py
+config-items:
+  - name: ondewo-bpi-server-port
+    default_value:
+        50051
+    type: int
+    description: ONDEWO BPI Server port
+    config_group: ONDEWO BPI Server Main
+  - name: ondewo-nlu-connection
+    parent:
+        interface-type: class
+        interface-name: BBM_OndewoNluClient
+        interface-version: '1.0'
+    type: connection

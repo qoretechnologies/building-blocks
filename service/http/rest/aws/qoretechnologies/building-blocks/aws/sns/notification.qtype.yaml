@@ -1,0 +1,324 @@
+# This is a generated file, don't edit!
+type: type
+path: qoretechnologies/building-blocks/aws/sns/notification
+typeinfo:
+    base_type: hash<auto>
+    name: hash<auto>
+    can_manage_fields: true
+    fields:
+        Type:
+            name: Type
+            desc: always `Notification`
+            type:
+                typename: string
+                name: string
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                    string.encoding:
+                        type: string
+                        desc: the output encoding when writing to the type
+                    string.max_size_chars:
+                        type: integer
+                        desc: the maximum length of the string in characters
+                options:
+                    qore.no_null: true
+                base_type: string
+                mandatory: true
+                types_accepted:
+                    - string
+                types_returned:
+                    - string
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+        MessageId:
+            name: MessageId
+            desc: 'The AWS message ID (ex: `dc1e94d9-56c5-5e96-808d-cc7f68faa162`)'
+            type:
+                typename: string
+                name: string
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                    string.encoding:
+                        type: string
+                        desc: the output encoding when writing to the type
+                    string.max_size_chars:
+                        type: integer
+                        desc: the maximum length of the string in characters
+                options:
+                    qore.no_null: true
+                base_type: string
+                mandatory: true
+                types_accepted:
+                    - string
+                types_returned:
+                    - string
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+        TopicArn:
+            name: TopicArn
+            desc: >-
+                The AWS topic ARN (ex:
+                `arn:aws:sns:us-east-2:111122223333:ExampleTopic1`)
+            type:
+                typename: string
+                name: string
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                    string.encoding:
+                        type: string
+                        desc: the output encoding when writing to the type
+                    string.max_size_chars:
+                        type: integer
+                        desc: the maximum length of the string in characters
+                options:
+                    qore.no_null: true
+                base_type: string
+                mandatory: true
+                types_accepted:
+                    - string
+                types_returned:
+                    - string
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+        Subject:
+            name: Subject
+            desc: 'The message subject (ex: `TestSubject`)'
+            type:
+                typename: string
+                name: string
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                    string.encoding:
+                        type: string
+                        desc: the output encoding when writing to the type
+                    string.max_size_chars:
+                        type: integer
+                        desc: the maximum length of the string in characters
+                options:
+                    qore.no_null: true
+                base_type: string
+                mandatory: true
+                types_accepted:
+                    - string
+                types_returned:
+                    - string
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+        Message:
+            name: Message
+            desc: The message body
+            type:
+                typename: string
+                name: string
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                    string.encoding:
+                        type: string
+                        desc: the output encoding when writing to the type
+                    string.max_size_chars:
+                        type: integer
+                        desc: the maximum length of the string in characters
+                options:
+                    qore.no_null: true
+                base_type: string
+                mandatory: true
+                types_accepted:
+                    - string
+                types_returned:
+                    - string
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+        Timestamp:
+            name: Timestamp
+            desc: The date/time of the message
+            type:
+                typename: date
+                name: date
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                options:
+                    qore.no_null: true
+                base_type: date
+                mandatory: true
+                types_accepted:
+                    - date
+                types_returned:
+                    - date
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+        SignatureVersion:
+            name: SignatureVersion
+            desc: 'The signation version (ex: `1`)'
+            type:
+                typename: string
+                name: string
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                    string.encoding:
+                        type: string
+                        desc: the output encoding when writing to the type
+                    string.max_size_chars:
+                        type: integer
+                        desc: the maximum length of the string in characters
+                options:
+                    qore.no_null: true
+                base_type: string
+                mandatory: true
+                types_accepted:
+                    - string
+                types_returned:
+                    - string
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+            isChild: false
+            level: 0
+            path: SignatureVersion
+            parentPath: false
+        Signature:
+            name: Signature
+            desc: >-
+                The message signature (ex:
+                `FMG5tlZhJNHLHUXvZgtZzlk24FzVa7oX0T4P03neeXw8ZEXZx6z35j2FOTuNYShn2h0bKNC/zLTnMyIxEzmi2X1shOBWsJHkrW2xkR58ABZF+4uWHEE73yDVR4SyYAikP9jstZzDRm+bcVs8+T0yaLiEGLrIIIL4esi1llhIkgErCuy5btPcWXBdio2fpCRD5x9oR6gmE/rd5O7lX1c1uvnv4r1Lkk4pqP2/iUfxFZva1xLSRvgyfm6D9hNklVyPfy+7TalMD0lzmJuOrExtnSIbZew3foxgx8GT+lbZkLd0ZdtdRJlIyPRP44eyq78sU0Eo/LsDr0Iak4ZDpg8dXg==`)
+            type:
+                typename: string
+                name: string
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                    string.encoding:
+                        type: string
+                        desc: the output encoding when writing to the type
+                    string.max_size_chars:
+                        type: integer
+                        desc: the maximum length of the string in characters
+                options:
+                    qore.no_null: true
+                base_type: string
+                mandatory: true
+                types_accepted:
+                    - string
+                types_returned:
+                    - string
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+        SigningCertURL:
+            name: SigningCertURL
+            desc: >-
+                The signing certificate URL (ex:
+                `https://sns.us-east-2.amazonaws.com/SimpleNotificationService-010a507c1833636cd94bdb98bd93083a.pem`)
+            type:
+                typename: string
+                name: string
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                    string.encoding:
+                        type: string
+                        desc: the output encoding when writing to the type
+                    string.max_size_chars:
+                        type: integer
+                        desc: the maximum length of the string in characters
+                options:
+                    qore.no_null: true
+                base_type: string
+                mandatory: true
+                types_accepted:
+                    - string
+                types_returned:
+                    - string
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+        UnsubscribeURL:
+            name: UnsubscribeURL
+            desc: >-
+                The unsubscribe URL (ex:
+                `https://sns.us-east-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-2:111122223333:ExampleTopic1:e1039402-24e7-40a3-a0d4-797da162b297`)
+            type:
+                typename: string
+                name: string
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                    string.encoding:
+                        type: string
+                        desc: the output encoding when writing to the type
+                    string.max_size_chars:
+                        type: integer
+                        desc: the maximum length of the string in characters
+                options:
+                    qore.no_null: true
+                base_type: string
+                mandatory: true
+                types_accepted:
+                    - string
+                types_returned:
+                    - string
+                fields: {}
+                can_manage_fields: false
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true

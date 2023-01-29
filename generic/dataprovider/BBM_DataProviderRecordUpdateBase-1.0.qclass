@@ -1,0 +1,124 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! Base class for updating records with a data provider using the record API
+class BBM_DataProviderRecordUpdateBase {
+    #! the primary record action logic: update records
+    /** @return a hash with the following keys:
+        - \c count: the number of records updated
+
+        @throw INVALID-OPERATION the data provider does not support record updating
+    */
+    auto updateRecordIntern(
+        *hash<auto> set,
+        string provider_path_item,
+        string set_item,
+        string where_item,
+        string search_options_item,
+        string mapper_name_item,
+        string output_item,
+        string retries_item,
+        string retry_delay_item,
+        string retry_errors_item,
+    ) {
+        return {
+            "count": doUpdateRecordIntern(set, provider_path_item, set_item, where_item, search_options_item,
+                mapper_name_item, output_item, retries_item, retry_delay_item, retry_errors_item),
+        };
+    }
+
+    #! the primary record action logic: update records
+    /** @return the number of records updated
+
+        @throw INVALID-OPERATION the data provider does not support record updating
+    */
+    int doUpdateRecordIntern(
+        *hash<auto> set,
+        string provider_path_item,
+        string set_item,
+        string where_item,
+        string search_options_item,
+        string mapper_name_item,
+        string output_item,
+        string retries_item,
+        string retry_delay_item,
+        string retry_errors_item,
+    ) {
+        # get number of retries
+        int retries = UserApi::getConfigItemValue(retries_item);
+        if (retries < 0) {
+            retries = 0;
+        }
+        int retry_delay_secs = UserApi::getConfigItemValue(retry_delay_item);
+        if (retries > 0 && retry_delay_secs < 0) {
+            retry_delay_secs = 0;
+        }
+
+        if (!set) {
+            set = UserApi::getConfigItemValue(set_item);
+        }
+
+        # get mapper name
+        *string mapper_name = UserApi::getConfigItemValue(mapper_name_item);
+        if (mapper_name) {
+            Mapper mapper = UserApi::getMapper(mapper_name);
+            set = mapper.mapData(set ?? {});
+        }
+
+        if (!set) {
+            throw "DATAPROVIDER-UPDATE-ERROR", "missing \"set\" criteria for data provider update";
+        }
+
+        *hash<auto> where_cond = UserApi::getConfigItemValue(where_item);
+
+        string provider_path = UserApi::getConfigItemValue(provider_path_item);
+        *hash<auto> search_options = UserApi::getConfigItemValue(search_options_item);
+        UserApi::logInfo("update provider: %y set: %y where: %y search opts: %y", provider_path, set, where_cond, search_options);
+
+        # get the data provider.
+        AbstractDataProvider provider = UserApi::getDataProvider(provider_path);
+        int rc;
+        int retry_count = 0;
+        while (True) {
+            try {
+                rc = provider.updateRecords(set, where_cond, search_options);
+                break;
+            } catch (hash<ExceptionInfo> ex) {
+                if (retries && isConnectionIoError(retry_errors_item, ex)) {
+                    if (retry_count == retries) {
+                        UserApi::logError("BBM_DataProviderRecordUpdateBase: %s: %s: maximum retries reached (%d), not retrying again",
+                            ex.err, ex.desc, retries);
+                    } else {
+                        ++retry_count;
+                        UserApi::logInfo("BBM_DataProviderRecordUpdateBase: %s: %s: waiting %d second%s for retry...", ex.err, ex.desc,
+                            retry_delay_secs, retry_delay_secs == 1 ? "" : "s");
+                        UserApi::sleep(retry_delay_secs);
+                        UserApi::logInfo("BBM_DataProviderRecordUpdateBase: retrying search action now");
+                        continue;
+                    }
+                }
+                rethrow;
+            }
+        }
+        UserApi::logInfo("BBM_DataProviderRecordUpdateBase: records updated: %d", rc);
+
+        # save output data
+        *hash<auto> output_data = UserApi::getConfigItemValue(output_item, NOTHING, False);
+        if (output_data) {
+            UserApi::updateOutputData({"count": rc}, output_data);
+        }
+
+        return rc;
+    }
+
+    #! Returns True if the error is a connection I/O error
+    private bool isConnectionIoError(string retry_errors_item, hash<ExceptionInfo> ex) {
+        return False;
+        *hash<string, bool> errmap = map {$1: True}, UserApi::getConfigItemValue(retry_errors_item);
+        bool rv = errmap{ex.err} ?? False;
+        UserApi::logDebug("BBM_DataProviderRecordUpdateBase: %y I/O error: %y", ex.err, rv);
+        return rv;
+    }
+}

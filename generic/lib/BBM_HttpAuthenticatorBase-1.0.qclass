@@ -1,0 +1,53 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! Provides functionality to return HTTP authenticators based on a config item
+class BBM_HttpAuthenticatorBase {
+    public {
+        #! Known authenticators
+        const KnownAuthenticators = (
+            AUTH_PERMISSIVE,
+            AUTH_DEFAULT,
+            AUTH_DEFAULT_BASIC,
+%ifdef QorusHasCookieAuthenticator
+            AUTH_COOKIE,
+%endif
+        );
+    }
+
+    #! Returns an authenticator from the config item value identified by the \a config_item_name argument
+    /** @param config_item_name the name of the config item identifying the authenticator to use; must be one of the
+        values in KnownAuthenticators
+        @param cookie_config_item_name the name of the config item for the cookie for the cookie authenticator
+
+        @return the authenticator corresponding to the config item value
+
+        @throw UNKNOWN-AUTHENTICATOR the given authenticator is unknown
+    */
+    static AbstractAuthenticator getAuthenticator(string config_item_name, *string cookie_config_item_name,
+            *string redirect_config_item_name) {
+        string auth = ServiceApi::getConfigItemValue(config_item_name);
+        switch (auth) {
+            case AUTH_PERMISSIVE: return new PermissiveAuthenticator();
+            case AUTH_DEFAULT: return new DefaultQorusRBACAuthenticator();
+            case AUTH_DEFAULT_BASIC: return new DefaultQorusRBACBasicAuthenticator();
+%ifdef QorusHasCookieAuthenticator
+            case AUTH_COOKIE:
+                return new QorusCookieAuthenticator(
+                    cookie_config_item_name
+                        ? ServiceApi::getConfigItemValue(cookie_config_item_name)
+                        : QorusCookieAuthenticator::DefaultCookie,
+                    redirect_config_item_name
+                        ? ServiceApi::getConfigItemValue(redirect_config_item_name)
+                        : NOTHING);
+%else
+            case "cookie": return new DefaultQorusRBACAuthenticator();
+%endif
+        }
+
+        throw "UNKNOWN-AUTHENTICATOR", sprintf("authenticator %y is unknown; expecting one of %y", auth,
+            KnownAuthenticators);
+    }
+}

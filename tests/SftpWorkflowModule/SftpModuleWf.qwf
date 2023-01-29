@@ -1,0 +1,13 @@
+workflow:
+    name: "SftpWorkflowModuleTest"
+    author: "Qore Technologies s.r.o."
+    version: "1.0"
+    desc: "XXX"
+    workflow-modules: ["SftpWorkflowModule",]
+    keylist: ["file_name", "parent_jiid",]
+    steps:
+      ["class:SftpWorkflowModuleTest_MoveFileToProcessing:1.0",
+       "class:SftpWorkflowModuleTest_DownloadToLocal:1.0",
+       "class:SftpWorkflowModuleTest_ReadContent:1.0",
+       "class:SftpWorkflowModuleTest_UploadFile:1.0",
+       "class:SftpWorkflowModuleTest_UploadContent:1.0"]

@@ -1,0 +1,138 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_ExcelReadDataProvider
+desc: >-
+    ## Summary
+
+
+    Provides a config-based data provider object for data from a **[Microsoft
+    Excel](https://www.microsoft.com/en-us/microsoft-365/excel)** spreadsheet.
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `searchRecordsConnector`
+
+
+    Creates an Excel read data provider object and returns the records parsed.
+
+
+    Local data for the call to `UserApi::expandTemplatedValue()` for all config
+    items is the input  argument data for the connector available as
+    `$local:input`.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: searchRecordsConnector
+    type: input-output
+    method: searchRecordsConnector
+version: '1.0'
+code: BBM_ExcelReadDataProvider-1.0.qclass
+config-items:
+  - name: excel-read-worksheet
+    default_value:
+        null
+    description: >
+        The name of the worksheet to process; if missing, the first worksheet is
+        used
+    config_group: Excel Read Data Provider
+    type: "*string"
+  - name: excel-read-data-cells
+    default_value:
+        null
+    description: >-
+        The range of cells for data to process;  this can one of the following
+        options:
+    
+        - a range of rows: ex **1:20**
+    
+        - a range of specific cells: ex **B2:K20**
+    
+    
+        If this value is not provided, then data processing starts at the first row
+        of the spreadsheet or the first row of the spreadsheet after the last header
+        row, and columns are detected automatically; the first empty cell is used as
+        the end of data for the row.
+    config_group: Excel Read Data Provider
+    type: "*string"
+  - name: excel-read-header-cells
+    default_value:
+        null
+    description: >
+        The range of cells for headers; possible values are:
+    
+        - a single row number: ex **1**
+    
+        - a range of row numbers: ex **2:5**
+    
+        - a range of cells: ex **A1:H1**
+    
+    
+        When using row numbers, header cells are detected automatically; the first
+        empty cell signals the end of header data.
+    config_group: Excel Read Data Provider
+    type: "*string"
+  - name: excel-read-header-names
+    default_value:
+        false
+    description: >-
+        if `true` then the object will parse the header names from the first header
+        row, in this case if `header_cells` is not set explicitly, it will be
+        assumed to be `1`
+    config_group: Excel Read Data Provider
+    type: bool
+  - name: excel-read-headers
+    default_value:
+      null
+    description: >-
+        The ist of header / column names for the data iterated; if this is present,
+        then `header_names` must be `false`
+    config_group: Excel Read Data Provider
+    type: "*list"
+  - name: excel-read-path
+    default_value:
+        null
+    description: The path to the Excel data; mutually exclusive with `stream`
+    config_group: Excel Read Data Provider
+    type: "*string"
+  - name: excel-read-stream
+    default_value:
+        null
+    description: >-
+        A Java or Qore `InputStream` object providing the binary Excel spreadsheet
+        data; mutually exclusive with `path`
+    config_group: Excel Read Data Provider
+    type: "*string"
+  - name: excel-read-timezone
+    default_value:
+        null
+    description: >-
+        The timezone region to use when creating date/time values (ex:
+        `Europe/Prague`).
+    
+    
+        If not set then all dates are assumed to be in the server's time zone.
+    config_group: Excel Read Data Provider
+    type: "*string"
+  - name: excel-read-tolwr
+    default_value:
+        false
+    description: >-
+        If `true` then all automatically-detected header names will be converted to
+        lower case.
+    config_group: Excel Read Data Provider
+    type: bool
+  - name: excel-read-search-where
+    default_value:
+        null
+    description: Search "where" criteria for the `searchRecords` connector
+    config_group: Excel Read Data Provider Search Options
+    type: "*hash"
+  - name: excel-read-search-options
+    default_value:
+        null
+    description: Search options for the `searchRecords` connector
+    config_group: Excel Read Data Provider Search Options
+    type: "*hash"

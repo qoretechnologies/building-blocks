@@ -1,0 +1,66 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_LogMessage
+desc: >-
+    ## Summary
+
+
+    Output a message to the current log file.
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the
+    `util/log-message` API data provider in the `qorus-api` factory instead
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `logMessage`
+
+
+    Logs a message to the log file according to the values of the configuration;
+    input data to the connector is available as `$local:input`.
+
+
+    Ouput data is the messages logged in a hash in the `msg` key.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: logMessage
+    method: logMessage
+    type: input-output
+    output-provider:
+        type: type
+        name: qoretechnologies
+        can_manage_fields: false
+        path: /building-blocks/log/output
+version: '1.0'
+code: BBM_LogMessage-1.0.qclass
+config-items:
+  - name: log-message-level
+    default_value:
+        "INFO"
+    allowed_values:
+      - "ALL"
+      - "TRACE"
+      - "DEBUG"
+      - "INFO"
+      - "WARN"
+      - "ERROR"
+      - "FATAL"
+      - "OFF"
+    config_group: Log Message Config
+    description: The log level for the log message
+  - name: log-message-string
+    config_group: Log Message Config
+    description: The actual message to be logged
+    strictly_local: true
+  - name: log-message-args
+    default_value:
+        null
+    config_group: Log Message Config
+    description: any argument(s) for the log message
+    strictly_local: true
+    type: any

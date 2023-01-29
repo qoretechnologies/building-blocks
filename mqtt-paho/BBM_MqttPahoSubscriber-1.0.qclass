@@ -1,0 +1,121 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+%module-cmd(jni) import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
+
+%module-cmd(jni) import java.lang.Throwable
+
+class BBM_MqttPahoSubscriber inherits MqttCallback, Observable {
+    public {
+        const EventMessageArrived = "BBM_MqttPahoSubscriber::messageArrived";
+        const EventDeliveryComplete = "BBM_MqttPahoSubscriber::deliveryComplete";
+        const EventConnectionLost = "BBM_MqttPahoSubscriber::connectionLost";
+    }
+
+    private {
+        BBM_MqttPahoClient client();
+
+        Counter stop_cnt(1);
+    }
+
+    constructor() {
+        softlist<softstring> topics = UserApi::getConfigItemValue("mqtt-paho-message-topics");
+        if (!topics) {
+            throw "MQTT-TOPICS-ERROR", "no topics defined in 'mqtt-paho-message-topics'";
+        }
+        client.connect();
+        client.setCallback(self);
+        UserApi::logInfo("subscribing to server: %y topics: %y", client.getCurrentServerURI(), topics);
+        client.subscribe(topics);
+    }
+
+    destructor() {
+        stop();
+    }
+
+    auto start(auto passthru) {
+        stop_cnt.waitForZero();
+        return passthru;
+    }
+
+    auto stop(auto passthru) {
+        on_exit if (stop_cnt.getCount()) {
+            stop_cnt.dec();
+        }
+        if (client && client.isConnected()) {
+            softlist<softstring> topics = UserApi::getConfigItemValue("mqtt-paho-message-topics");
+            UserApi::logInfo("disconnecting MQTT client from server: %y topics: %y", client.getCurrentServerURI(),
+                topics);
+            client.disconnect();
+        }
+        return passthru;
+    }
+
+    connectionLost(*Throwable cause) {
+        hash<auto> event = {
+            "class_name": cause.getClass().getName(),
+            "message": cause.getMessage(),
+            "cause": cause,
+        };
+        UserApi::logDebug("event %y: class name: %y message: %s", EventConnectionLost, event.class_name,
+            event.message);
+        notifyObservers(EventConnectionLost, event);
+    }
+
+    deliveryComplete(*IMqttDeliveryToken token) {
+        *MqttMessage message = token.getMessage();
+        if (message) {
+            *list<string> topics = token.getTopics();
+            *hash<auto> event_info;
+            if (topics) {
+                event_info = {"topics": topics};
+            }
+            doMessageEvent(EventDeliveryComplete, message, event_info);
+        } else {
+            UserApi::logWarn("delivery complete event received for empty message");
+        }
+    }
+
+    messageArrived(string topic, *MqttMessage message) {
+        doMessageEvent(EventMessageArrived, message, {"topic": topic});
+    }
+
+    doMessageEvent(string event_name, MqttMessage message, *hash<auto> event_info) {
+        try {
+            auto payload = message.getPayload();
+            string format = UserApi::getConfigItemValue("mqtt-paho-message-format");
+            switch (format) {
+                case "STRING":
+                    payload = payload.toString(UserApi::getConfigItemValue("mqtt-paho-message-string-encoding"));
+                    break;
+
+                case "JSON":
+                    payload = parse_json(payload.toString(UserApi::getConfigItemValue("mqtt-paho-message-string-encoding")));
+                    break;
+
+                case "YAML":
+                    payload = parse_yaml(payload.toString(UserApi::getConfigItemValue("mqtt-paho-message-string-encoding")));
+                    break;
+
+                default:
+                    # RAW or none: leave as binary data
+            }
+
+            hash<auto> event = event_info + {
+                "id": message.getId(),
+                "payload": payload,
+                "qos": message.getQos(),
+                "duplicate": message.isDuplicate(),
+                "retained": message.isRetained(),
+                "message": message,
+            };
+            UserApi::logDebug("event %y: id: %y payload: %d bytes (%s)", event_name, message.getId(),
+                message.getPayload().size(), format);
+            notifyObservers(event_name, event);
+        } catch (hash<ExceptionInfo> ex) {
+            UserApi::logError("exception in MQTT event handling: %s", get_exception_string(ex));
+        }
+    }
+}

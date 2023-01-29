@@ -1,0 +1,232 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class ExampleCreateCustomer inherits QorusService {
+    private {
+        const DbToSchemaCustomerMap = {
+            "id": "Id",
+            "name": "Name",
+            "type": "Type",
+            "taxid": "TaxId",
+        };
+
+        const SchemaToDbCustomerMap = map {$1.value: $1.key}, DbToSchemaCustomerMap.pairIterator();
+
+        const DbToSchemaAddressMap = {
+            "name": "Name",
+            "address_line_1": "AddressLine1",
+            "address_line_2": "AddressLine2",
+            "address_line_3": "AddressLine3",
+            "city": "City",
+            "postal_code": "PostalCode",
+            "region": "Region",
+            "country": "Country",
+        };
+
+        const SchemaToDbAddressMap = map {$1.value: $1.key}, DbToSchemaAddressMap.pairIterator();
+    }
+
+    init() {
+    }
+
+    # creates a new customer record in the DB and returns the unique customer ID
+    hash<auto> customerCreate(hash<auto> cust) {
+        AbstractTable customer = getSqlTable("omquser", "crm_customer_example");
+
+        try {
+            on_error customer.rollback();
+            on_success customer.commit();
+
+            # insert the new customer and retrieve the new customer ID
+            int id = customer.insert(mapSchemaToDbCustomer(cust), {
+                "returning": "id",
+            }).id;
+
+            # insert the new address
+            insertAddress(id, cust.Address);
+
+            logInfo("created cust_id %d: %y", id, cust);
+            return {"Id": id};
+        } catch (hash<ExceptionInfo> ex) {
+            if (customer.isDuplicateRowError(ex)) {
+                throw "SWAGGER-ERROR", "400", {
+                    "err": "DUPLICATE-CUSTOMER",
+                    "desc": sprintf("cannot create customer: %s: %s", ex.err, ex.desc),
+                };
+            }
+            rethrow;
+        }
+    }
+
+    customerDelete(*hash<auto> args) {
+        AbstractTable customer = getSqlTable("omquser", "crm_customer_example");
+        AbstractTable address = getSqlTable("omquser", "crm_address_example");
+
+        on_error customer.rollback();
+        on_success customer.commit();
+
+        # first delete any address(es)
+        int addr_rows = address.del({
+            "cust_id": args.customerId,
+        });
+
+        int cust_rows = customer.del({
+            "id": args.customerId,
+        });
+        if (!cust_rows) {
+            throw "SWAGGER-ERROR", "404", {
+                "err": "NO-CUSTOMER",
+                "desc": sprintf("no customer exists with ID %d", args.customerId),
+            };
+        }
+        logInfo("deleted customer ID %d (%d address row%s)", args.customerId, addr_rows == 1 ? "" : "s");
+    }
+
+    hash<auto> customerRead(hash<auto> args) {
+        AbstractTable customer = getSqlTable("omquser", "crm_customer_example");
+        AbstractTable address = getSqlTable("omquser", "crm_address_example");
+
+        *hash<auto> cust_row = customer.selectRow({
+            "where": {
+                "id": args.customerId,
+            },
+        });
+        if (!cust_row) {
+            throw "SWAGGER-ERROR", "404", {
+                "err": "NO-CUSTOMER",
+                "desc": sprintf("no customer exists with ID %d", args.customerId),
+            };
+        }
+
+        hash<auto> cust = mapDbToSchemaCustomer(cust_row);
+
+        *hash<auto> addr_row = address.selectRow({
+            "where": {
+                "cust_id": args.customerId,
+            },
+            "limit": 1,
+        });
+
+        if (addr_row) {
+            # do not try to map SQL NULL values
+            map delete addr_row{$1.key}, addr_row.pairIterator(), $1.value === NULL;
+            cust.Address = mapDbToSchemaAddress(addr_row);
+        }
+
+        return cust;
+    }
+
+    customerUpdate(hash<auto> args) {
+        # get update hash
+        hash<auto> update;
+
+        if (args.Name) {
+            update.name = args.Name;
+        }
+
+        if (args.Type) {
+            update.type = args.Type;
+        }
+
+        if (args.TaxId) {
+            update.taxid = args.TaxId;
+        }
+
+        AbstractTable customer = getSqlTable("omquser", "crm_customer_example");
+
+        on_error customer.rollback();
+        on_success customer.commit();
+
+        int rows = customer.update(update, {"id": args.customerId});
+        if (!rows) {
+            throw "SWAGGER-ERROR", "404", {
+                "err": "NO-CUSTOMER",
+                "desc": sprintf("no customer exists with ID %d", args.customerId),
+            };
+        }
+
+        if (args.Address) {
+            AbstractTable address = getSqlTable("omquser", "crm_address_example");
+
+            # delete any current address
+            address.del({"cust_id": args.customerId});
+
+            insertAddress(args.customerId, args.Address, address);
+        }
+    }
+
+    list<hash<auto>> customersGet(*hash<auto> args) {
+        AbstractTable customer = getSqlTable("omquser", "crm_customer_example");
+        AbstractTable address = getSqlTable("omquser", "crm_address_example");
+
+        hash<auto> sh;
+        if (args.limit) {
+            sh.limit = args.limit;
+        }
+        if (args.Name) {
+            sh."where".name = op_like(args.Name);
+        }
+        if (args.Type) {
+            sh."where".type = op_like(args.Type);
+        }
+        if (args.TaxId) {
+            sh."where".taxid = op_like(args.TaxId);
+        }
+
+        hash<auto> q = customer.select(sh);
+        if (!q.id) {
+            return ();
+        }
+        hash<string, hash<auto>> cmap = map {$1.id: mapDbToSchemaCustomer($1)}, q.contextIterator();
+
+        q = address.select({
+            "where": {
+                "cust_id": op_in(q.id),
+            },
+        });
+        foreach hash<auto> addr in (q.contextIterator()) {
+            reference<*hash<auto>> cust = \cmap{addr.cust_id};
+            if (!cust) {
+                continue;
+            }
+            cust.Address = mapDbToSchemaAddress(addr);
+        }
+
+        return cmap.values();
+    }
+
+    # Returns the port that the service is listening on
+    int getPort() {
+        return getServiceInfo().resources.firstValue().info.port;
+    }
+
+    private insertAddress(int id, hash<auto> addr,
+            AbstractTable address = UserApi::getSqlTable("omquser", "crm_address_example")) {
+        address.insert({
+            "cust_id": id,
+        } + mapSchemaToDbAddress(addr));
+    }
+
+    private static hash<auto> mapDbToSchemaCustomer(hash<auto> h) {
+        return ExampleCreateCustomer::applyMap(DbToSchemaCustomerMap, h, False);
+    }
+
+    private static hash<auto> mapDbToSchemaAddress(hash<auto> h) {
+        return ExampleCreateCustomer::applyMap(DbToSchemaAddressMap, h, False);
+    }
+
+    private static hash<auto> mapSchemaToDbCustomer(hash<auto> h) {
+        return ExampleCreateCustomer::applyMap(SchemaToDbCustomerMap, h);
+    }
+
+    private static hash<auto> mapSchemaToDbAddress(hash<auto> h) {
+        return ExampleCreateCustomer::applyMap(SchemaToDbAddressMap, h);
+    }
+
+    private static hash<auto> applyMap(hash<auto> map_hash, hash<auto> h, bool all = True) {
+        return map {map_hash{$1.key}: $1.value}, h.pairIterator(),
+            exists map_hash{$1.key} && (all || $1.value.val());
+    }
+}

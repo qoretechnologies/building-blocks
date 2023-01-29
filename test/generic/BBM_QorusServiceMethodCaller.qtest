@@ -1,0 +1,30 @@
+#!/usr/bin/env qore
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%require-types
+%strict-args
+%new-style
+%enable-all-warnings
+
+%exec-class BBM_QorusServiceMethodCaller
+
+%requires QorusInterfaceTest
+
+class BBM_QorusServiceMethodCaller inherits QorusJobTest {
+    private {
+        const JobName = "bbm-qorus-service-method-caller-test";
+    }
+
+    constructor() : QorusJobTest(JobName, "1.0", \ARGV, Opts) {
+        addTestCase("job test", \jobTest());
+        set_return_value(main());
+    }
+
+    jobTest() {
+        RunJobResult job(OMQ::StatComplete);
+        hash<auto> result = exec(job).getJobResult();
+        hash<auto> info = getJobResultHash(result.job_instanceid);
+        on_error printf("result: %N\n", info);
+        assertEq(Type::Hash, info.info.test.firstValue().type());
+    }
+}

@@ -1,0 +1,4 @@
+sftp-local-test = (
+   desc = Local test env with SFTP,
+   url = sftp://foo:pass@local-sftp:22/upload,
+)

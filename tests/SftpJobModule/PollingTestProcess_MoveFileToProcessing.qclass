@@ -1,0 +1,13 @@
+# name: PollingTestProcess_MoveFileToProcessing
+# version: 1.0
+# desc: XXX
+# author: Qore Technologies s.r.o.
+
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class PollingTestProcess_MoveFileToProcessing inherits SftpModule::MoveFileStep {
+}
+# END

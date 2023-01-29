@@ -1,0 +1,45 @@
+#!/usr/bin/env qore
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%require-types
+%strict-args
+%new-style
+%enable-all-warnings
+
+%exec-class BBM_BindSubworkflowTest
+
+%requires QorusInterfaceTest
+%requires Util
+%requires FsUtil
+%requires ssh2
+
+class BBM_BindSubworkflowTest inherits QorusWorkflowTest {
+    constructor() : QorusWorkflowTest("BB-BIND-TEST", "1.0", \ARGV, Opts) {
+        addTestCase("test", \test());
+        set_return_value(main());
+    }
+
+    private usageIntern(int offset = OffsetColumn) {
+        TestReporter::usageIntern(OffsetColumn);
+    }
+
+    test() {
+        qrest.put("workflows/BB-BIND-TEST/stepinfo/bb-test-parent/config/bind-subworkflow-skip", {"value": False});
+        ExecSynchronousOrder action({
+            "name": "BB-BIND-TEST",
+            "staticdata": {},
+        });
+        exec(action);
+        hash<auto> dd = action.result().dynamicdata;
+        assertGt(0, dd.workflow_instanceid);
+
+        qrest.put("workflows/BB-BIND-TEST/stepinfo/bb-test-parent/config/bind-subworkflow-skip", {"value": True});
+        action = new ExecSynchronousOrder({
+            "name": "BB-BIND-TEST",
+            "staticdata": {},
+        });
+        exec(action);
+        dd = action.result().dynamicdata;
+        assertLt(0, dd.workflow_instanceid);
+    }
+}

@@ -1,0 +1,24 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class AwsSnsRestHandler inherits AwsSnsRestHandlerBase {
+    private {
+        BBM_AwsSnsServiceEventSource service;
+    }
+
+    constructor(BBM_AwsSnsServiceEventSource service) {
+        self.service = service;
+    }
+
+    private hash<HttpHandlerResponseInfo> processNotificationImpl(hash<auto> cx, *hash<auto> ah) {
+        service.notifyObservers("BBM_AwsSnsServiceEventSource::snsEvent", ah);
+    }
+}
+
+class BBM_AwsSnsServiceEventSource inherits BBM_AwsSnsServiceBase, ::OMQ::Observable {
+    private AbstractServiceHttpHandler getHandlerImpl() {
+        return new AwsSnsRestHandler(self);
+    }
+}

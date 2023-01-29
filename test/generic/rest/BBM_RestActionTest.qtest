@@ -1,0 +1,47 @@
+#!/usr/bin/env qore
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%require-types
+%strict-args
+%new-style
+%enable-all-warnings
+
+%exec-class BBM_RestActionTest
+
+%requires QorusInterfaceTest
+
+class BBM_RestActionTest inherits QorusJobTest {
+    private {
+        const JobName = "bbm-rest-action-test";
+    }
+
+    constructor() : QorusJobTest(JobName, "1.0", \ARGV, Opts) {
+        addTestCase("rest test", \restTest());
+        set_return_value(main());
+    }
+
+    private usageIntern(int offset = OffsetColumn) {
+        TestReporter::usageIntern(OffsetColumn);
+    }
+
+    restTest() {
+        # create REST connection
+        string conn_name = "rests-test-" + get_random_string();
+        string url = qorus_get_local_url();
+        url =~ s/^http/rest/;
+        hash<auto> conn = {
+            "name": conn_name,
+            "desc": "test connection",
+            "url": url,
+        };
+        qrest.post("connections", conn);
+        on_exit qrest.del("connections/" + conn_name);
+
+        qrest.put("jobs/bbm-rest-action-test/config/rest-connection-name", {"value": conn_name});
+        RunJobResult job(OMQ::StatComplete);
+        exec(job);
+
+        hash<auto> h = qrest.get("jobresults/" + job.getJobResult().job_instanceid);
+        assertEq(Type::String, h.info.rest."instance-key".type());
+    }
+}

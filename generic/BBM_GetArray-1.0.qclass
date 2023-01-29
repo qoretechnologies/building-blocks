@@ -1,0 +1,21 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_GetArray {
+    #! Connector to return an array; useful for array logic in steps
+    /** @param input available in the \a input key of local context data (i.e. <tt>$local:input</tt> when looking up
+        config item values)
+
+        @return a list defined by the value of the \c get-array-output config item; if this config item returns a
+        non-list value, then it is converted to a list before returning
+    */
+    list<auto> getArray(auto input) {
+        hash<auto> local_context = {"input": input};
+        softlist<auto> rv = UserApi::getConfigItemValue("get-array-output", local_context);
+        UserApi::logInfo("get array connector returning %d element%s", rv.lsize(), rv.lsize() == 1 ? "" : "s");
+        UserApi::logDebug("array data: %N", rv);
+        return rv;
+    }
+}

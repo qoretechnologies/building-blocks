@@ -1,0 +1,60 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+#! creates a workflow order from the input data according to the configuration
+/** supports atomic workflow order creation through handling \c DUPLICATE-ORDER-KEY exceptions thrown by
+    @ref UserApi::createOrder()
+
+    Configuration items:
+    - \c create-workflow-order-mapper: the mapper used to create the static order data for the order; the mapper
+      returns the value used for the @ref UserApi::createOrder() \a params option giving the new workflow order
+      information
+    - \c create-workflow-name: the name of the workflow to create the order for
+    - \c create-workflow-version: the optional version of the workflow, if not set, then an order will be created for
+      the latest version of the workflow
+    - \c create-workflow-duplicate-handling: set to determine how duplicate errors are handled; set to \c "SUCCESS" to
+      enable the @ref BBM_ExecSyncWorkflow::createWorkflowOrder() method to return the workflow_instanceid in case a single
+      workflow_instanceid matches, set to \c "DUPLICATE" to throw a \c DUPLICATE-ORDER-KEY exception in all cases if
+      duplicates are found
+
+      @note No comparison of the order data is made in case of duplications; it is assumed that the data is identical
+
+    Connector types:
+    - \c input: \c qoretechnologies/qorus-api/workflows/create-order/request
+    - \c output: \c qoretechnologies/building-blocks/exec-sync-workflow/response
+*/
+class BBM_ExecSyncWorkflowStatic inherits BBM_CreateOrderStatic {
+    #! create order method suitable for use as an input/output connector, independent of input data
+    /** @param input available in the \a input key of local context data (i.e. <tt>$local:input</tt> when looking up
+        config item values)
+
+        @return a single hash with connector output type \c qoretechnologies/building-blocks/exec-sync-workflow/response;
+        the hash has the following keys:
+        - \c workflow_instanceid the workflow instance ID of the order created
+        - \c duplicate: a boolean flag: \c True if the order already existed (config item
+          \c create-workflow-duplicate-handling = \c SUCCESS), \c False if not
+        - \c status: the order status
+        - \c dynamicdata: any dynamic data in the order
+        - \c error: the last error code added to the order, if any
+        - \c description: the error description for the last error added to the order, if any
+        - \c info: the info hash for the last error added to the order, if any
+    */
+    static hash<auto> execSyncWorkflowStatic(auto input) {
+        hash<auto> local_context = {"input": input};
+        hash<auto> order_data = map {$1.key: UserApi::getConfigItemValue($1.value, local_context)},
+            OrderMap.pairIterator();
+        map remove order_data{$1.key}, order_data.pairIterator(), !exists $1.value;
+        # log request but do not log any sensitive data
+        UserApi::logInfo("order data from context: %N",
+            order_data + (order_data.sensitive_data ? {"sensitive_data": "<masked>"} : NOTHING));
+
+        bool dup = False;
+        hash<auto> rv = doWorkflowIntern(order_data, <CreateOrderOptionInfo>{}, \dup, True);
+        rv.duplicate = dup;
+        return rv;
+    }
+}

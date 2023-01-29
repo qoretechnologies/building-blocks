@@ -1,0 +1,158 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_WebSocketServiceBase
+desc: >-
+    ## Summary
+
+
+    A base class for WebSocket handler services in Qorus services
+
+
+    There are no connectors; it is entirely driven by configuration, and
+    WebSocket server services are initialized when the object is created.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: BBM_HttpServiceGenericBase
+requires:
+  - BBM_HttpServiceGenericBase
+  - BBM_HttpAuthenticatorBase
+  - BBM_CorsBase
+version: '1.0'
+code: BBM_WebSocketServiceBase-v1.0.qclass
+config-items:
+  - name: http-listener-bind-address
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceGenericBase
+        interface-version: '1.0'
+  - name: http-listener-cert-location
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceGenericBase
+        interface-version: '1.0'
+  - name: http-listener-cert-format
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceGenericBase
+        interface-version: '1.0'
+  - name: http-listener-key-location
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceGenericBase
+        interface-version: '1.0'
+  - name: http-listener-key-format
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceGenericBase
+        interface-version: '1.0'
+  - name: http-listener-key-password
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceGenericBase
+        interface-version: '1.0'
+  - name: http-listener-ssl-mode
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceGenericBase
+        interface-version: '1.0'
+  - name: http-listener-accept-all-certs
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceGenericBase
+        interface-version: '1.0'
+  - name: http-listener-capture-client-certs
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceGenericBase
+        interface-version: '1.0'
+  - name: websockets-root-uri
+    description: The root URI path for the REST service
+    strictly_local: true
+    config_group: WebSocket Handler
+  - name: websockets-auth-name
+    default_value:
+        "default"
+    allowed_values:
+      - "permissive"
+      - "default"
+      - "default-basic"
+      - "cookie"
+    description: |-
+        A string identifying the authenticator; the following values are allowed:
+         - **`default`**: the default Qorus authenticator; new connections must have valid credentials for Qorus
+         - **`default-basic`**: the same as **`default`** except in case of an unauthorized request, a `WWW-Authenticate` header is returned indicating that HTTP basic authentication is required
+         - **`permissive`**: no authentication is required; all requests are automatically accepted
+         - **`cookie`**: same as `default` with also support for cookie-based authentication; the cookie name is defined with the `websockets-auth-cookie` config item
+    strictly_local: true
+    config_group: WebSocket Handler
+  - name: websockets-auth-cookie
+    default_value:
+        "qorus_auth_token"
+    config_group: WebSocket Handler
+    description: >-
+        A string providing the name of the cookie for cookie-based authentication,
+        only used when `websockets-auth-name` is `cookie`
+    strictly_local: true
+  - name: websockets-auth-redirect
+    default_value:
+        null
+    type: "*string"
+    config_group: WebSocket Handler
+    description: >-
+        A string providing the URL to redirect unauthenticated requests; only used
+        when `websockets-auth-name` is `cookie`
+    strictly_local: true
+  - name: websockets-cors-enable
+    default_value:
+        false
+    config_group: WebSocket Handler CORS
+    description: set to `true` to enable CORS
+    strictly_local: true
+    type: bool
+  - name: websockets-cors-methods
+    default_value:
+      - GET
+      - POST
+      - PUT
+      - PATCH
+      - DELETE
+      - OPTIONS
+    config_group: WebSocket Handler CORS
+    description: >-
+        HTTP methods allowed with CORS; ignored if `websockets-cors-enable` is
+        `false`
+    strictly_local: true
+    type: list
+  - name: websockets-cors-max-age
+    default_value:
+        9999999
+    config_group: WebSocket Handler CORS
+    description: the value for the `Access-Control-Max-Age` header
+    strictly_local: true
+    type: int
+  - name: websockets-cors-headers
+    default_value:
+      - Content-Type
+      - content-type
+      - Content-Language
+      - content-language
+      - Accept
+      - Accept-Language
+      - Authorization
+    config_group: WebSocket Handler CORS
+    description: values for the `Access-Control-Allow-Headers` header
+    strictly_local: true
+    type: "*list"
+  - name: websockets-cors-credentials
+    default_value:
+        false
+    config_group: WebSocket Handler CORS
+    description: 'if `true` then the `Access-Control-Allow-Credentials: true` header is sent'
+    strictly_local: true
+    type: bool
+  - name: http-listener-allow-sharing
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceGenericBase
+        interface-version: '1.0'

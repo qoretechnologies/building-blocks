@@ -1,0 +1,15 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_WsgiUiExtension inherits BBM_QorusUiExtension {
+    public {
+        BBM_WsgiHandlerBase wsgi();
+    }
+
+    hash<HttpResponseInfo> handleRequest(HttpListenerInterface listener, Socket s, hash<auto> cx, hash<auto> hdr,
+            *data body) {
+        return wsgi.handleRequest(listener, s, cx, hdr, body);
+    }
+}

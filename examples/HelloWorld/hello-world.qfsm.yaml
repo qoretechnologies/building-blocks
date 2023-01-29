@@ -1,0 +1,62 @@
+# This is a generated file, don't edit!
+type: fsm
+name: hello-world
+desc: 'Log `Hello,World!`'
+states:
+    '1':
+        position:
+            x: 78
+            'y': 100.578125
+        initial: true
+        name: 'Log Hello, World!'
+        desc: ''
+        type: state
+        id: qCJwrwQJy
+        action:
+            type: apicall
+            value:
+                type: factory
+                name: qorus-api
+                is_api_call: true
+                supports_request: true
+                supports_read: false
+                supports_update: false
+                supports_create: false
+                supports_delete: false
+                descriptions:
+                    - >-
+                        Top-level Qorus API data provider; request/response (API) data
+                        providers are provided as children
+                    - >-
+                        Top-level Qorus API data provider; request/response (API) data
+                        providers are provided as children
+                    - >-
+                        Data provider providing child request-response data providers
+                        representing supported utility APIs in Qorus
+                    - >-
+                        Top-level Qorus API data provider; request/response (API) data
+                        providers are provided as children
+                    - >-
+                        Data provider providing child request-response data providers
+                        representing supported utility APIs in Qorus
+                    - >-
+                        Request/response data provider: writes a log message to the
+                        current log file.
+        
+        
+                        This API call can only be made internally in Qorus.
+        
+        
+                        This API call does not return any response.
+                path: /util/log-message
+                use_args: true
+                args:
+                    type: hash
+                    value:
+                        level:
+                            type: select-string
+                            value: INFO
+                        message:
+                            type: string
+                            value: 'Hello, World!'
+        execution_order: 1

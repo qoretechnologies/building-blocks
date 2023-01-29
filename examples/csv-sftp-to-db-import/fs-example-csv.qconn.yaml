@@ -1,0 +1,5 @@
+# This is a generated file, don't edit!
+type: connection
+name: fs-example-csv
+desc: CSV import filesystem connection
+url: file://$OMQ_DIR/user/csv-import

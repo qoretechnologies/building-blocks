@@ -1,0 +1,120 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! Base class for make a search action with a data provider
+class BBM_DataProviderSearchBase {
+    #! the primary search action logic: perform the search
+    /** @return the record data as provided by the data provider
+    */
+    auto doSearchWithItems(
+        string provider_path_item,
+        string search_criteria_item,
+        string search_options_item,
+        string requires_result_item,
+        string output_item,
+        string retries_item,
+        string retry_delay_item,
+        string retry_errors_item,
+        *hash<auto> local_context,
+    ) {
+        *hash<auto> search_criteria = UserApi::getConfigItemValue(search_criteria_item, local_context);
+        *hash<auto> search_options = UserApi::getConfigItemValue(search_options_item, local_context);
+        return doSearchWithItemsIntern(search_criteria, search_options, provider_path_item, requires_result_item,
+            output_item, retries_item, retry_delay_item, retry_errors_item, NOTHING, NOTHING, NOTHING, local_context);
+    }
+
+    #! the primary search action logic: perform the search
+    /** @return the record data as provided by the data provider
+    */
+    *list<hash<auto>> doSearchWithItemsIntern(
+        *hash<auto> search_criteria,
+        *hash<auto> search_options,
+        string provider_path_item,
+        string requires_result_item,
+        string output_item,
+        string retries_item,
+        string retry_delay_item,
+        string retry_errors_item,
+        *bool allow_multiple_output_records,
+        *int retries,
+        *int retry_delay_secs,
+        *hash<auto> local_context,
+    ) {
+        # get number of retries
+        int retries = UserApi::getConfigItemValue(retries_item, local_context);
+        if (retries < 0) {
+            retries = 0;
+        }
+        int retry_delay_secs = UserApi::getConfigItemValue(retry_delay_item, local_context);
+        if (retries > 0 && retry_delay_secs < 0) {
+            retry_delay_secs = 0;
+        }
+
+        string provider_path = UserApi::getConfigItemValue(provider_path_item, local_context);
+        UserApi::logInfo("provider: %y search criteria: %y options: %y (retries: %d delay: %ds)", provider_path,
+            search_criteria, search_options, retries, retry_delay_secs);
+
+        # get the data provider
+        AbstractDataProvider provider = UserApi::getDataProvider(provider_path);
+        # ensure that it supports the search API
+        provider.checkRead();
+
+        # get all records from search
+        softlist<hash<auto>> records;
+        int retry_count = 0;
+        while (True) {
+            try {
+                records = map $1, provider.searchRecords(search_criteria, search_options);
+                break;
+            } catch (hash<ExceptionInfo> ex) {
+                if (retries && isConnectionIoError(retry_errors_item, ex, local_context)) {
+                    if (retry_count == retries) {
+                        UserApi::logError("BBM_DataProviderSearch: %s: %s: maximum retries reached (%d), not retrying again",
+                            ex.err, ex.desc, retries);
+                    } else {
+                        ++retry_count;
+                        UserApi::logInfo("BBM_DataProviderSearch: %s: %s: waiting %d second%s for retry...", ex.err, ex.desc,
+                            retry_delay_secs, retry_delay_secs == 1 ? "" : "s");
+                        UserApi::sleep(retry_delay_secs);
+                        UserApi::logInfo("BBM_DataProviderSearch: retrying search action now");
+                        continue;
+                    }
+                }
+                rethrow;
+            }
+        }
+
+        UserApi::logInfo("records retrieved: %d", records.size());
+        UserApi::logDebug("RECORDS: %N", records);
+
+        if (!records && UserApi::getConfigItemValue(requires_result_item, local_context)) {
+            throw "SEARCH-ERROR", sprintf("config item %y indicates that a search result is required, but none was "
+                "returned", requires_result_item);
+        }
+
+        # save output data unconditionally if a record is available
+        *hash<auto> output_data = UserApi::getConfigItemValue(output_item, NOTHING, False);
+        if (output_data) {
+            if (allow_multiple_output_records) {
+                UserApi::updateOutputData({"records": records}, output_data);
+            } else if (records.size() > 1) {
+                throw "CONFIG-ERROR", sprintf("cannot save output data; result has %d records; need exactly one "
+                    "record to save output data", records.size());
+            } else if (records[0]) {
+                UserApi::updateOutputData(records[0], output_data);
+            }
+        }
+
+        return records;
+    }
+
+    #! Returns True if the error is a connection I/O error
+    private bool isConnectionIoError(string retry_errors_item, hash<ExceptionInfo> ex, *hash<auto> local_context) {
+        *hash<string, bool> errmap = map {$1: True}, UserApi::getConfigItemValue(retry_errors_item, local_context);
+        bool rv = errmap{ex.err} ?? False;
+        UserApi::logDebug("BBM_DataProviderSearch: %y I/O error: %y", ex.err, rv);
+        return rv;
+    }
+}

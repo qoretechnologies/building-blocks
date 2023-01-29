@@ -1,0 +1,58 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! Makes a request with a data provider using the request/response API
+class BBM_DataProviderRequest inherits BBM_DataProviderRequestBase {
+    public {
+        const ProviderPathItem = "dataprovider-request-provider-path";
+        const RemoveNullsItem = "dataprovider-request-body-remove-nulls";
+        const RequestOptionsItem = "dataprovider-request-options";
+        const InputItem = "dataprovider-request-input";
+        const MapperItem = "dataprovider-request-mapper";
+        const LogItem = "dataprovider-request-id-log-msg";
+        const IdLocItem = "dataprovider-request-id-location";
+        const OutputItem = "dataprovider-request-output-data";
+    }
+
+    #! the primary request action logic: make the request
+    /** @return the response data as provided by the data provider
+    */
+    auto makeRequest() {
+        return makeRequestIntern(ProviderPathItem, RemoveNullsItem, RequestOptionsItem, InputItem, MapperItem,
+            LogItem, IdLocItem, OutputItem);
+    }
+
+    #! REST action method suitable for use as an input/output connector
+    /** @param request the input request data
+
+        @return the response from the request
+    */
+    auto makeDataProviderRequestConnector(auto request) {
+        if (!exists request) {
+            # the message body for the request
+            request = UserApi::getConfigItemValue(InputItem);
+            UserApi::logInfo("using request from configuration: %y", request);
+        }
+
+        return doRequestIntern(request, ProviderPathItem, RemoveNullsItem, RequestOptionsItem, MapperItem,
+            LogItem, IdLocItem, OutputItem);
+    }
+
+    #! REST action method suitable for use as an input/output connector from configuration
+    /** @param input used as local data when looking up config item values available as
+        <tt>$local:input</tt> when resolving config items
+
+        @return the response from the request
+    */
+    auto makeDataProviderRequestFromConfigConnector(auto input) {
+        hash<auto> local_context = {"input": input};
+        # the message body for the request
+        auto request = UserApi::getConfigItemValue(InputItem, local_context);
+        UserApi::logInfo("using request from configuration: %y", request);
+
+        return doRequestIntern(request, ProviderPathItem, RemoveNullsItem, RequestOptionsItem, MapperItem,
+            LogItem, IdLocItem, OutputItem, local_context);
+    }
+}

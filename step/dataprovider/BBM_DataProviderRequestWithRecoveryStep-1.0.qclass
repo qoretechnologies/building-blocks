@@ -1,0 +1,19 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! Makes a request with a data provider using the request/response API
+class BBM_DataProviderRequestWithRecoveryStep inherits QorusNormalStep, BBM_DataProviderRequestWithRecovery {
+    #! Makes a request with a data provider using the request/response API
+    primary() {
+        makeRequest();
+    }
+
+    #! Verifies if the request was really made
+    string validation() {
+        return checkRequest()
+            ? OMQ::StatComplete
+            : OMQ::StatRetry;
+    }
+}

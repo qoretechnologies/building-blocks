@@ -1,0 +1,49 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class MyFtpHandler inherits public AbstractFtpHandler {
+    constructor(string dir) : AbstractFtpHandler(dir, True) {
+    }
+}
+
+class BbFtpTest inherits QorusService {
+    private {
+        softint port;
+    }
+
+    init() {
+        # get root directory
+        *string root = getConfigItemValue("ftp-server-root");
+        if (!exists root) {
+            root = tmp_location() + DirSep + get_random_string();
+        }
+        MyFtpHandler handler(root);
+        {
+            auto bind = getConfigItemValue("ftp-server-bind");
+            trim bind;
+            if ((int b = bind.toInt()) == bind) {
+                bind = b;
+            }
+            logInfo("using bind address: %y", bind);
+            handler.addListener(bind);
+        }
+        bindFtp(handler);
+
+        foreach hash rh in (getServiceInfo().resources.iterator()) {
+            if (rh.type == "FtpListener" && rh.info.family == AF_INET) {
+                port = rh.info.port;
+                break;
+            }
+        }
+        if (!port) {
+            throw "FTP-SERVER-ERROR", sprintf("cannot determine listening port");
+        }
+        logInfo("listening on IPv4 port %y", port);
+    }
+
+    int getPort() {
+        return port;
+    }
+}

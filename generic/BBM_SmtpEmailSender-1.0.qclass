@@ -1,0 +1,115 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+%requires SmtpClient
+%requires MailMessage
+
+class BBM_SmtpEmailSender {
+    public {
+        const Config = (
+            "smtp-connection",
+            "smtp-from",
+            "smtp-subject",
+            "smtp-body",
+            "smtp-body-encoding",
+            "smtp-body-content-type",
+            "smtp-attachments",
+
+            "smtp-important",
+            "smtp-delivery-receipt",
+            "smtp-read-receipt",
+        ) + MustHaveOne;
+
+        const MustHaveOne = (
+            "smtp-to",
+            "smtp-cc",
+            "smtp-bcc",
+        );
+    }
+
+    #! send email connnector
+    /**
+    */
+    static auto sendEmail(auto input) {
+        hash<auto> local_context = {"input": input};
+
+        hash<auto> config = map {$1: UserApi::getConfigItemValue($1, local_context)}, Config;
+        map remove config{$1.key}, config.pairIterator(), !exists $1.value;
+        UserApi::logInfo("BBM_SmtpEmailSender using config: %y", config);
+
+        # ensure that at least one recipient is present
+        if (!config{MustHaveOne}) {
+            throw "SMTP-EMAIL-MISSING-RECIPIENT", sprintf("config missing recipient; none of %y are set in config",
+                MustHaveOne);
+        }
+
+        SmtpClient smtp = UserApi::getUserConnection(config."smtp-connection");
+        Message message(config."smtp-from", config."smtp-subject");
+
+        # set recipients
+        map message.addTO($1), config."smtp-to";
+        map message.addCC($1), config."smtp-cc";
+        map message.addBCC($1), config."smtp-bcc";
+
+        # set message body
+        message.setBody(config."smtp-body", config."smtp-body-encoding", config."smtp-body-content-type");
+
+        # add attachments
+        map message.addAttachment(BBM_SmtpEmailSender::getAttachment($1)), config."smtp-attachments";
+
+        # set message flags
+        if (config."smtp-important") {
+            message.important(True);
+        }
+        if (config."smtp-delivery-receipt") {
+            message.receiptDelivery(True);
+        }
+        if (config."smtp-read-receipt") {
+            message.receiptRead(True);
+        }
+
+        return smtp.sendMessage(message);
+    }
+
+    static Attachment getAttachment(hash<auto> attachment) {
+        if (attachment.name.typeCode() != NT_STRING) {
+            throw "SMTP-EMAIL-ATTACHMENT-ERROR", sprintf("attachment 'name' key has type %y; expecting \"string\"; "
+                "keys provided: %y", attachment.name.type(), keys attachment);
+        }
+        {
+            int dt = attachment."data".typeCode();
+            if (dt != NT_STRING && dt != NT_BINARY) {
+                throw "SMTP-EMAIL-ATTACHMENT-ERROR", sprintf("attachment 'data' key has type %y; expecting "
+                    "\"string\" or \"binary\"; keys provided: %y", attachment."data".type(), keys attachment);
+            }
+        }
+
+        if (attachment.mime.typeCode() != NT_STRING) {
+            throw "SMTP-EMAIL-ATTACHMENT-ERROR", sprintf("attachment 'mime' key has type %y; expecting \"string\"; "
+                "keys provided: %y", attachment.mime.type(), keys attachment);
+        }
+
+        if (exists attachment.encoding && attachment.encoding.typeCode() != NT_STRING) {
+            throw "SMTP-EMAIL-ATTACHMENT-ERROR", sprintf("attachment 'encoding' key has type %y; expecting \"string\"",
+                attachment.encoding.type());
+        }
+
+        if (exists attachment.header && attachment.headers.typeCode() != NT_HASH) {
+            throw "SMTP-EMAIL-ATTACHMENT-ERROR", sprintf("attachment 'headers' key has type %y; expecting \"hash\"",
+                attachment.headers.type());
+        }
+
+        return new Attachment(attachment.name, attachment.mime, attachment."data",
+            attachment.encoding ?? MailMessage::EncDefault, attachment.headers);
+    }
+
+    static Attachment getAttachment(Message message, auto attachment) {
+        throw "SMTP-EMAIL-ATTACHMENT-ERROR", sprintf("invalid attachment type %y; expecting a hash with the following "
+            "keys: name (required): the attachment name / file name, data (required): the attachment data itself, "
+            "mime (required): the MIME type for the attachment, encoding (optional): the encoding for the attachment "
+            "(one of 'default', 'none', 'base64', or 'quoted-printable'), headers (optional): a hash of MIME "
+            "attachment headers", attachment.type());
+    }
+}

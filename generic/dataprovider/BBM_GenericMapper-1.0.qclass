@@ -1,0 +1,82 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_GenericMapper inherits BBM_AutoMapper {
+    private {
+        const InputItem = "automapper-input";
+        const OutputItem = "automapper-output";
+    }
+
+    #! method suitable for use as an input/output connector for a single record or multiple records
+    /** @param request the input request data
+
+        @return the response from the request
+    */
+    auto genericMapper(auto input) {
+        hash<auto> local_context = {"input": input};
+        if (!exists input) {
+            # the message body for the request
+            input = UserApi::getConfigItemValue(InputItem, local_context);
+        }
+        return mapIntern(input, local_context);
+    }
+
+    #! method suitable for use as an input/output connector for a single record or multiple records
+    /** @param request the input request data
+
+        @return the response from the request
+    */
+    auto mapFromConfig(auto input) {
+        hash<auto> local_context = {"input": input};
+        input = UserApi::getConfigItemValue(InputItem, local_context);
+        return mapIntern(input, local_context);
+    }
+
+    auto mapIntern(auto input, hash<auto> local_context) {
+        string mapper_name = UserApi::getConfigItemValue(MapperItem, local_context);
+        *hash<auto> rtopts = getRuntimeOptions();
+        UserApi::logInfo("retrieving mapper %y with options: %y", mapper_name, rtopts);
+        Mapper mapper = UserApi::getMapper(mapper_name, rtopts);
+        auto rv = mapper.mapAll(input ?? {});
+        int cnt = mapper.getCount();
+        UserApi::logInfo("%d record%s mapped", cnt, cnt == 1 ? "" : "s");
+
+        # check for a list in the output
+        if (rv.typeCode() == NT_LIST) {
+            if (rv.size() == 1) {
+                rv = rv[0];
+            }
+        }
+
+        if (*hash<auto> output_config = UserApi::getConfigItemValue(OutputItem, NOTHING, False)) {
+            # in case we have a list of hashes, convert it to a hash of lists as the context info for the
+            # update output data call
+            hash<auto> h_rv;
+            if (rv.typeCode() == NT_LIST) {
+                hash<auto> h_rv = map {$1: ()}, keys rv;
+                foreach hash<auto> rec in (rv) {
+                    map h_rv{$1.key} += $1.value, rec.pairIterator();
+                }
+            } else {
+                h_rv = rv;
+            }
+
+            # write output info
+            int count = 0;
+
+            hash<auto> values;
+            hash<auto> output;
+            foreach hash<auto> i in (output_config.pairIterator()) {
+                string key = sprintf("k%d", count++);
+                values{key} = UserApi::expandTemplatedValue(i.key, h_rv);
+                output{key} = i.value;
+            }
+            #UserApi::logDebug("v: %y output: %y (c: %y)", values, output, output_config);
+            UserApi::logDebug("writing output data: %y", (map {output{$1}: values{$1}}, keys values));
+            UserApi::updateOutputData(values, output);
+        }
+        return rv;
+    }
+}

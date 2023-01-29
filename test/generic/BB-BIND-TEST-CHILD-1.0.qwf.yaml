@@ -1,0 +1,15 @@
+# This is a generated file, don't edit!
+type: workflow
+name: BB-BIND-TEST-CHILD
+desc: test bind BB
+author:
+  - Qore Technologies, s.r.o.
+autostart: 0
+groups:
+  - bb-test
+  - test
+version: "1.0"
+steps:
+    [
+        "bb-test-child:1.0"
+    ]

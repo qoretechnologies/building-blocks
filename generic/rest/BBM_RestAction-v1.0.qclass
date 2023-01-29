@@ -1,0 +1,270 @@
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+%requires RestClient
+%requires Swagger
+
+#! this base building block makes a REST request using a REST connection
+/** The following configuration items are supported; note that subclasses must provide default values
+    for required config items (in bold):
+    - \b \c rest-connection-name: (required) the name of the REST connection
+    - \b \c rest-uri-path: (required) the URI path for creating and querying the object in the REST server
+    - \c rest-api-mapper-name: (optional) the name of the mapper to create the REST call request body; the mapper is
+      provided a hash with a single key:
+      - \c context: the return value of the
+        @ref UserApi::UserApi::getUserContextInfo() "UserApi::getUserContextInfo()" method
+      .
+      if no message body is to be sent, then this configuration item should have no value
+    - \c rest-id-location: (optional) location in the response for the unique ID in the request response
+    - \c rest-swagger-schema-location: (optional) the name of the service resource (name:resource) for the Swagger
+      schema for the REST connection (default empty = no swagger schema service resource for REST client)
+
+    @note The swagger schema can be set in the REST connection itself; \c rest-swagger-schema-location is only for
+    convenience in case the same Swagger schema is also used by a server-side service
+*/
+class BBM_RestAction {
+    #! REST action method suitable for use as an input/output connector
+    /** @param request_data the input request data; should have type
+        \c qoretechnologies/building-blocks/rest-action/request - if the \c body key is not present in this argument,
+        the message body will be taken from the \b \c rest-body configuration item
+
+        @return a hash (connector output type \c qoretechnologies/building-blocks/rest-action/response) with the
+        following keys:
+        - \c body: the deserialized response message body
+        - \c request-uri: the request URI string (ex: \c "POST /services/async/38.0/job HTTP/1.1")
+        - \c request-headers: a hash of HTTP request headers
+        - \c request-serialization: the type of message serialization in the request
+        - \c response-code: the HTTP response code
+        - \c response-uri: the HTTP response line
+        - \c response-headers: a hash of HTTP headers in the response
+        - \c response-serialization: the type of message serialization in the response
+        - \c response-chunked: a boolean flag indicating if the response was subject to chunked transfer encoding or
+          not
+    */
+    hash<auto> makeRestRequestConnector(*hash<auto> request_data) {
+        auto body = request_data.body;
+        if (body) {
+            checkBody(body, "the request_data.body parameter");
+        } else {
+            body = UserApi::getConfigItemValue("rest-body");
+            checkBody(body, "the \"rest-body\" configuration item");
+        }
+        return makeRestRequestConnectorIntern(body, request_data.uri_path, request_data.hdr);
+    }
+
+    #! REST action method suitable for use as an input/output connector
+    /** @param input the input data is set  in the \c input key of local data for looking up config item values
+
+        @return a hash (connector output type \c qoretechnologies/building-blocks/rest-action/response) with the
+        following keys:
+        - \c body: the deserialized response message body
+        - \c request-uri: the request URI string (ex: \c "POST /services/async/38.0/job HTTP/1.1")
+        - \c request-headers: a hash of HTTP request headers
+        - \c request-serialization: the type of message serialization in the request
+        - \c response-code: the HTTP response code
+        - \c response-uri: the HTTP response line
+        - \c response-headers: a hash of HTTP headers in the response
+        - \c response-serialization: the type of message serialization in the response
+        - \c response-chunked: a boolean flag indicating if the response was subject to chunked transfer encoding or
+          not
+    */
+    hash<auto> makeRestRequestConnectorFromConfig(auto input) {
+        return makeRestRequestConnectorFromConfig({"input": input});
+    }
+
+    #! REST action method suitable for use as an input/output connector
+    /** @param local_data the hash input data is used as local data in the calls to look up the config item values
+
+        @return a hash (connector output type \c qoretechnologies/building-blocks/rest-action/response) with the
+        following keys:
+        - \c body: the deserialized response message body
+        - \c request-uri: the request URI string (ex: \c "POST /services/async/38.0/job HTTP/1.1")
+        - \c request-headers: a hash of HTTP request headers
+        - \c request-serialization: the type of message serialization in the request
+        - \c response-code: the HTTP response code
+        - \c response-uri: the HTTP response line
+        - \c response-headers: a hash of HTTP headers in the response
+        - \c response-serialization: the type of message serialization in the response
+        - \c response-chunked: a boolean flag indicating if the response was subject to chunked transfer encoding or
+          not
+    */
+    hash<auto> makeRestRequestConnectorFromConfig(hash<auto> local_data) {
+        auto body = UserApi::getConfigItemValue("rest-body", local_data);
+        return makeRestRequestConnectorIntern(body, NOTHING, NOTHING, NOTHING, local_data);
+    }
+
+    private hash<auto> makeRestRequestConnectorIntern(*hash<auto> body, *string uri_path_add, *hash<auto> hdr,
+            *reference<hash<auto>> info, *hash<auto> local_data) {
+        hash<auto> resp = makeRestRequestIntern(body, uri_path_add, hdr, \info, local_data);
+        return {
+            "body": resp.body,
+            "request-uri": info."request-uri",
+            "request-headers": info.headers,
+            "request-serialization": info."request-serialization",
+            "response-code": info."response-code",
+            "response-uri": info."response-uri",
+            "response-headers": info."response-headers",
+            "response-serialization": info."response-serialization",
+            "response-chunked": info.chunked,
+        };
+    }
+
+    #! checks the REST body argument
+    private checkBody(auto body, string info) {
+        if (exists body && body.typeCode() != NT_HASH) {
+            throw "BODY-ERROR", sprintf("REST body (taken from %s) exists and is not a hash (got type %y instead)",
+                info, body.type());
+        }
+    }
+
+    #! the primary REST action logic: make the REST request
+    /** @return the entire response hash (the deserialized response body is found in the \c "body" key in the value
+        returned)
+    */
+    hash<auto> makeRestRequest() {
+        return makeRestRequestIntern(getRestInputData());
+    }
+
+    #! Make the REST request with the given data
+    /** @return the entire response hash (the deserialized response body is found in the \c "body" key in the value
+        returned)
+    */
+    hash<auto> makeRestRequestIntern(*hash<auto> object_info, *string uri_path_add, *hash<auto> hdr,
+            *reference<hash<auto>> info, *hash<auto> local_data) {
+        # get number of retries
+        int retries = UserApi::getConfigItemValue("rest-action-retries", local_data);
+        if (retries < 0) {
+            retries = 0;
+        }
+        int retry_delay_secs = UserApi::getConfigItemValue("rest-action-retry-delay", local_data);
+        if (retries > 0 && retry_delay_secs < 0) {
+            retry_delay_secs = 0;
+        }
+
+        # get mapper name
+        *string mapper_name = UserApi::getConfigItemValue("rest-api-mapper-name", local_data);
+        if (exists mapper_name) {
+            # get mapper to convert from order data to the REST call
+            Mapper mapper = UserApi::getMapper(mapper_name);
+
+            # map the data to get the REST request body, if applicable
+            object_info = mapper.mapData(object_info + {
+                "context": UserApi::getUserContextInfo(),
+            });
+        }
+        # remove null args from the REST body if applicable
+        if (UserApi::getConfigItemValue("rest-body-remove-nulls", local_data)) {
+            object_info -= (map $1.key, object_info.pairIterator(), !$1.value.val());
+        }
+
+        # get the URI path for the request for creating the object
+        string uri_path = UserApi::getConfigItemValue("rest-uri-path", local_data);
+        if (uri_path_add.val()) {
+            uri_path += uri_path_add;
+        }
+        string rest_method = UserApi::getConfigItemValue("rest-method", local_data);
+        hdr += UserApi::getConfigItemValue("rest-headers");
+        UserApi::logDebug("REST REQUEST: method: %y URI: %y args: %y hdr: %y", rest_method, uri_path, object_info,
+            hdr);
+        hash<auto> response;
+        int retry_count = 0;
+        while (True) {
+            UserApi::logInfo("retries: %y retry_delay_secs: %y", retries, retry_delay_secs);
+            # ensure that request info gets logged
+            on_exit {
+                UserApi::logDebug("REST REQUEST INFO: %N", info);
+            }
+            # make the request and get the unique ID (if applicable)
+            try {
+                # NOTE: the socket connection to the remote service is already established in the call to
+                # getConnection(), so it has to be made in the try block
+                RestClient rc = getConnection(local_data);
+                # make the request to the server
+                response = rc.doRequest(
+                    rest_method,
+                    uri_path,
+                    object_info,
+                    \info,
+                    NOTHING,
+                    hdr,
+                );
+                if (retry_count) {
+                    UserApi::logInfo("BBM_RestAction: successfully recovered the REST action after %d retr%s", retry_count,
+                        retry_count == 1 ? "y" : "ies");
+                }
+                break;
+            } catch (hash<ExceptionInfo> ex) {
+                if (retries && isConnectionIoError(ex, local_data)) {
+                    if (retry_count == retries) {
+                        UserApi::logError("BBM_RestAction: %s: %s: maximum retries reached (%d), not retrying again",
+                            ex.err, ex.desc, retries);
+                    } else {
+                        ++retry_count;
+                        UserApi::logInfo("BBM_RestAction: %s: %s: waiting %d second%s for retry...", ex.err, ex.desc,
+                            retry_delay_secs, retry_delay_secs == 1 ? "" : "s");
+                        UserApi::sleep(retry_delay_secs);
+                        UserApi::logInfo("BBM_RestAction: retrying REST action now");
+                        continue;
+                    }
+                }
+                rethrow;
+            }
+        }
+        UserApi::logDebug("REST RESPONSE: %N", response);
+
+        *string rest_id_loc = UserApi::getConfigItemValue("rest-id-location", local_data);
+        auto val;
+        if (exists rest_id_loc) {
+            val = UserApi::getHashDotValue(response, rest_id_loc);
+            if (!exists val) {
+                throw "REST-REQUEST-ERROR", sprintf("no value was found in the REST response at location %y; "
+                    "response: %y", rest_id_loc, response);
+            }
+            UserApi::logInfo(UserApi::getConfigItemValue("rest-id-log-msg", local_data + {"rest-id": val}));
+        }
+
+        # save output data
+        *hash<auto> output_data = UserApi::getConfigItemValue("rest-output-data", NOTHING, False);
+        if (output_data) {
+            UserApi::updateOutputData(response + {"rest-id": val}, output_data);
+        }
+
+        return response;
+    }
+
+    #! Returns True if the error is a connection I/O error
+    private bool isConnectionIoError(hash<ExceptionInfo> ex, *hash<auto> local_data) {
+        *hash<string, bool> errmap = map {$1: True}, UserApi::getConfigItemValue("rest-action-retry-errors",
+            local_data);
+        bool rv = errmap{ex.err} ?? False;
+        UserApi::logDebug("BBM_RestAction: %y I/O error: %y", ex.err, rv);
+        return rv;
+    }
+
+    #! returns the input data for the mapper that creates the REST request body, if any
+    private *hash<auto> getRestInputData(*hash<auto> local_data) {
+        return UserApi::getConfigItemValue("rest-body", local_data);
+    }
+
+    #! returns a REST connection to the server, optionally setting a Swagger schema from a service resource
+    private RestClient getConnection(*hash<auto> local_data) {
+        # connection options, if any
+        hash<auto> connection_opts;
+        {
+            # get Swagger schema resource name, if any
+            *string schema = UserApi::getConfigItemValue("rest-swagger-schema-location", local_data);
+            if (schema) {
+                UserApi::logInfo("using swagger schema location: %y", schema);
+                # create Swagger REST schema validator object
+                connection_opts = {
+                    "validator": SwaggerLoader::fromString(UserApi::getTextFileFromLocation(schema), False),
+                };
+            }
+        }
+        # get REST connecting and use validator, if present
+        return UserApi::getUserConnection(UserApi::getConfigItemValue("rest-connection-name", local_data), True, True,
+            connection_opts);
+    }
+}

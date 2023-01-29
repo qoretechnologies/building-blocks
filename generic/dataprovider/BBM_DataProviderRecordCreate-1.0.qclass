@@ -1,0 +1,122 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! Base class for creating a record with a data provider using the record API
+class BBM_DataProviderRecordCreate inherits BBM_DataProviderRecordCreateBase {
+    public {
+        const ProviderPathItem = "dataprovider-create-provider-path";
+        const CreateOptionsItem = "dataprovider-create-options";
+        const DuplicateHandlingItem = "dataprovider-create-duplicate-handling";
+        const InputItem = "dataprovider-create-input";
+        const MapperItem = "dataprovider-create-mapper";
+        const OutputItem = "dataprovider-create-output-data";
+        const UpsertItem = "dataprovider-create-upsert";
+    }
+
+    #! the primary record action logic: create the record
+    /** @return the record written to the data provider
+
+        @throw INVALID-OPERATION the data provider does not support record creation
+    */
+    auto makeRecord() {
+        return makeRecordIntern(ProviderPathItem, CreateOptionsItem, DuplicateHandlingItem, InputItem, MapperItem,
+            OutputItem, UpsertItem);
+    }
+
+    #! REST action method suitable for use as an input/output connector
+    /** @param input_records the input records; if not present then the <tt>dataprovider-create-input</tt> config item
+        is used; this is the data to be used to create the record or the input to the mapper, if the
+        <tt>dataprovider-create-mapper</tt> config item is set
+
+        @return the record written to the data provider
+
+        @throw INVALID-OPERATION the data provider does not support record creation
+    */
+    auto makeDataProviderRecord(list<hash<auto>> input_records) {
+        map doRecordIntern($1, ProviderPathItem, CreateOptionsItem, DuplicateHandlingItem, MapperItem, OutputItem,
+            UpsertItem), input_records;
+    }
+
+    #! REST action method suitable for use as an input/output connector
+    /** @param input_record the input record; if not present then the <tt>dataprovider-create-input</tt> config item
+        is used; this is the data to be used to create the record or the input to the mapper, if the
+        <tt>dataprovider-create-mapper</tt> config item is set
+
+        @return the record written to the data provider
+
+        @throw INVALID-OPERATION the data provider does not support record creation
+    */
+    auto makeDataProviderRecord(auto input_record) {
+        if (!exists input_record) {
+            # the message body for the request
+            input_record = UserApi::getConfigItemValue(InputItem);
+        }
+
+        return doRecordIntern(input_record, ProviderPathItem, CreateOptionsItem, DuplicateHandlingItem, MapperItem,
+            OutputItem, UpsertItem);
+    }
+
+    #! REST action method suitable for use as an input/output connector
+    /** @param input used as local data when looking up config item values; available as <tt>$local:input</tt> when
+        resolving config item values
+
+        @return the record written to the data provider
+
+        @throw INVALID-OPERATION the data provider does not support record creation
+    */
+    auto makeDataProviderRecordFromConfig(auto input) {
+        hash<auto> local_context = {"input": input};
+
+        # the message body for the request
+        auto input_record = UserApi::getConfigItemValue(InputItem, local_context);
+
+        return doRecordIntern(input_record, ProviderPathItem, CreateOptionsItem, DuplicateHandlingItem, MapperItem,
+            OutputItem, UpsertItem, local_context);
+    }
+
+    #! make recovery record
+    /** @return True if the data exists, False if not
+    */
+    bool checkRecordIntern(
+        *hash<auto> record,
+        string provider_path_item,
+        string create_options_item,
+        string duplicate_handling_item,
+        string input_item,
+        string mapper_name_item,
+        string output_item,
+        string upsert_item,
+        *hash<auto> local_context,
+    ) {
+        try {
+            if (!exists record) {
+                # the message body for the record
+                record = UserApi::getConfigItemValue(input_item, local_context);
+            }
+            return exists doRecordIntern(record, provider_path_item, create_options_item, duplicate_handling_item,
+                mapper_name_item, output_item, upsert_item, local_context);
+        } catch (hash<ExceptionInfo> ex) {
+            if (ex.err == "DATA-PROVIDER-RESPONSE-MISSING") {
+                UserApi::logInfo("%s: %s: no data present", ex.err, ex.desc);
+                return False;
+            }
+            rethrow;
+        }
+    }
+
+    #! Connector usable as step validation logic
+    /** @param input used as local data when looking up config item values; available as <tt>$local:input</tt> when
+        resolving config item values
+
+        @return the string validation status, either:
+        - \c RETRY (@ref OMQ::StatRetry): no output data found; the step should be retried
+        - \c COMPLETE (@ref OMQ::StatComplete): output data found; the step is complete
+    */
+    string validate(auto input) {
+        hash<auto> local_context = {"input": input};
+        return checkRecordIntern(NOTHING, ProviderPathItem, CreateOptionsItem, DuplicateHandlingItem,
+            InputItem, MapperItem, OutputItem, UpsertItem, local_context) ? OMQ::StatComplete : OMQ::StatRetry;
+    }
+}

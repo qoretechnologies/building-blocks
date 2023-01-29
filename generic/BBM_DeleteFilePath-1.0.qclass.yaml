@@ -1,0 +1,47 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_DeleteFilePath
+desc: >-
+    ## Summary
+
+
+    Deletes a file from the filesystem
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the `delete` API
+    data provider in the `file` factory instead
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `deleteFilePath`
+
+
+    Deletes the file identified by the `delete-file-path` config item.
+
+
+    Local data used when resolving config items for this connector is the input
+    argument data for the connector available as `$local:input`.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: deleteFilePath
+    method: deleteFilePath
+    type: input-output
+version: '1.0'
+code: BBM_DeleteFilePath-1.0.qclass
+config-items:
+  - name: delete-file-path
+    config_group: Delete File Path
+    description: A path to a file on the filesystem to be deleted
+    strictly_local: true
+  - name: delete-file-ignore-missing
+    default_value:
+        true
+    config_group: Delete File Path
+    description: If `true` then a missing file is not an error
+    strictly_local: true
+    type: bool

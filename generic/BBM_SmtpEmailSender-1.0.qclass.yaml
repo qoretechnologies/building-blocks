@@ -1,0 +1,156 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_SmtpEmailSender
+desc: >
+    ## Summary
+
+
+    A building class to send one or more emails through an SMTP server.
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the `send-email`
+    API data provider in the `smtpclient` factory instead
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector sendEmail
+
+
+    Sends an email to the recipient based on configuration.
+
+
+    Input data is available as `$local:input` when resolving config items with
+    this connector.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: sendEmail
+    type: input-output
+    method: sendEmail
+version: '1.0'
+code: BBM_SmtpEmailSender-1.0.qclass
+config-items:
+  - name: smtp-connection
+    description: The name of an SMTP server connection that will be used to send the email
+    config_group: SMTP Email Send Main
+    type: connection
+  - name: smtp-from
+    description: The sender's email address
+    config_group: SMTP Email Send Main
+  - name: smtp-subject
+    description: The email subject
+    config_group: SMTP Email Send Main
+    strictly_local: true
+  - name: smtp-to
+    default_value:
+      null
+    description: >-
+        One or more `To:` addresses for the email; note that the data type for this
+        config item is a list.
+    
+    
+        At least one address for `smtp-to`, `smtp-cc`, or `smtp-bcc` must be set.
+    config_group: SMTP Email Send Addressees
+    strictly_local: true
+    type: "*list"
+  - name: smtp-cc
+    default_value:
+      null
+    description: >-
+        One or more `cc:` addresses for the email; note that the data type for this
+        config item is a list.
+    
+    
+        At least one address for `smtp-to`, `smtp-cc`, or `smtp-bcc` must be set.
+    config_group: SMTP Email Send Addressees
+    type: "*list"
+    strictly_local: true
+  - name: smtp-bcc
+    default_value:
+      null
+    description: >-
+        One or more `bcc:` (blind carbon copy) addresses for the email; note that
+        the data type for this config item is a list.
+    
+    
+        At least one address for `smtp-to`, `smtp-cc`, or `smtp-bcc` must be set.
+    config_group: SMTP Email Send Addressees
+    strictly_local: true
+    type: "*list"
+  - name: smtp-body
+    description: The message body to send; must be either a string or a binary value.
+    config_group: SMTP Email Body Config
+    type: any
+    strictly_local: true
+  - name: smtp-body-encoding
+    default_value:
+        "default"
+    description: >-
+        The encoding for the message body, may be:
+    
+        - `default`: means `quoted-printable` for a string, `base64` for a binary
+        body
+    
+        - `base64` base 64 encoding
+    
+        - `quoted-printablt`: quoted printable encoding
+    
+        - `none`: no encoding
+    config_group: SMTP Email Body Config
+    allowed_values:
+      - "default"
+      - "base64"
+      - "quoted-printable"
+      - "none"
+    strictly_local: true
+  - name: smtp-body-content-type
+    default_value:
+        null
+    description: The MIME type for the message body
+    config_group: SMTP Email Body Config
+    type: "*string"
+    strictly_local: true
+  - name: smtp-attachments
+    default_value:
+      null
+    description: |-
+        A list of hashes giving information for message attachments.
+    
+        Each hash in the list can have the following keys:
+        - `name`: (string) required; the attachment name / file name
+        - `mime`: (string) required; the attachment MIME type
+        - `data`: (string or binary) required; the attachment data
+        - `encoding` (string) optional one of the following values:
+          - `default`: means `base64` for binary attachments, `quoted-printable` for string attachments
+          - `base64`: base 64 encoding
+          - `quoted-printable`: quoted printable encoding
+          - `none`: no encoding
+        - `headers`: any MIME headers for the attachment
+    config_group: SMTP Email Body Config
+    strictly_local: true
+    type: "*list"
+  - name: smtp-important
+    default_value:
+        false
+    description: A flag that determines if the `Important` flag is set on the message
+    config_group: SMTP Email Message Flags
+    strictly_local: true
+    type: bool
+  - name: smtp-delivery-receipt
+    default_value:
+        false
+    description: A flag that determines if the `ReceiptDelivery` flag is set on the message
+    config_group: SMTP Email Message Flags
+    strictly_local: true
+    type: bool
+  - name: smtp-read-receipt
+    default_value:
+        false
+    description: A flag that determines if the `ReceiptRead` flag is set on the message
+    config_group: SMTP Email Message Flags
+    strictly_local: true
+    type: bool

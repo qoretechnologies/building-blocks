@@ -1,0 +1,476 @@
+# This is a generated file, don't edit!
+type: type
+path: qoretechnologies/building-blocks/salesforce/stream-event
+typeinfo:
+    base_type: hash<auto>
+    can_manage_fields: true
+    fields:
+        event:
+            canBeNull: false
+            desc: event metadata hash
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: event
+            type:
+                base_type: hash<auto>
+                can_manage_fields: true
+                fields:
+                    replayId:
+                        canBeNull: false
+                        desc: Salesforce event ID
+                        isCustom: true
+                        name: replayId
+                        type:
+                            base_type: int
+                            can_manage_fields: false
+                            fields: {}
+                            mandatory: true
+                            name: int
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                            typename: int
+                            types_accepted:
+                                - int
+                            types_returned:
+                                - int
+                mandatory: true
+                name: hash<auto>
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: hash
+                types_accepted:
+                    - hash<auto>
+                types_returned:
+                    - hash<auto>
+        payload:
+            canBeNull: false
+            desc: the event payload hash; contents depend on the event source
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: payload
+            type:
+                base_type: hash<auto>
+                can_manage_fields: false
+                fields:
+                    ChangeEventHeader:
+                        canBeNull: false
+                        desc: Salesforce change event info
+                        firstCustomInHierarchy: true
+                        isCustom: true
+                        name: ChangeEventHeader
+                        type:
+                            base_type: hash<auto>
+                            can_manage_fields: false
+                            fields:
+                                changeOrigin:
+                                    canBeNull: false
+                                    desc: >-
+                                        Only populated for changes done by API apps
+                                        or from Lightning Experience; empty
+                                        otherwise. The Salesforce API and the API
+                                        client ID that initiated the change, if set
+                                        by the client
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: changeOrigin
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: string
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: string
+                                        types_accepted:
+                                            - string
+                                        types_returned:
+                                            - string
+                                changeType:
+                                    canBeNull: false
+                                    desc: >-
+                                        The operation that caused the change. Can be
+                                        one of the following values: - `CREATE` -
+                                        `UPDATE` - `DELETE` - `UNDELETE`
+
+                                        For gap events, the change type starts with
+                                        the `GAP_` prefix: - `GAP_CREATE` -
+                                        `GAP_UPDATE` - `GAP_DELETE` - `GAP_UNDELETE`
+
+                                        For overflow events, the change type is
+                                        `GAP_OVERFLOW`.
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: changeType
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: string
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: string
+                                        types_accepted:
+                                            - string
+                                        types_returned:
+                                            - string
+                                changedFields:
+                                    canBeNull: false
+                                    desc: >-
+                                        list of the fields that were changed in an
+                                        update operation, including the
+                                        `LastModifiedDate` system field. This field
+                                        is empty for other operations, including
+                                        record creation
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: changedFields
+                                    type:
+                                        base_type: list<auto>
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: list<auto>
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                        typename: list
+                                        types_accepted:
+                                            - list<auto>
+                                        types_returned:
+                                            - list<auto>
+                                commitNumber:
+                                    canBeNull: false
+                                    desc: >-
+                                        The system change number (SCN) of a
+                                        committed transaction, which increases
+                                        sequentially
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: commitNumber
+                                    type:
+                                        base_type: int
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: int
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                        typename: int
+                                        types_accepted:
+                                            - int
+                                        types_returned:
+                                            - int
+                                commitTimestamp:
+                                    canBeNull: false
+                                    desc: >-
+                                        The date and time when the change occurred,
+                                        represented as the number of milliseconds
+                                        since `January 1, 1970 00:00:00 GMT`
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: commitTimestamp
+                                    type:
+                                        base_type: int
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: int
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                        typename: int
+                                        types_accepted:
+                                            - int
+                                        types_returned:
+                                            - int
+                                commitUser:
+                                    canBeNull: false
+                                    desc: >-
+                                        The ID of the user that ran the change
+                                        operation
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: commitUser
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: string
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: string
+                                        types_accepted:
+                                            - string
+                                        types_returned:
+                                            - string
+                                entityName:
+                                    canBeNull: false
+                                    desc: >-
+                                        The API name of the standard or custom
+                                        object that the change pertains to
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: entityName
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: string
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: string
+                                        types_accepted:
+                                            - string
+                                        types_returned:
+                                            - string
+                                recordIds:
+                                    canBeNull: false
+                                    desc: >-
+                                        One or more record IDs for the changed
+                                        records (typically only one ID)
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: recordIds
+                                    type:
+                                        base_type: list<auto>
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: list<auto>
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                        typename: list
+                                        types_accepted:
+                                            - list<auto>
+                                        types_returned:
+                                            - list<auto>
+                                sequenceNumber:
+                                    canBeNull: false
+                                    desc: >-
+                                        The sequence of the change within a
+                                        transaction
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: sequenceNumber
+                                    type:
+                                        base_type: int
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: int
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                        typename: int
+                                        types_accepted:
+                                            - int
+                                        types_returned:
+                                            - int
+                                transactionKey:
+                                    canBeNull: false
+                                    desc: >-
+                                        A string that uniquely identifies each
+                                        Salesforce transaction. You can use this key
+                                        to identify and group all changes that were
+                                        made in the same transaction
+                                    firstCustomInHierarchy: true
+                                    isCustom: true
+                                    name: transactionKey
+                                    type:
+                                        base_type: string
+                                        can_manage_fields: false
+                                        fields: {}
+                                        mandatory: true
+                                        name: string
+                                        options:
+                                            qore.no_null: true
+                                        supported_options:
+                                            qore.no_null:
+                                                desc: >-
+                                                    if True then NULL is not supported on
+                                                    input if NOTHING is also not accepted
+                                                type: bool
+                                            string.encoding:
+                                                desc: >-
+                                                    the output encoding when writing to the
+                                                    type
+                                                type: string
+                                            string.max_size_chars:
+                                                desc: >-
+                                                    the maximum length of the string in
+                                                    characters
+                                                type: integer
+                                        typename: string
+                                        types_accepted:
+                                            - string
+                                        types_returned:
+                                            - string
+                            mandatory: true
+                            name: hash<auto>
+                            options:
+                                qore.no_null: true
+                            supported_options:
+                                qore.no_null:
+                                    desc: >-
+                                        if True then NULL is not supported on input
+                                        if NOTHING is also not accepted
+                                    type: bool
+                            typename: hash
+                            types_accepted:
+                                - hash<auto>
+                            types_returned:
+                                - hash<auto>
+                mandatory: true
+                name: hash<auto>
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                typename: hash
+                types_accepted:
+                    - hash<auto>
+                types_returned:
+                    - hash<auto>
+        schema:
+            canBeNull: false
+            desc: Salesforce event REST event schema identifier
+            firstCustomInHierarchy: true
+            isCustom: true
+            name: schema
+            type:
+                base_type: string
+                can_manage_fields: false
+                fields: {}
+                mandatory: true
+                name: string
+                options:
+                    qore.no_null: true
+                supported_options:
+                    qore.no_null:
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                        type: bool
+                    string.encoding:
+                        desc: the output encoding when writing to the type
+                        type: string
+                    string.max_size_chars:
+                        desc: the maximum length of the string in characters
+                        type: integer
+                typename: string
+                types_accepted:
+                    - string
+                types_returned:
+                    - string
+    name: hash<auto>

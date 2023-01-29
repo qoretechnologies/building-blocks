@@ -1,0 +1,14 @@
+# This is a generated file, don't edit!
+type: workflow
+name: ONDEWO-CALL-TEST
+desc: Ondewo VTSI call test
+version: '1.0'
+author:
+  - Qore Technologies, s.r.o.
+autostart: 0
+groups:
+  - ondewo
+steps:
+    [
+        "OndewoCallTest:1.0"
+    ]

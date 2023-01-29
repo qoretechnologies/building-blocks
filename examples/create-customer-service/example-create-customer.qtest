@@ -1,0 +1,75 @@
+#!/usr/bin/env qore
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%require-types
+%strict-args
+%new-style
+%enable-all-warnings
+
+%exec-class ExampleCreateCustomer
+
+%requires QorusInterfaceTest
+%requires Swagger
+
+class ExampleCreateCustomer inherits QorusServiceTest {
+    constructor() : QorusServiceTest("example-create-customer", "1.0", \ARGV, Opts) {
+        addTestCase("test", \test());
+        set_return_value(main());
+    }
+
+    private usageIntern(int offset = OffsetColumn) {
+        TestReporter::usageIntern(OffsetColumn);
+    }
+
+    test() {
+        RestClient rest = getRestClient();
+
+        hash<auto> cust = {
+            "Name": "test-customer",
+            "Type": "NEW",
+            "TaxId": get_random_string(25),
+            "Address": {
+                "Name": "Test Inc",
+                "AddressLine1": "10 Street Lane",
+                "City": "Prague",
+                "PostalCode": "130 00",
+                "Country": "CZ",
+            },
+        };
+        int id = rest.post("customers", cust).body.Id;
+        assertGt(0, id);
+        on_exit rest.del("customers/" + id);
+
+        hash<auto> cust1 = rest.get("customers/" + id).body;
+        map delete cust1{$1.key}, cust1.pairIterator(), !exists $1.value;
+        map delete cust1.Address{$1.key}, cust1.Address.pairIterator(), !exists $1.value;
+
+        assertNothing(rest.put("customers/" + id, {"Type": "STANDARD"}).body);
+        cust.Type = "STANDARD";
+
+        cust1 = rest.get("customers/" + id).body;
+        map delete cust1{$1.key}, cust1.pairIterator(), !exists $1.value;
+        map delete cust1.Address{$1.key}, cust1.Address.pairIterator(), !exists $1.value;
+
+        assertEq(cust, cust1 - "Id");
+    }
+
+    RestClient getRestClient() {
+        int port = qrest.put("services/example-create-customer/getPort/call");
+        string url = qorus_get_local_url();
+        if (url =~ /:[0-9]+/) {
+            url = regex_subst(url, ":[0-9]+", ":" + port);
+        } else {
+            url += ":" + port;
+        }
+        if (url =~ /^https/) {
+            url =~ s/^https/http/;
+        }
+        string schema = qrest.get("services/example-create-customer/resource_files/example-customer-schema-1.0.yaml/data");
+        return new RestClient({
+            "url": url,
+            "validator": SwaggerLoader::fromString(schema),
+            "swagger_base_path": "/example-crm",
+        });
+    }
+}

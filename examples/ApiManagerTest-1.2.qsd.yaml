@@ -1,0 +1,41 @@
+# This is a generated file, don't edit!
+type: service
+name: ApiManagerTest
+desc: Test
+lang: python
+api-manager:
+    factory: swagger
+    provider-options:
+        schema:
+            type: file-as-string
+            value: swagger_schema.yaml
+        root-uri:
+            type: string
+            value: test
+    endpoints:
+        -
+            endpoint: /accounts/*/GET
+            type: fsm
+            value: OndewoIntentHandler
+        -
+            endpoint: /accounts/*/PUT
+            type: method
+            value: PUT_ACCOUNTS
+        -
+            endpoint: /accounts/GET
+            type: method
+            value: new_method
+author:
+  - Filip Witosz
+base-class-name: QorusService
+class-name: ApiManagerTest
+version: '1.2'
+servicetype: USER
+code: ApiManagerTest-1.2.qsd.py
+methods:
+  - name: init
+    desc: init
+  - name: PUT_ACCOUNTS
+    desc: PUT_ACCOUNTS method
+  - name: new_method
+    desc: xxx

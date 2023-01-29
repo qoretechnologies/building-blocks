@@ -1,0 +1,197 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_DataProviderSearch
+desc: >
+    ## Summary
+
+
+    Performs a search in a record-based data provider and returns the result
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the
+    `data-provider/search` API data provider in the `qorus-api` factory instead
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `DataProvider Single Record Search`
+
+
+    This connector executes the search using the input data for the search
+    parameters; the search must return a single record (or no result).
+
+
+    With this connector, the local data (i.e. `$local:*`) for the
+    `dataprovider-search-output-data` config item is the record returned if any
+    data is returned; if no data is returned from the search, no output data can
+    be stored; the internal call to `UserApi::updateOutputData()` is not
+    executed in this case.
+
+
+    ### Input/Output Connector `DataProvider Single Record Search From Config`
+
+
+    This connector executes the search using configuration for search
+    parameters; the search must return a single record (or no result).
+
+
+    The input data is available as `$local:input` for all config items resolved
+    with this connector (in internal calls to `UserApi::expandTemplatedValue()`)
+    except `dataprovider-search-output-data`.
+
+
+    With this connector, the local data (i.e. `$local:*`) for the
+    `dataprovider-search-output-data` config item is the record returned if any
+    data is returned; if no data is returned from the search, no output data can
+    be stored; the internal call to `UserApi::updateOutputData()` is not
+    executed in this case.
+
+
+    ### Input/Output Connector `DataProvider Multiple Record Search`
+
+
+    This connector executes the search using the input data for the search
+    parameters; the search can return multiple records; output data is the list
+    of hashes representing the records retrieved, or no data, in case no records
+    were matched.
+
+
+    With this connector, the local data for the
+    `dataprovider-search-output-data` config item is the records returned in
+    `$local:records`).
+
+
+    ### Input/Output Connector `DataProvider Multiple Record Search From Config`
+
+
+    This connector executes the search using configuration for search
+    parameters; the search can return multiple records; output data is the list
+    of hashes representing the records retrieved, or no data, in case no records
+    were matched.
+
+
+    The input data is available as `$local:input` for all config items resolved
+    with this connector (in internal calls to `UserApi::expandTemplatedValue()`)
+    except `dataprovider-search-output-data`.
+
+
+    With this connector, the local data for the
+    `dataprovider-search-output-data` config item is the records returned in
+    `$local:records`).
+
+
+    ## References
+
+
+    See `BBM_DataProviderSearchBase`
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: BBM_DataProviderSearchBase
+class-connectors:
+  - name: DataProvider Single Record Search
+    method: doSingleRecordSearchConnector
+    type: input-output
+    output-provider:
+        name: qore
+        path: /hash
+        type: type
+    input-provider:
+        name: qoretechnologies
+        path: /building-blocks/data-provider-search/input
+        type: type
+  - name: DataProvider Single Record Search From Config
+    method: doSingleRecordSearchConnectorFromConfig
+    output-provider:
+        name: qore
+        path: /hash
+        type: type
+    type: input-output
+  - name: DataProvider Multiple Record Search
+    type: input-output
+    method: doMultipleSearchConnector
+    input-provider:
+        name: qoretechnologies
+        path: /building-blocks/data-provider-search/input
+        type: type
+  - name: DataProvider Multiple Record Search From Config
+    type: input-output
+    method: doMultipleSearchConnectorFromConfig
+requires:
+  - BBM_DataProviderSearchBase
+version: '1.0'
+code: BBM_DataProviderSearch-1.0.qclass
+config-items:
+  - name: dataprovider-search-provider-path
+    description: the path to the data provider to use for the search
+    config_group: Data Provider Search Main
+    strictly_local: true
+    type: data-provider
+  - name: dataprovider-search-criteria
+    config_group: Data Provider Search Main
+    description: The search criteria for the data provider
+    strictly_local: true
+    type: "*hash"
+  - name: dataprovider-search-options
+    default_value:
+        null
+    config_group: Data Provider Search Main
+    description: Search options
+    strictly_local: true
+    type: "*hash"
+  - name: dataprovider-search-requires-result
+    default_value:
+        false
+    config_group: Data Provider Search Post Processing
+    description: Flag indicating if a result is required from the search
+    strictly_local: true
+    type: bool
+  - name: dataprovider-search-output-data
+    default_value:
+        null
+    description: >-
+        The configuration of output data,
+    
+    
+        For the `DataProvider Search` and `DataProvider Single Record Search`
+        connectors; this can only be used if a single record has been retrieved; in
+        this case that record is passed as input to the
+        `UserApi::updateOutputData()` method.
+    
+    
+        For the `DataProvider Multiple Record Search` connector; all records
+        retrieved can be accessed in the `records` key of the hash passed as input
+        to `UserApi::updateOutputData()`.
+    config_group: Data Provider Search Post Processing
+    strictly_local: true
+    type: "*hash"
+  - name: dataprovider-search-retries
+    default_value:
+        3
+    description: >-
+        Number of times a search action will be retried if a connection error is
+        encountered; if this number is <=0, then no retries are made
+    config_group: Data Provider Search Retry
+    strictly_local: true
+    type: int
+  - name: dataprovider-search-retry-delay
+    default_value:
+        5
+    description: >-
+        The retry delay in number of seconds; only takes effect if
+        `dataprovider-search-retries` is > 0
+    config_group: Data Provider Search Retry
+    type: int
+    strictly_local: true
+  - name: dataprovider-search-retry-errors
+    default_value:
+      - SOCKET-CONNECT-ERROR
+      - SOCKET-CLOSED
+    description: >-
+        The list of error codes that result in a retry of the search operation if
+        `dataprovider-search-retries` > 0
+    config_group: Data Provider Search Retry
+    type: list
+    strictly_local: true

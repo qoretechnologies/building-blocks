@@ -1,0 +1,21 @@
+# This is a generated file, don't edit!
+type: fsm
+name: bbm-data-provider-create-processor-test
+desc: test FSM
+groups:
+  - bb-test
+  - test
+states:
+    '1':
+        position:
+            x: 32
+            'y': 72.46249389648438
+        initial: true
+        name: Run Pipeline
+        desc: ''
+        type: state
+        id: FE6nyiVxU
+        action:
+            type: pipeline
+            value: bbm-data-provider-create-processor-test
+        execution_order: 1

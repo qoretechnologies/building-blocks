@@ -1,0 +1,57 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_GetData
+desc: >-
+    ## Summary
+
+
+    Returns data from configuration data
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the
+    `util/get-data` API data provider in the `qorus-api` factory instead
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `getData`
+
+
+    Returns the value of the `get-data` config item.
+
+
+    Input data is available as `$local:input` for all config items resolved with
+    this connector (in internal calls to `UserApi::expandTemplatedValue()`).
+
+
+    ### Input/Output Connector `getDataAsList`
+
+
+    Returns the value of the `get-data` config item, converted to a
+    single-element list if necessary.
+
+
+    Input data is available as `$local:input` for all config items resolved with
+    this connector (in internal calls to `UserApi::expandTemplatedValue()`).
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: getData
+    method: getData
+    type: input-output
+  - name: getDataAsList
+    type: input-output
+    method: getDataAsList
+version: '1.0'
+code: BBM_GetData-1.0.qclass
+config-items:
+  - name: get-data
+    description: >-
+        This value will be passed to `UserApi::expandTemplatedValue()`, and that
+        value will be returned
+    config_group: Get Data
+    strictly_local: true
+    type: any

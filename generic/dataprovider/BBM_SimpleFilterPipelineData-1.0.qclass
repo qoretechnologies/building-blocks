@@ -1,0 +1,45 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_SimpleFilterPipelineData inherits AbstractDataProcessor {
+    # NOTE: ignores input data
+    private submitImpl(code enqueue, auto _data) {
+        # perform bulk processing
+        if (_data.typeCode() == NT_HASH && _data.firstValue().typeCode() == NT_LIST) {
+            hash<auto> new_data = map {$1.key: $1.value.typeCode() == NT_LIST ? () : $1.value}, _data.pairIterator();
+            list<string> dynamic_keys = map $1.key, _data.pairIterator(), $1.value.typeCode() == NT_LIST;
+            foreach hash<auto> row in (_data.contextIterator()) {
+                # only add to new data if the filter passes for the row
+                if (UserApi::getConfigItemValue("simple-filter-criteria", row)) {
+                    UserApi::logDebug("BBM_SimpleFilterPipelineData: processing bulk row: %y", row);
+                    map new_data{$1} += row{$1}, dynamic_keys;
+                } else {
+                    UserApi::logDebug("BBM_SimpleFilterPipelineData: skipping bulk row: %y", row);
+                }
+            }
+            if (new_data.firstValue()) {
+                enqueue(new_data);
+            }
+            return;
+        }
+
+        hash<auto> local_context = _data.typeCode() == NT_HASH ? _data : {"data": _data};
+        if (UserApi::getConfigItemValue("simple-filter-criteria", local_context)) {
+            UserApi::logDebug("BBM_SimpleFilterPipelineData: processing data: %y", _data);
+            enqueue(_data);
+        } else {
+            UserApi::logDebug("BBM_SimpleFilterPipelineData: skipping data: %y", _data);
+        }
+    }
+
+    #! Returns @ref True if the data processor supports bulk operation
+    /** @return @ref True if the data processor supports bulk operation
+
+        @see dataprovider_pipeline_bulk_processing
+    */
+    private bool supportsBulkApiImpl() {
+        return True;
+    }
+}

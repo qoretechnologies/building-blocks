@@ -1,0 +1,79 @@
+# This is a generated file, don't edit!
+type: job
+name: bbm-dataprovider-record-search-test
+desc: test for the `BBM_DataProviderRecordSearch` building blocks
+lang: qore
+active: false
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusJob
+class-name: BBM_DataproviderRecordSearchTest
+classes:
+  - BBM_DataProviderSearch
+groups:
+  - test
+  - bb-test
+schedule:
+    minutes: "0"
+    hours: "0"
+    days: "1"
+    months: "1"
+    dow: "*"
+version: '1.0'
+code: bbm-dataprovider-record-search-test-1.0.qjob
+class-connections:
+    Connection_1:
+      - class: BBM_DataProviderSearch
+        connector: DataProvider Multiple Record Search
+        trigger: run
+config-items:
+  - name: dataprovider-search-provider-path
+    value:
+        "datasource/omquser/bb_local"
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderSearch
+        interface-version: '1.0'
+  - name: dataprovider-search-criteria
+    value:
+        null
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderSearch
+        interface-version: '1.0'
+  - name: dataprovider-search-options
+    value:
+        null
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderSearch
+        interface-version: '1.0'
+  - name: dataprovider-search-requires-result
+    value:
+        true
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderSearch
+        interface-version: '1.0'
+  - name: dataprovider-search-output-data
+    value:
+        records: '$jinfo:records'
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderSearch
+        interface-version: '1.0'
+  - name: dataprovider-search-retries
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderSearch
+        interface-version: '1.0'
+  - name: dataprovider-search-retry-delay
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderSearch
+        interface-version: '1.0'
+  - name: dataprovider-search-retry-errors
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderSearch
+        interface-version: '1.0'

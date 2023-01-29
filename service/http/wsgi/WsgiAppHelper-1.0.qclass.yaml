@@ -1,0 +1,26 @@
+# This is a generated file, don't edit!
+type: class
+name: WsgiAppHelper
+desc: Used to create the WSGi application object for a WSGi server
+lang: python
+version: '1.0'
+author:
+  - Qore Technologies, s.r.o.
+code: WsgiAppHelper-1.0.qclass.py
+config-items:
+  - name: wsgi-app
+    description: >+
+        Specifies the WSGi application.
+
+
+        Format: __module_name__.__var_name__:
+
+        - __module_name__: can be a full dotted path
+
+        - __var_name__: refers to a WSGI callable that should be found in the
+        specified module
+
+
+        Example: `superset.app:create_app()`
+
+    config_group: WSGi Config

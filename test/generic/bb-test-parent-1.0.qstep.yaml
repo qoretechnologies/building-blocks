@@ -1,0 +1,101 @@
+# This is a generated file, don't edit!
+type: step
+name: bb-test-parent
+desc: test bind BB
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusSubworkflowStep
+class-name: BbTestParent
+classes:
+  - BBM_BindSubworkflowStatic
+version: '1.0'
+steptype: SUBWORKFLOW
+code: bb-test-parent-1.0.qstep
+class-connections:
+    Connection_1:
+      - class: BBM_BindSubworkflowStatic
+        connector: bindSubworkflow
+        trigger: primary
+config-items:
+  - name: bind-subworkflow-name
+    value:
+        "BB-BIND-TEST-CHILD"
+    parent:
+        interface-type: class
+        interface-name: BBM_BindSubworkflow
+        interface-version: '1.0'
+  - name: bind-subworkflow-version
+    parent:
+        interface-type: class
+        interface-name: BBM_BindSubworkflow
+        interface-version: '1.0'
+  - name: bind-subworkflow-output-data
+    value:
+        workflow_instanceid: '$dynamic:{workflow_instanceid}'
+    parent:
+        interface-type: class
+        interface-name: BBM_BindSubworkflow
+        interface-version: '1.0'
+  - name: bind-subworkflow-staticdata
+    value:
+        {}
+    parent:
+        interface-type: class
+        interface-name: BBM_BindSubworkflowStatic
+        interface-version: '1.0'
+  - name: bind-subworkflow-sensitivedata
+    parent:
+        interface-type: class
+        interface-name: BBM_BindSubworkflowStatic
+        interface-version: '1.0'
+  - name: bind-subworkflow-dynamicdata
+    parent:
+        interface-type: class
+        interface-name: BBM_BindSubworkflowStatic
+        interface-version: '1.0'
+  - name: bind-subworkflow-tempdata
+    parent:
+        interface-type: class
+        interface-name: BBM_BindSubworkflowStatic
+        interface-version: '1.0'
+  - name: bind-subworkflow-external-id
+    parent:
+        interface-type: class
+        interface-name: BBM_BindSubworkflowStatic
+        interface-version: '1.0'
+  - name: bind-subworkflow-order-keys
+    parent:
+        interface-type: class
+        interface-name: BBM_BindSubworkflowStatic
+        interface-version: '1.0'
+  - name: bind-subworkflow-specific-unique-key
+    parent:
+        interface-type: class
+        interface-name: BBM_BindSubworkflowStatic
+        interface-version: '1.0'
+  - name: bind-subworkflow-unique-key
+    parent:
+        interface-type: class
+        interface-name: BBM_BindSubworkflowStatic
+        interface-version: '1.0'
+  - name: bind-subworkflow-global-unique-key
+    parent:
+        interface-type: class
+        interface-name: BBM_BindSubworkflowStatic
+        interface-version: '1.0'
+  - name: bind-subworkflow-priority
+    parent:
+        interface-type: class
+        interface-name: BBM_BindSubworkflowStatic
+        interface-version: '1.0'
+  - name: bind-subworkflow-scheduled
+    parent:
+        interface-type: class
+        interface-name: BBM_BindSubworkflowStatic
+        interface-version: '1.0'
+  - name: bind-subworkflow-skip
+    parent:
+        interface-type: class
+        interface-name: BBM_BindSubworkflowStatic
+        interface-version: '1.0'

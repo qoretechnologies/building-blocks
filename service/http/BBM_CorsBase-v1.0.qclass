@@ -1,0 +1,55 @@
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+#! The base CORS-handling code
+class BBM_CorsBase {
+    private {
+        #! the config item prefix
+        string pfx;
+    }
+
+    #! Creates the object with the given configuration
+    constructor(string pfx) {
+        self.pfx = pfx;
+    }
+
+    #! Returns CORS headers for the request if CORS is enabled, otherwise returns @ref NOTHING
+    *hash<auto> getCorsResponseHeaders(hash<auto> cx) {
+        if (UserApi::getConfigItemValue(pfx + "-cors-enable")) {
+            # IMPLEMENTME: check origin
+            return getCorsResponseHeadersIntern(cx);
+        }
+    }
+
+    #! Returns CORS headers for the request; assumes CORS is enabled and the origin is allowed
+    hash<auto> getCorsResponseHeadersIntern(hash<auto> cx) {
+        hash<auto> hdr = {
+            "Access-Control-Allow-Methods": (foldl $1 + ", " + $2, UserApi::getConfigItemValue(pfx + "-cors-methods")),
+            "Access-Control-Max-Age": UserApi::getConfigItemValue(pfx + "-cors-max-age").toString(),
+            "Access-Control-Allow-Origin": cx.hdr.origin && cx.hdr.authorization ? cx.hdr.origin : "*",
+            "Vary": "Origin",
+        };
+        if (*list<auto> allow_headers = UserApi::getConfigItemValue(pfx + "-cors-headers")) {
+            hdr."Access-Control-Allow-Headers" = (foldl $1 + ", " + $2, allow_headers);
+        }
+        if (UserApi::getConfigItemValue(pfx + "-cors-credentials")) {
+            hdr."Access-Control-Allow-Credentials" = "true";
+        }
+        return hdr;
+    }
+
+    #! handles OPTIONS requests
+    hash<HttpResponseInfo> handleOptions(hash<auto> cx) {
+        # check if CORS is enabled
+        *hash<auto> hdr = getCorsResponseHeaders(cx);
+        if (hdr) {
+            # return a CORS response
+            return AbstractHttpRequestHandler::makeResponse(200, NOTHING, hdr);
+        }
+
+        # otherwise return a 501 Not Implemeneted response
+        return AbstractHttpRequestHandler::makeResponse(501, "OPTIONS not implemented");
+    }
+}

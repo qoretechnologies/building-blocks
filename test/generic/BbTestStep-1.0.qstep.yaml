@@ -1,0 +1,12 @@
+# This is a generated file, don't edit!
+type: step
+name: BbTestStep
+desc: BB test step
+lang: qore
+base-class-name: QorusNormalStep
+class-name: BbTestStep
+version: '1.0'
+author:
+  - Qore Technologies, s.r.o.
+steptype: NORMAL
+code: BbTestStep-1.0.qstep

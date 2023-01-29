@@ -1,0 +1,185 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_WebSocketServiceEventSource
+desc: >-
+    ## Summary
+
+
+    An event source for WebSocket events in Qorus services
+
+
+    This class is designed to be used as an event source for services.
+
+
+    The class's constructor initializes the object, so if it's used as an event
+    source (or generally in any connection) or as the primary service class,
+    there is no need to use the `init` connector.
+
+
+    ## Connectors
+
+
+    ### Event Connector `webSocketReceiveEvent`
+
+
+    Provides a hash event when a WebSocket message is received from a client.
+
+
+    ### Input/Output Connector `init`
+
+
+    Must be used to initialize the object in a service if this class is not used
+    as an event source (or generally in any connection) or as the primary
+    service class.
+
+
+    ### Input/Output Connector `webSocketSendEvent`
+
+
+    Sends a message or a response to a client; the client is identified by the
+    `cid` key in the input hash.
+
+
+    No ouput data is provided.
+
+
+    ### Input/Output Connector `webSocketBroadcastEvent`
+
+
+    Broadcasts a message to all clients; the message is provided as the `msg`
+    key in the input data.
+
+
+    No ouput data is provided.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: BBM_WebSocketServiceBase
+class-connectors:
+  - name: webSocketReceiveEvent
+    type: event
+    method: event (ignored)
+    output-provider:
+        type: type
+        name: qoretechnologies
+        can_manage_fields: false
+        path: /building-blocks/websockets/recv-event
+  - name: webSocketSendEvent
+    type: input-output
+    method: sendMessage
+    input-provider:
+        type: type
+        name: qoretechnologies
+        can_manage_fields: false
+        path: /building-blocks/websockets/send-event
+  - name: init
+    type: input-output
+    method: init
+  - name: webSocketBroadcastEvent
+    type: input-output
+    method: broadcastMessage
+    output-provider:
+        type: type
+        name: qoretechnologies
+        can_manage_fields: false
+        path: /building-blocks/websockets/broadcast-event
+requires:
+  - BBM_WebSocketServiceBase
+version: '1.0'
+code: BBM_WebSocketServiceEventSource-1.0.qclass
+config-items:
+  - name: http-listener-bind-address
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: http-listener-cert-location
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: http-listener-cert-format
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: http-listener-key-location
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: http-listener-key-format
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: http-listener-key-password
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: http-listener-ssl-mode
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: http-listener-accept-all-certs
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: http-listener-capture-client-certs
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: websockets-root-uri
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: websockets-auth-name
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: websockets-cors-enable
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: websockets-cors-methods
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: websockets-cors-max-age
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: websockets-cors-headers
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: websockets-cors-credentials
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: websockets-auth-cookie
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: websockets-auth-redirect
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: http-listener-allow-sharing
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'

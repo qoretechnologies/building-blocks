@@ -1,0 +1,41 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_GetArray
+desc: >-
+    ## Summary
+
+
+    Returns an array from the configuration data
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `getArray`
+
+
+    This connector returns a list defined by the value of the `get-array-output`
+    config item; if this config item returns a non-list value, then it is
+    converted to a list before returning.
+
+
+    The input data is available as `$local:input` for all config items resolved
+    with this connector (in internal calls to
+    `UserApi::expandTemplatedValue()`).
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: getArray
+    method: getArray
+    type: input-output
+version: '1.0'
+code: BBM_GetArray-1.0.qclass
+config-items:
+  - name: get-array-output
+    config_group: Get Array
+    description: >-
+        This value will be passed to `UserApi::expandTemplatedValue()`, and that
+        value will be returned
+    strictly_local: true
+    type: "*hash"

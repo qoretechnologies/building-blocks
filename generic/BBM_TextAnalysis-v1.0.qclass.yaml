@@ -1,0 +1,146 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_TextAnalysis
+desc: >
+    ## Summary
+
+
+    A Python-based text analysis building block class using tensorflow, keras,
+    and numpy to apply a pre-trained model on text input to classify the user's
+    intent.
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `processInput`
+
+
+    Processes the input directly; input must be a string.
+
+
+    The output is any action string associated wiht the input.
+
+
+    ### Input/Output Connector `processInputHash`
+
+
+    Process input data identified as by the `text-analysis-hash-event-key`
+    config item which designates a key in the input hash holding the input data.
+
+
+    Output data is a hash with a `result` key giving the action associated with
+    the input.
+
+
+    ### Input/Output Connector `processInputFromConfig`
+
+
+    Process input data identified by the `text-analysis-input` config item,
+    where the input data to this connector is available as `$local:input`/
+
+
+    Output data is a hash with a `result` key giving the action associated with
+    the input.
+lang: python
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: processInput
+    method: processInput
+    type: input-output
+    input-provider:
+        type: type
+        name: qore
+        can_manage_fields: false
+        path: /string
+  - name: processInputHash
+    type: input-output
+    method: processInputHash
+    input-provider:
+        type: type
+        name: qoretechnologies
+        can_manage_fields: false
+        path: /building-blocks/text-analysis/input-event
+    output-provider:
+        type: type
+        name: qoretechnologies
+        can_manage_fields: false
+        path: /building-blocks/text-analysis/output-event
+  - name: processInputFromConfig
+    type: input-output
+    method: processInputFromConfig
+version: '1.0'
+code: BBM_TextAnalysis-v1.0.qclass.py
+config-items:
+  - name: text-analysis-intents
+    description: The location of the JSON file with intents
+    config_group: Text Analysis Main
+    strictly_local: true
+  - name: text-analysis-model
+    description: The location of the model
+    config_group: Text Analysis Main
+    strictly_local: true
+  - name: text-analysis-actions
+    default_value:
+        {}
+    description: >-
+        Text Analysis action hash; format: `tag`: `<action>`
+    
+    
+        Actions have the following format:
+    
+        - `fsm:<name>` launch the given Finite State Machine (must be valid for the
+        service)
+    
+        - `response`: return one of the valid responses
+    
+    
+        **NOTE**: the default action for any tag is to send a valid response
+    config_group: Text Analysis Main
+    strictly_local: true
+    type: hash
+  - name: text-analysis-threshold
+    default_value:
+        0.5
+    description: The error threshold under which requests are not understood to be matched
+    config_group: Text Analysis Main
+    strictly_local: true
+    type: float
+  - name: text-analysis-hard-actions
+    default_value:
+        {}
+    description: >-
+        The hard action hash is a hash of actions for specific literal imputs not
+        processed by the AI system; these inputs are checked first before submitting
+        for AI intent matching.
+    
+    
+        If the input matches exactly (case-insensitive), then the given action is
+        executed.
+    
+    
+        Hash keys are case-insensitive input strings, values are strings with the
+        following format:
+    
+        - `fsm:<name>`: launch the given Finite State Machine (must be a valid FSM
+        for the current interface)
+    
+        - any other string; return the given string as a response
+    config_group: Text Analysis Main
+    strictly_local: true
+    type: "*hash"
+  - name: text-analysis-hash-event-key
+    default_value:
+        "msg"
+    description: >-
+        The key value giving the input key to use in the hash argument to the
+        `processInputHash` connector
+    config_group: Text Analysis Hash Event Config
+    strictly_local: true
+  - name: test-analysis-input
+    default_value:
+        "$local:input"
+    description: Identifies the input data in the `processInputFromConfig` connector
+    config_group: Text Analysis Main
+    strictly_local: true

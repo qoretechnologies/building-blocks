@@ -1,0 +1,26 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class TestHashStore {
+    public {
+        list<hash<auto>> cache;
+    }
+
+    store(hash<auto> info) {
+        cache += info;
+    }
+
+    *list<hash<auto>> get() {
+        return cache;
+    }
+
+    *list<hash<auto>> removeCache() {
+        return remove cache;
+    }
+
+    clear() {
+        remove cache;
+    }
+}

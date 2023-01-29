@@ -1,0 +1,63 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+%module-cmd(python) add-module-path $OMQ_DIR/user/python/lib/python3.8/site-packages
+%module-cmd(python) import builtins.bytes
+
+class BBM_WsgiServer inherits BBM_HttpServiceBase {
+    private AbstractServiceHttpHandler getHandlerImpl() {
+        return new WsgiHandler();
+    }
+}
+
+class WsgiHandler inherits BBM_HttpHandlerBase {
+    public {
+        BBM_WsgiHandlerBase wsgi();
+        *string root_path;
+    }
+
+    constructor() {
+        root_path = UserApi::getConfigItemValue("http-root-uri");
+        if (exists root_path && !UserApi::getConfigItemValue("http-root-uri-is-regex")) {
+            # strip any leading / chars
+            root_path =~ s/^\/*//;
+            if (!root_path.val()) {
+                remove root_path;
+            }
+        }
+    }
+
+    hash<HttpResponseInfo> handleRequest(HttpListenerInterface listener, Socket s, hash<auto> cx, hash<auto> hdr,
+            *data body) {
+        # handle preflight (OPTIONS) requests directly
+        if (hdr.method == "OPTIONS") {
+            return handleOptions(cx);
+        }
+
+        if (exists root_path) {
+            if (!cx.root_path) {
+                cx.root_path = root_path;
+            }
+            if (!hdr.path.equalPartialPath(root_path)) {
+                # return a 404
+                return <HttpResponseInfo>{
+                    "code": 404,
+                    "body": sprintf("path %y is invalid; content is served from URI path root: %y", hdr.path,
+                        root_path),
+                };
+            }
+            splice hdr.path, 0, root_path.length();
+            # remove any leading / from path
+            hdr.path =~ s/^\/*//;
+        }
+
+        hash<HttpResponseInfo> rv = wsgi.handleRequest(listener, s, cx, hdr, body);
+
+        # add CORS headers if appropriate
+        rv.hdr += getCorsResponseHeaders(cx);
+
+        return rv;
+    }
+}

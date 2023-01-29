@@ -1,0 +1,52 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_AutoMapperRecord inherits BBM_AutoMapper {
+    public {
+        const RecoveryFieldItemName = "automapper-recovery-field";
+    }
+
+    #! returns True if output data is present, False if not
+    bool checkOutput(auto input) {
+        hash<auto> local_context = {"input": input};
+        *string field_name = UserApi::getConfigItemValue(RecoveryFieldItemName, local_context);
+        if (!exists field_name) {
+            UserApi::logInfo("recovery config item %y is not set; retrying", RecoveryFieldItemName);
+            return False;
+        }
+
+        # get mapper name
+        string mapper_name = UserApi::getConfigItemValue("automapper-mapper-name", local_context);
+        Mapper mapper = UserApi::getMapper(mapper_name);
+        AbstractDataProvider output_provider = mapper.getOutputProvider();
+
+        auto value = UserApi::getConfigItemValue("automapper-recovery-value-template", local_context);
+
+        hash<auto> where_hash = {
+            field_name: value,
+        };
+
+        *hash<auto> row = output_provider.searchSingleRecord(where_hash);
+        if (row) {
+            UserApi::logInfo("found data with %y = %y; transfer is already COMPLETE", field_name, value);
+            return True;
+        }
+
+        UserApi::logInfo("no data found with %y = %y; transfer will be retried", field_name, value);
+        return False;
+    }
+
+    #! Connector usable as step validation logic
+    /** @param input used as local data when looking up config item values; it is available in the
+        as <tt>$local:input</tt> when resolving config items
+
+        @return the string validation status, either:
+        - \c RETRY (@ref OMQ::StatRetry): no output data found; the step should be retried
+        - \c COMPLETE (@ref OMQ::StatComplete): output data found; the step is complete
+    */
+    string validate(auto input) {
+        return checkOutput(input) ? OMQ::StatComplete : OMQ::StatRetry;
+    }
+}

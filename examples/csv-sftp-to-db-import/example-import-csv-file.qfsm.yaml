@@ -1,0 +1,58 @@
+# This is a generated file, don't edit!
+type: fsm
+name: example-import-csv-file
+desc: Import a CSV file into our target table
+states:
+    '1':
+        position:
+            x: 98
+            'y': 70.5
+        initial: true
+        name: Import CSV to DB
+        desc: ''
+        type: state
+        id: QdjY_Ks4i
+        action:
+            type: connector
+            value:
+                class: BBM_AutoMapper
+                connector: runMapper
+        execution_order: 1
+        config-items:
+          - name: automapper-mapper-name
+            value:
+                "example-import-csv-file"
+            parent:
+                interface-type: class
+                interface-name: BBM_AutoMapper
+                interface-version: '1.0'
+          - name: automapper-input-request
+            parent:
+                interface-type: class
+                interface-name: BBM_AutoMapper
+                interface-version: '1.0'
+          - name: automapper-input-request-options
+            parent:
+                interface-type: class
+                interface-name: BBM_AutoMapper
+                interface-version: '1.0'
+          - name: automapper-input-search
+            parent:
+                interface-type: class
+                interface-name: BBM_AutoMapper
+                interface-version: '1.0'
+          - name: automapper-input-search-options
+            parent:
+                interface-type: class
+                interface-name: BBM_AutoMapper
+                interface-version: '1.0'
+          - name: automapper-output-upsert
+            parent:
+                interface-type: class
+                interface-name: BBM_AutoMapper
+                interface-version: '1.0'
+          - name: automapper-output-request-options
+            parent:
+                interface-type: class
+                interface-name: BBM_AutoMapper
+                interface-version: '1.0'

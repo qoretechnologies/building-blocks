@@ -1,0 +1,182 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_BindSubworkflowStatic
+desc: >-
+    ## Summary
+
+
+    Binds a subworkflow in a subworkflow step based on configuration.
+
+
+    This building block uses configuration for all binding data; for a building
+    block that binds purely based on input data, see `BBM_BindSubworkflow`
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the
+    `util/workflow/bind-subworkflow` API data provider in the `qorus-api`
+    factory instead
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `bindSubworkflow`
+
+
+    Binds the subworkflow based on configuration.
+
+
+    The input data is available as `$local:input` for all config items resolved
+    with this connector (in internal calls to
+    `UserApi::expandTemplatedValue()`).
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: BBM_BindSubworkflow
+class-connectors:
+  - name: bindSubworkflow
+    method: bindSubworkflow
+    output-provider:
+        type: type
+        name: qoretechnologies
+        can_manage_fields: false
+        path: /building-blocks/bind-subworkflow/response
+    type: input-output
+requires:
+  - BBM_BindSubworkflow
+version: '1.0'
+code: BBM_BindSubworkflowStatic-1.0.qclass
+config-items:
+  - name: bind-subworkflow-name
+    parent:
+        interface-type: class
+        interface-name: BBM_BindSubworkflow
+        interface-version: '1.0'
+  - name: bind-subworkflow-version
+    parent:
+        interface-type: class
+        interface-name: BBM_BindSubworkflow
+        interface-version: '1.0'
+  - name: bind-subworkflow-output-data
+    parent:
+        interface-type: class
+        interface-name: BBM_BindSubworkflow
+        interface-version: '1.0'
+  - name: bind-subworkflow-skip
+    default_value:
+        false
+    config_group: Bind Subworkflow Order
+    description: Set to `true` to ignore the configuration and skip the bind
+    strictly_local: true
+    type: bool
+  - name: bind-subworkflow-staticdata
+    config_group: Bind Subworkflow Data
+    description: A hash providing the initial workflow order static data
+    strictly_local: true
+    type: hash
+  - name: bind-subworkflow-sensitivedata
+    default_value:
+        null
+    config_group: Bind Subworkflow Data
+    description: An optional hash providing the initial workflow order sensitive data
+    strictly_local: true
+    type: "*hash"
+  - name: bind-subworkflow-dynamicdata
+    default_value:
+        null
+    config_group: Bind Subworkflow Data
+    description: An optional hash providing the initial workflow order dynamic data
+    strictly_local: true
+    type: "*hash"
+  - name: bind-subworkflow-tempdata
+    default_value:
+        null
+    config_group: Bind Subworkflow Data
+    description: >-
+        An optional hash providing the initial workflow order temporary / scratch
+        data
+    strictly_local: true
+    type: "*hash"
+  - name: bind-subworkflow-external-id
+    default_value:
+        null
+    config_group: Bind Subworkflow Data
+    description: >-
+        An optional external order ID; not a unique key for the order; use order
+        keys for generic order key references
+    strictly_local: true
+    type: "*hash"
+  - name: bind-subworkflow-order-keys
+    default_value:
+        null
+    config_group: Bind Subworkflow Keys
+    description: >-
+        An optional hash of order keys; the keys in this hash must correspond to
+        registered workflow order keys, the values are one or more key values. These
+        keys can be used to quickly search for workflow order data
+    strictly_local: true
+    type: "*hash"
+  - name: bind-subworkflow-specific-unique-key
+    default_value:
+        null
+    config_group: Bind Subworkflow Keys
+    description: >-
+        An optional hash of order keys that will ensure uniqueness for a particular
+        workflow (workflowid or name and version); the keys in this hash must
+        correspond to registered workflow order keys, the values are one or more key
+        values.  These keys can be used to quickly search for workflow order data.
+    
+        If a workflow order for the same exact workflow (workflowid) has one of the
+        given key/value combinations already, then the workflow order creation
+        duplicate logic will be triggered.
+    strictly_local: true
+    type: "*hash"
+  - name: bind-subworkflow-unique-key
+    default_value:
+        null
+    config_group: Bind Subworkflow Keys
+    description: >-
+        An optional hash of order keys that will ensure uniqueness for a particular
+        workflow name (across all versions); the keys in this hash must correspond
+        to registered workflow order keys, the values are one or more key values.
+        These keys can be used to quickly search for workflow order data.
+    
+        If a workflow order for the same workflow name (across all version) has one
+        of the given key/value combinations already, then the workflow order
+        creation duplicate logic will be triggered.
+    strictly_local: true
+    type: "*hash"
+  - name: bind-subworkflow-global-unique-key
+    default_value:
+        null
+    config_group: Bind Subworkflow Keys
+    description: >-
+        An optional hash of order keys that will ensure uniqueness across all
+        workflows in the given Qorus instance; the keys in this hash must correspond
+        to registered workflow order keys, the values are one or more key values.
+        These keys can be used to quickly search for workflow order data.
+    
+        If a workflow order already exists with one of the given key/value
+        combinations already, then the workflow order creation duplicate logic will
+        be triggered.
+    strictly_local: true
+    type: "*hash"
+  - name: bind-subworkflow-priority
+    default_value:
+        500
+    config_group: Bind Subworkflow Additional Info
+    description: >-
+        The workflow order priority value from 0 - 999; priority 0 is the highest;
+        999 is the lowest
+    strictly_local: true
+    type: int
+  - name: bind-subworkflow-scheduled
+    default_value:
+        null
+    config_group: Bind Subworkflow Additional Info
+    description: >-
+        The workflow order scheduled date; if this value is set, then the order
+        cannot be processed before the given date/time value
+    strictly_local: true
+    type: "*date"

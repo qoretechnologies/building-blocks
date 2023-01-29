@@ -1,0 +1,59 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_QorusUiExtension
+desc: >-
+    ## Summary
+
+
+    Qorus web UI extension handlindler service building block.   Allows a Qorus
+    service to provide a UI extension with configuration.
+
+
+    The UI resources files should be provided as service resources; the default
+    resource will be served according to config item
+    `ui-extension-default-resource`.
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `init`
+
+
+    Initializes the service according to configurqation; input data is returned
+    as-is but is otherwise ignored.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: init
+    type: input-output
+    method: init
+version: '1.0'
+code: BBM_QorusUiExtension-1.0.qclass
+config-items:
+  - name: ui-extension-group
+    description: |-
+        The top-level group name for this extension.
+    
+        All UI extensions in the same group will be presented together
+    config_group: Qorus UI Extension Config
+    strictly_local: true
+  - name: ui-extension-menu
+    description: The menu entry text for the UI extension under the group
+    config_group: Qorus UI Extension Config
+    strictly_local: true
+  - name: ui-extension-desc
+    description: The description for the menu entry
+    config_group: Qorus UI Extension Config
+    strictly_local: true
+  - name: ui-extension-default-resource
+    default_value:
+        null
+    description: |-
+        The default HTTP service resource for the UI extension.
+    
+        Use this if the extension is served from service resources automatically.
+    config_group: Qorus UI Extension Config
+    type: "*string"
+    strictly_local: true

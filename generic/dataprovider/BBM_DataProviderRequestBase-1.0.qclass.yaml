@@ -1,0 +1,28 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_DataProviderRequestBase
+desc: >-
+    ## Summary
+
+
+    Base class for using the data-provider request API to make requests; no
+    configuration
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the
+    `data-provider/do-request` API data provider in the `qorus-api` factory
+    instead
+
+
+    ## References
+
+
+    See `BBM_DataProviderRequest` and `BBM_DataProviderRequestWithRecovery`
+    forbuilding blocks with configuration and connectors based on this base
+    class.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+version: '1.0'
+code: BBM_DataProviderRequestBase-1.0.qclass

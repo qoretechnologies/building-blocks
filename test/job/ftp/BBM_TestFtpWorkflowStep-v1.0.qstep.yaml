@@ -1,0 +1,12 @@
+# This is a generated file, don't edit!
+type: step
+name: BBM_TestFtpWorkflowStep
+desc: Qore test step class
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusNormalStep
+class-name: BBM_TestFtpWorkflowStep
+version: '1.0'
+steptype: NORMAL
+code: BBM_TestFtpWorkflowStep-v1.0.qstep

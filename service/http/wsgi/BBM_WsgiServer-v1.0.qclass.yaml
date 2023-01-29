@@ -1,0 +1,136 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_WsgiServer
+desc: >-
+    WSGi Server Building Block for Qorus
+
+
+    This class is written in Qore instead of Python to be thread-safe and
+    scalable.
+
+
+    The `WsgiAppHelper` class is used to initialize the WSGi app with the same
+    syntax as [Gunicorn](https://gunicorn.org/)
+lang: qore
+base-class-name: BBM_HttpServiceBase
+requires:
+  - BBM_HttpServiceBase
+  - BBM_WsgiHandlerBase
+version: '1.0'
+code: BBM_WsgiServer-v1.0.qclass
+config-items:
+  - name: http-listener-bind-address
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-listener-cert-location
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-listener-cert-format
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-listener-key-location
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-listener-key-format
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-listener-key-password
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-listener-ssl-mode
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-listener-accept-all-certs
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-listener-capture-client-certs
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-root-uri
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-root-uri-is-regex
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-auth-name
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-match-content-types
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-match-headers
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-cors-enable
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-cors-methods
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-cors-max-age
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-cors-headers
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-cors-credentials
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: wsgi-app
+    parent:
+        interface-type: class
+        interface-name: WsgiAppHelper
+        interface-version: '1.0'
+  - name: http-auth-cookie
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-auth-redirect
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-listener-allow-sharing
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'

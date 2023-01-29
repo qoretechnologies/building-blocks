@@ -1,0 +1,104 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_GenericMapper
+desc: >
+    ## Summary
+
+
+    This is a generic mapper class building block that can be used to make
+    generic data transformations.
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `map`
+
+
+    This connector uses the configured mapper to transform the input data; the
+    output data is the result of the map operation.
+
+
+    Input data is available as `$local:input` when resolving config items with
+    this connector.
+
+
+    Note that input data used for the mapper is always the connector input data
+    if present.
+
+
+    ### Input/Output Connector `mapFromConfig`
+
+
+    This connector uses the configured mapper to transform the input data; the
+    output data is the result of the map operation.
+
+
+    Note that input data used for the mapper is always taken from the
+    `automapper-input` config item; input data is only used as context data
+    (i.e. as `$local:input`) when resolving config item template values.
+lang: qore
+class-connectors:
+  - name: map
+    method: genericMapper
+    type: input-output
+  - name: mapFromConfig
+    type: input-output
+    method: mapFromConfig
+requires:
+  - BBM_AutoMapper
+version: '1.0'
+code: BBM_GenericMapper-1.0.qclass
+config-items:
+  - name: automapper-mapper-name
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: '1.0'
+  - name: automapper-input-request
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: '1.0'
+  - name: automapper-input-request-options
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: '1.0'
+  - name: automapper-input-search
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: '1.0'
+  - name: automapper-input-search-options
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: '1.0'
+  - name: automapper-output-upsert
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: '1.0'
+  - name: automapper-output-request-options
+    parent:
+        interface-type: class
+        interface-name: BBM_AutoMapper
+        interface-version: '1.0'
+  - name: automapper-input
+    default_value:
+        null
+    config_group: Auto Mapper Config
+    description: 'The input data for the mapper, if required'
+    strictly_local: true
+    type: "*hash"
+  - name: automapper-output
+    default_value:
+        null
+    config_group: Auto Mapper Config
+    description: >-
+        the configuration of output data; this can only be used if a single record
+        has been retrieved; in this case that record is passed as input to the
+        `UserApi::updateOutputData()` method
+    strictly_local: true
+    type: "*hash"

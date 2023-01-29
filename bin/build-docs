@@ -1,0 +1,139 @@
+#!/usr/bin/env qore
+
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+%requires Util
+%requires yaml
+
+%exec-class BuildDocs
+
+class BuildDocs {
+    public {
+        string src_root_dir;
+        string template_path;
+        string target_path;
+
+        # program options
+        hash<auto> opts;
+
+        # maps a pathname -> BB class docs
+        hash<string, string> docmap;
+
+        const Readme = "README.md";
+
+        const TemplateSuffix = ".template";
+
+        const DocHeader = "__Building Block Documentation Details__";
+
+        const Opts = {
+            "help":    "h,help",
+            "verbose": "v,verbose:i+",
+        };
+    }
+
+    constructor() {
+        opts = GetOpt::parseExit(Opts, \ARGV);
+        if (opts.help) {
+            usage();
+        }
+
+        # get source root dir
+        src_root_dir = normalize_dir(get_script_dir() + DirSep + "..");
+        src_root_dir = regex_subst(src_root_dir, "^" + getcwd(), ".");
+
+        # find target file path
+        target_path = src_root_dir + DirSep + Readme;
+
+        # find source template readme file
+        template_path = target_path + TemplateSuffix;
+
+        if (!is_readable(template_path)) {
+            stderr.printf("%s: cannot read source template file: %s\n", template_path, strerror());
+            exit(1);
+        }
+
+        if (opts.verbose) {
+            printf("%s: source template %y; scanning %y -> %y\n", get_script_name(), template_path, src_root_dir,
+                target_path);
+        }
+
+        scanSources(src_root_dir);
+
+        #printf("cached docs for:\n");
+        #map printf("+ %y\n", $1), keys docmap;
+
+        generateTargetFile();
+    }
+
+    scanSources(string path) {
+        #printf("scanning %y\n", path);
+        # scan for class yaml files
+        Dir dir();
+        dir.chdir(path);
+        map scanSources(path + DirSep + $1), dir.listDirs(), $1 !~ /^\./ && $1 !~ /test/;
+        map scanFile(path + DirSep + $1), dir.listFiles("\\.yaml$");
+    }
+
+    scanFile(string path) {
+        hash<auto> metadata = parse_yaml(File::readTextFile(path));
+        # ignore non-class files
+        if (metadata.type != "class") {
+            return;
+        }
+        #metadata.desc =~ s/#/##/;
+        # cache class markdown description
+        docmap{metadata.name} = metadata.desc;
+    }
+
+    generateTargetFile() {
+        # open input file
+        InputStreamLineIterator i(new FileInputStream(template_path));
+        # open temporary output file
+        string tmp_target_path = target_path + ".tmp";
+        StreamWriter f(new FileOutputStream(tmp_target_path));
+        on_success {
+            printf("renaming temporary output file %y -> %y\n", tmp_target_path, target_path);
+            rename(tmp_target_path, target_path);
+        }
+
+        while (i.next()) {
+            string line = i.getValue();
+            if (line =~ /^\|\[/) {
+                # get building Block
+                string bb = (line =~ x/^\|\[([^\|]+)\]/)[0];
+                if (!docmap{bb}) {
+                    throw "BUILDING-BLOCK-ERROR", sprintf("building block %y referenced in README has no reference file", bb);
+                }
+                # rewrite link
+                string link = makeLink(bb);
+                line = regex_subst(line, "^(\\|\\[[^\\]]+\\])\\([^\\)]+\\)(.*)", sprintf("$1(%s)$2", link));
+                f.printf("%s\n", line);
+                continue;
+            } else if (line == DocHeader) {
+                map f.printf("\n## **%s Building Block**\n\n%s\n___\n", $1.key, $1.value), docmap{sort(keys docmap)}.pairIterator();
+                if (opts.verbose) {
+                    printf("output documentation for %d building blocks\n", docmap.size());
+                }
+            } else {
+                f.printf("%s\n", line);
+            }
+        }
+    }
+
+    static string makeLink(string bb) {
+        bb =~ tr/A-Z/a-z/;
+        # convert spaces to dashes
+        bb =~ s/ /-/g;
+        return "#" + bb + "-building-block";
+    }
+
+    static usage() {
+        printf("usage %s [options]\n");
+        printf(" -h,--help           this help text\n");
+        printf(" -v,--verbose[=ARG]  higher verbose levels result in more output\n");
+        exit(0);
+    }
+}

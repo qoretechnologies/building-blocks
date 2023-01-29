@@ -1,0 +1,45 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class ExampleSftpPoller inherits BBM_SftpPollerCreateOrderJob {
+    private {
+        ####### GENERATED SECTION! DON'T EDIT! ########
+        ClassConnections_ExampleSftpPoller class_connections();
+        ############ GENERATED SECTION END ############
+    }
+
+    ####### GENERATED SECTION! DON'T EDIT! ########
+    run() {
+        class_connections.run();
+    }
+    ############ GENERATED SECTION END ############
+}
+
+####### GENERATED SECTION! DON'T EDIT! ########
+class ClassConnections_ExampleSftpPoller {
+    private {
+        # map of prefixed class names to class instances
+        hash<auto> class_map;
+    }
+
+    constructor() {
+        class_map = {
+            "BBM_SftpPollerCreateOrderJob": new BBM_SftpPollerCreateOrderJob(),
+        };
+    }
+
+    auto callClassWithPrefixMethod(string prefixed_class, string method) {
+        UserApi::logDebug("ClassConnections_ExampleSftpPoller: callClassWithPrefixMethod: method: %s class: %y", method, prefixed_class);
+        return call_object_method_args(class_map{prefixed_class}, method, argv);
+    }
+
+    auto run(auto params) {
+        UserApi::logDebug("run called with data: %y", params);
+
+        UserApi::logDebug("calling runJob: %y", params);
+        return callClassWithPrefixMethod("BBM_SftpPollerCreateOrderJob", "runJob", params);
+    }
+}
+############ GENERATED SECTION END ############

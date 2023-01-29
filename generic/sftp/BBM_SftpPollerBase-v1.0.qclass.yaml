@@ -1,0 +1,225 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_SftpPollerBase
+desc: >+
+    ## Summary
+
+
+    Generic building block class for polling for files from an SFTP server.
+
+
+    This class is meant to be used as a base class for interfaces (normally a
+    job or a service) that provide SFTP polling as an event connector.
+
+
+    If config item `sftp-polling-file-connection` is set, then files are
+    streamed efficiently to the given local file system location and not stored
+    in memory.  If this config item is not set, then all files are transferred
+    and stored in main memory, which can cause problems with very large files.
+
+
+    If uploads to the SFTP server are not atomic, the `sftp-polling-minage`
+    config item can be used to ensure that files are only polled after they have
+    been present on the FTP server for a defined period of time, which should be
+    greater than the maximum time required to transfer the largest files.
+
+
+    Note that this class can be used in either a job or a service to provide
+    regular polling for files from an SFTP server.  Use in a job is encouraged,
+    as the job schedule is easily controlled by operational users and is the
+    pollijng schedule, additionally the results of each polling operation are
+    exposed in the UI and in the API as job results, making it easier to monitor
+    the SFTP polling status.
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `pollForFiles`
+
+
+    Used to poll for files once and return file data as output for all files
+    polled.  Input data is ignored.
+
+
+    ### Input/Output Connector `start`
+
+
+    This connector can be used in a service to poll in a service's `start()`
+    method in a background thread.  In order to use this class's `sftpFileEvent`
+    connector, this connector must be used as the service's `start()` method.
+
+
+    Input data is ignored and passed through to the output data.
+
+
+    ### Input/Output Connector `stop`
+
+
+    This connector can be used in a service to stop polling in a service's
+    `stop()` method.   In order to use this class's `sftpFileEvent` connector,
+    this connector must be used as the service's `stop()` method.
+
+
+    Input data is ignored and passed through to the output data.
+
+
+    ### Event Connector `sftpFileEvent`
+
+
+    This event connector can be used in a service to process file events once
+    they have been polled and fully transferred to the server.  In order to use
+    this connector, the `start` and `stop` connectors must be used in a
+    service's `start()` and `stop()` methods to start and stop the polling
+    thread, respectively.
+
+
+    ## References
+
+
+    See:
+
+    - class building block: `BBM_SftpPollerCreateOrder`
+
+    - job base class: `BBM_SftpPollerCreateOrderJob`
+
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: pollForFiles
+    type: input-output
+    method: pollForFiles
+  - name: start
+    type: input-output
+    method: start
+  - name: stop
+    type: input-output
+    method: stop
+  - name: ftpFileEvent
+    type: event
+    method: sftpFileEvent
+    output-provider:
+        type: type
+        name: qoretechnologies
+        can_manage_fields: false
+        path: /building-blocks/sftp/event
+requires:
+  - BBM_RegularExpressions
+version: '1.0'
+code: BBM_SftpPollerBase-v1.0.qclass
+config-items:
+  - name: sftp-polling-connection-name
+    description: the name of the SFTP connection
+    config_group: SFTP Polling
+    strictly_local: true
+    type: connection
+  - name: sftp-polling-mask
+    description: >
+        the filename mask for files to match when polling; is a regular expression
+        if `sftp-polling-mask-regex` is set; if not, then this value is a glob value
+    strictly_local: true
+    config_group: SFTP Polling
+  - name: sftp-polling-mask-regex
+    default_value:
+        false
+    type: bool
+    description: if `sftp-polling-mask` is a regular expression or not
+    strictly_local: true
+    config_group: SFTP Polling
+  - name: sftp-polling-regex-options
+    default_value:
+        "NONE"
+    allowed_values:
+      - "NONE"
+      - "IGNORE-CASE"
+      - "MULTILINE"
+      - "IGNORE-CASE and MULTILINE"
+    description: >
+        regular expression options for SFTP polling; only used if
+        `sftp-polling-mask-regex` is true
+    strictly_local: true
+    config_group: SFTP Polling
+  - name: sftp-polling-interval-secs
+    default_value:
+        60
+    description: >-
+        The polling interval in seconds for when this class is used in a service
+        with the `start` and `stop` and `sftpFileEvent` connectors.
+    
+    
+        This config item is only used when this class is used in the background
+        polling thread in a Qorus service with the above-mentioned connectors; it is
+        ignored in all other cases.
+    config_group: SFTP Polling
+    strictly_local: true
+    type: int
+  - name: sftp-polling-file-connection
+    default_value:
+        null
+    description: >
+        the name of a local file connection where to save files;
+        `sftp-polling-file-name` can be set to give a subdirectory path offset from
+        the connection; note that if this configuration item is not set, then files
+        are retrieved to memory, this should only be done for relatively small
+        files; if files can be large, then it's recommended to set this option and
+        process files directly from the filesystem
+    config_group: SFTP File Options
+    strictly_local: true
+    type: "*connection"
+  - name: sftp-polling-file-name
+    default_value:
+        null
+    type: "*string"
+    description: >
+        a template string giving the target local file name as offset from the
+        connection identified with `sftp-polling-file-connection`; ignored if
+        `sftp-polling-file-connection` is not set; local context includes the event
+        information (ex: `subdir/$local:name`)
+    strictly_local: true
+    config_group: SFTP File Options
+  - name: sftp-polling-file-temp-template
+    default_value:
+        ".tmp.$local:{name}.part"
+    description: >
+        the template for the temporary filename used while transferring the file,
+        the file event info is added to the local context (ex: the target filename
+        is available as `$local:name`)
+    strictly_local: true
+    config_group: SFTP Polling Fine Tuning
+  - name: sftp-polling-minage
+    default_value:
+        0
+    type: int
+    description: >-
+        the minimum age of the file in seconds before it will be visible to the
+        poller
+    strictly_local: true
+    config_group: SFTP Polling Fine Tuning
+  - name: sftp-polling-encoding
+    default_value:
+        null
+    type: "*string"
+    description: the character encoding for any text files received
+    strictly_local: true
+    config_group: SFTP Polling Fine Tuning
+  - name: sftp-polling-delete-file
+    default_value:
+        true
+    type: bool
+    description: >
+        if true then files will be deleted after the polling action has been
+        executed on them; if false then `sftp-polling-move-target` must be set
+    strictly_local: true
+    config_group: SFTP Polling Post Processing
+  - name: sftp-polling-move-target
+    default_value:
+        null
+    type: "*string"
+    description: >
+        the directory and target filename for moving / renaming files after the
+        polling action has been executed, only used if `sftp-polling-delete-file` is
+        false; file event info is added to the local context (ex:
+        `complete/$local:{name}`)"
+    strictly_local: true
+    config_group: SFTP Polling Post Processing

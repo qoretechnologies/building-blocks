@@ -1,0 +1,87 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! for bind subworkflow options
+hashdecl BindSubworkflowOptionInfo {
+    #! the workflow name
+    string workflow = UserApi::getConfigItemValue("bind-subworkflow-name");
+    #! the optional workflow version
+    *string version = UserApi::getConfigItemValue("bind-subworkflow-version");
+}
+
+#! Binds a subworkflow order in a subworkflow step according to input data and configuration
+/** Configuration items:
+    - \c bind-subworkflow-name: the name of the workflow to create the order for
+    - \c bind-subworkflow-version: the optional version of the workflow, if not set, then an order will be created for
+      the latest version of the workflow
+    - \c bind-subworkflow-output-data: a hash describing where output data should be written
+
+    Connector types:
+    - \c input: \c qoretechnologies/building-blocks/bind-subworkflow/request
+    - \c output: \c qoretechnologies/building-blocks/bind-subworkflow/response
+*/
+class BBM_BindSubworkflow {
+    public {
+        const OutputItem = "bind-subworkflow-output-data";
+    }
+
+    #! Bind subworkflow order method suitable for use as an input/output connector
+    /** @param order_data the input order data; should have type
+        \c qoretechnologies/building-blocks/bind-subworkflow/request
+
+        @return of type \c qoretechnologies/building-blocks/bind-subworkflow/response with the following keys:
+        - skipped (bool): @ref True if the bind operation was skipped, @ref False if not
+        - workflow_instanceid (*int): the workflow instance ID if the bind operation was performed (i.e. \a skipped is @ref False)
+    */
+    static hash<auto> bindSubworkflow(*hash<auto> order_data) {
+        return BBM_BindSubworkflow::bindSubworkflowIntern(order_data, <BindSubworkflowOptionInfo>{});
+    }
+
+    #! Bind subworkflow order
+    /** @param order_data the input order data; should have type
+        \c qoretechnologies/building-blocks/bind-subworkflow/request
+
+        @return of type \c qoretechnologies/building-blocks/bind-subworkflow/response with the following keys:
+        - skipped (bool): @ref True if the bind operation was skipped, @ref False if not
+        - workflow_instanceid (int): the workflow instance ID if the bind operation was performed; if \a skipped is
+          @ref True, then this value will be \c -1
+    */
+    static hash<auto> bindSubworkflowIntern(*hash<auto> order_data, hash<BindSubworkflowOptionInfo> opts) {
+        string wfdesc = opts.workflow;
+        if (opts.version) {
+            wfdesc += sprintf(" v%s", opts.version);
+        }
+
+        if (!order_data) {
+            throw "BIND-SUBWORKFLOW-ERROR", "missing order data hash argument";
+        }
+
+        hash<auto> rv;
+        if (remove order_data.skip) {
+            UserApi::logInfo("skipping subworkflow bind operation for %s", wfdesc);
+            QorusSubworkflowStep::skipSubworkflow();
+            rv = {
+                "skipped": True,
+                "workflow_instanceid": -1,
+            };
+        } else {
+            rv = {
+                "skipped": False,
+                "workflow_instanceid": QorusSubworkflowStep::bindSubworkflow({
+                    "name": opts.workflow,
+                    "version": opts.version,
+                }, order_data).workflow_instanceid.toInt(),
+            };
+        }
+        UserApi::logInfo("bound %s order instance id: %d", wfdesc, rv.workflow_instanceid);
+
+        # save output data if configured
+        *hash<auto> output_data = UserApi::getConfigItemValue(OutputItem, NOTHING, False);
+        if (output_data) {
+            UserApi::updateOutputData(rv, output_data);
+        }
+        return rv;
+    }
+}

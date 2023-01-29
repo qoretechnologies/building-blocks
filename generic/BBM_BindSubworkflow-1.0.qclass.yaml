@@ -1,0 +1,78 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_BindSubworkflow
+desc: >-
+    ## Summary
+
+
+    Binds a subworkflow in a subworkflow step.
+
+
+    This building block uses the input data for binding; for a building block
+    that binds based on configuration, see `BBM_BindSubworkflowStatic`
+
+
+    This building block is useful only in limited use cases;
+    `BBM_BindSubworkflowStatic` can do everything this building block can do and
+    more; it's recommended to use `BBM_BindSubworkflowStatic` instead.
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the
+    `util/workflow/bind-subworkflow` API data provider in the `qorus-api`
+    factory instead
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `bindSubworkflow`
+
+
+    Binds the subworkflow based on the input data; configuration is only used to
+    identify the workflow and to specify output data handling.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: bindSubworkflow
+    type: input-output
+    method: bindSubworkflow
+    output-provider:
+        type: type
+        name: qoretechnologies
+        can_manage_fields: false
+        path: /building-blocks/bind-subworkflow/response
+    input-provider:
+        type: type
+        name: qoretechnologies
+        can_manage_fields: false
+        path: /building-blocks/bind-subworkflow/request
+version: '1.0'
+code: BBM_BindSubworkflow-1.0.qclass
+config-items:
+  - name: bind-subworkflow-name
+    description: the name of the subworkflow
+    config_group: Bind Subworkflow Order
+    strictly_local: true
+    type: workflow
+  - name: bind-subworkflow-version
+    default_value:
+        null
+    type: "*string"
+    description: >-
+        the version of the subworkflow; if not set (the default), the latest version
+        will be used
+    strictly_local: true
+    config_group: Bind Subworkflow Order
+  - name: bind-subworkflow-output-data
+    default_value:
+        null
+    config_group: Bind Subworkflow Order Post Processing
+    description: >-
+        the configuration of output data for `UserApi::updateOutputData()`; the
+        output data will include a `workflow_instanceid` key with the ID created for
+        the new workflow order (if the operation was not skipped) and a `skipped`
+        key with a boolean value indicating if the bind operation was skipped
+    strictly_local: true
+    type: "*hash"

@@ -1,0 +1,16 @@
+type: workflow
+name: BB-TEST-FTP-WORKFLOW-DUP
+version: "1.0"
+desc: FTP create order job BB test workflow
+author:
+  - Qore Technologies, s.r.o.
+autostart: 0
+keylist:
+    - filename
+    - orig_name
+groups:
+    - test
+    - bb-test
+remote: false
+sla_threshold: 20
+steps: ["BBM_TestFtpWorkflowStep:1.0"]

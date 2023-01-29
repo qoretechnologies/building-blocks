@@ -1,0 +1,74 @@
+# This is a generated file, don't edit!
+type: job
+name: bbm-data-serialization-test
+desc: BBM_DataSerialization test
+lang: qore
+active: false
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusJob
+class-name: BBM_DataSerializationTest
+classes:
+  - BBM_DataSerialization
+  - BBM_OutputData
+  - BBM_GetData
+schedule:
+    minutes: "0"
+    hours: "0"
+    days: "*"
+    months: "*"
+    dow: "*"
+version: '1.0'
+code: bbm-data-serialization-test-1.0.qjob
+class-connections:
+    run:
+      - class: BBM_GetData
+        trigger: run
+        connector: getData
+      - class: BBM_DataSerialization
+        connector: serialize
+      - class: BBM_OutputData
+        connector: writeOutputData
+config-items:
+  - name: data-serialization-format
+    value:
+        "XML"
+    parent:
+        interface-type: class
+        interface-name: BBM_DataSerialization
+        interface-version: '1.0'
+  - name: output-data-hash
+    value:
+        '$local:*': '$jinfo:result'
+    parent:
+        interface-type: class
+        interface-name: BBM_OutputData
+        interface-version: '1.0'
+  - name: data-serialization-verbose-output
+    value:
+        true
+    parent:
+        interface-type: class
+        interface-name: BBM_DataSerialization
+        interface-version: '1.0'
+  - name: data-serialization-xml-key
+    value:
+        "test"
+    parent:
+        interface-type: class
+        interface-name: BBM_DataSerialization
+        interface-version: '1.0'
+  - name: get-data
+    value:
+        "$qore-expr:{\"a\": 1, \"b\": 2}"
+    parent:
+        interface-type: class
+        interface-name: BBM_GetData
+        interface-version: '1.0'
+    is_value_templated_string: true
+    value_true_type: string
+  - name: data-serialization-input
+    parent:
+        interface-type: class
+        interface-name: BBM_DataSerialization
+        interface-version: '1.0'

@@ -1,0 +1,57 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_SnmpServiceTrapEventSource
+desc: Building block providing an event source for SNMP traps
+lang: java
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: snmpTrap
+    type: event
+    method: snmpTrap
+requires:
+  - BBM_SnmpCommonBase
+tags:
+    classpath: $OMQ_DIR/user/building-blocks/snmp/jar/snmp4j-3.6.2.jar
+version: '1.0'
+code: bbm_snmpservicetrapeventsource_1_0_class/BBM_SnmpServiceTrapEventSource.java
+config-items:
+  - name: snmp-event-source-listen-address
+    description: >-
+        The UDP listener address in the format `<address>/<port>`; ex:
+    
+        - `0.0.0.0/9988`: listen on all interfaces on IPv4 UDP port 9988
+    
+        - `127.0.0.1/9988`: listen on the localhost interface only on IPv4 UDP port
+        9988
+    
+        - `[::]/9988`: listen on all interfaces on IPv6 UDP port 9988
+    
+        - `[::1]/9988`: listen on the localhost interface only on IPv6 UDP port 9988
+    config_group: SNMP Event Source Config
+    strictly_local: true
+  - name: snmp-user
+    parent:
+        interface-type: class
+        interface-name: BBM_SnmpCommonBase
+        interface-version: '1.0'
+  - name: snmp-auth-passphrase
+    parent:
+        interface-type: class
+        interface-name: BBM_SnmpCommonBase
+        interface-version: '1.0'
+  - name: snmp-auth-protocol
+    parent:
+        interface-type: class
+        interface-name: BBM_SnmpCommonBase
+        interface-version: '1.0'
+  - name: snmp-priv-passphrase
+    parent:
+        interface-type: class
+        interface-name: BBM_SnmpCommonBase
+        interface-version: '1.0'
+  - name: snmp-priv-protocol
+    parent:
+        interface-type: class
+        interface-name: BBM_SnmpCommonBase
+        interface-version: '1.0'

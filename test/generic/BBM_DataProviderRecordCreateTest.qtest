@@ -1,0 +1,73 @@
+#!/usr/bin/env qore
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%require-types
+%strict-args
+%new-style
+%enable-all-warnings
+
+%exec-class BBM_DataProviderRecordCreateTest
+
+%requires QorusInterfaceTest
+%requires SqlUtil
+
+class BBM_DataProviderRecordCreateTest inherits QorusJobTest {
+    private {
+        const JobName = "bbm-data-provider-create-test";
+    }
+
+    constructor() : QorusJobTest(JobName, "1.0", \ARGV, Opts) {
+        addTestCase("record create test", \recordCreateTest());
+        set_return_value(main());
+    }
+
+    private usageIntern(int offset = OffsetColumn) {
+        TestReporter::usageIntern(OffsetColumn);
+    }
+
+    recordCreateTest() {
+        AbstractTable bb_local = (new Table(omquser, "bb_local")).getTable();
+        {
+            on_error bb_local.rollback();
+            on_success bb_local.commit();
+
+            bb_local.del();
+        }
+
+        RunJobResult job(OMQ::StatComplete);
+        exec(job);
+
+        qrest.put("jobs/bbm-data-provider-create-test/config/dataprovider-create-upsert", {"value": True});
+
+        job = new RunJobResult(OMQ::StatComplete);
+        exec(job);
+
+        hash<auto> h = qrest.put("jobs/bbm-data-provider-record-update-test/run");
+        assertEq(OMQ::StatComplete, h.status);
+
+        assertEq("a3", bb_local.selectRow({"where": {"qorus_wfiid": 1}}).remote_id);
+
+        qrest.put("jobs/bbm-dataprovider-record-search-test/config/dataprovider-search-requires-result",
+            {"value": True});
+        qrest.put("jobs/bbm-dataprovider-record-search-test/config/dataprovider-search-criteria",
+            {"value": {"qorus_wfiid": 1}});
+        h = qrest.put("jobs/bbm-dataprovider-record-search-test/run");
+        {
+            on_error printf("h: %y\n", h);
+            auto records = qrest.get("jobresults/" + h.job_instanceid + "/info/records");
+            assertEq("a3", records[0].remote_id);
+        }
+
+        # test to ensure that null results are also stored
+        qrest.put("jobs/bbm-dataprovider-record-search-test/config/dataprovider-search-criteria",
+            {"value": {"qorus_wfiid": -1}});
+        qrest.put("jobs/bbm-dataprovider-record-search-test/config/dataprovider-search-requires-result",
+            {"value": False});
+        h = qrest.put("jobs/bbm-dataprovider-record-search-test/run");
+        {
+            on_error printf("h: %y\n", h);
+            auto records = qrest.get("jobresults/" + h.job_instanceid + "/info/records");
+            assertEq((), records);
+        }
+    }
+}

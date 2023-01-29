@@ -1,0 +1,183 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_RestActionWithRecovery
+desc: Class for making a transaction-safe REST request
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: BBM_RestAction
+class-connectors:
+  - name: restAction
+    input-provider:
+        name: qoretechnologies
+        path: /building-blocks/rest-action/request
+        type: type
+    method: makeRestRequestConnector
+    output-provider:
+        name: qoretechnologies
+        path: /building-blocks/rest-action/response
+        type: type
+    type: input-output
+  - name: restAction Validation
+    method: makeRestValidationRequestConnector
+    type: output
+requires:
+  - BBM_RestAction
+version: '1.0'
+code: BBM_RestActionWithRecovery-v1.0.qclass
+config-items:
+  - name: rest-connection-name
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-method
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-api-mapper-name
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-uri-path
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-id-location
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-headers
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-swagger-schema-location
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-body-remove-nulls
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-output-data
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-id-log-msg
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-supports-recovery
+    default_value:
+        true
+    type: bool
+    description: >
+        set to `true` if the request requires and supports recovery, `false` if not;
+        if `true` then `rest-recovery-uri` and at least one of `rest-id-location`
+        and/or `rest-recovery-id-location` or `rest-recovery-response-location` must
+        be set
+    strictly_local: true
+    config_group: Rest Action Recovery
+  - name: rest-recovery-uri
+    default_value:
+        null
+    type: "*string"
+    description: >-
+        the URI path for the recovery request to the REST server; must be set if
+        `rest-supports-recovery` is set to `true`
+    strictly_local: true
+    config_group: Rest Action Recovery
+  - name: rest-recovery-id-location
+    default_value:
+        null
+    type: "*string"
+    description: >
+        the location of the unique ID for the record in the REST recovery response;
+        conflicts with `rest-recovery-response-location`; if not set and
+        `rest-id-location` is set, then `rest-id-location` will be used for this
+        value
+    strictly_local: true
+    config_group: Rest Action Recovery
+  - name: rest-recovery-response-location
+    default_value:
+        null
+    type: "*string"
+    description: >
+        the location of the recovery value in the recovery response message to
+        check; the value to check must be set with `rest-recovery-response-value`;
+        conflicts with `rest-recovery-id-location`; only used if `rest-id-location`
+        is not set; the value here is related to the entire HTTP response; prefix
+        with `body.` to compare values in the response message body (ex:
+        `body.account.ID`)
+    strictly_local: true
+    config_group: Rest Action Recovery
+  - name: rest-recovery-response-value
+    default_value:
+        null
+    type: any
+    description: >
+        the value to compare against the value given by
+        `rest-recovery-response-location`; must be set with
+        `rest-recovery-response-location`; conflicts with
+        `rest-recovery-id-location`; only used if `rest-id-location` is not set
+    strictly_local: true
+    config_group: Rest Action Recovery
+  - name: rest-recovery-output-data
+    default_value:
+        null
+    config_group: Rest Action Recovery Post Processing
+    description: >
+        The configuration of output data taking the recovery message on input; the
+        REST recovery response hash is passed as input to the
+        `UserApi::updateOutputData()` method.
+    
+    
+        The deserialized REST response body is located in the `body` key of this
+        hash; if `rest-id-location` or `rest-recovery-id-location` is configured,
+        then the value retrieved can be referenced with key `rest-id` in the output
+        data hash.
+    
+    
+        **Note**: If this configuration item is not set, and `rest-output-data` is
+        set, then `rest-output-data` will be used instead (for example in case the
+        original message response is identical to the recovery message response)
+    strictly_local: true
+    type: "*hash"
+  - name: rest-recovery-id-log-msg
+    default_value:
+        "REST RECOVERY response sucessfully retrieved ID: $local:{rest-id}"
+    description: >
+        a string giving a log message for successful retrieval of the ID identified
+        by `rest-recovery-id-location` or `rest-id-location`; this ID can be
+        referred to as `$local:{rest-id}` in the template string
+    strictly_local: true
+    config_group: Rest Action Cosmetic
+  - name: rest-body
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-action-retries
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-action-retry-delay
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'
+  - name: rest-action-retry-errors
+    parent:
+        interface-type: class
+        interface-name: BBM_RestAction
+        interface-version: '1.0'

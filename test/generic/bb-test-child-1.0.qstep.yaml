@@ -1,0 +1,12 @@
+# This is a generated file, don't edit!
+type: step
+name: bb-test-child
+desc: test bind BB
+lang: qore
+base-class-name: QorusNormalStep
+class-name: BbTestChild
+version: "1.0"
+author:
+  - Qore Technologies, s.r.o.
+steptype: NORMAL
+code: bb-test-child-1.0.qstep

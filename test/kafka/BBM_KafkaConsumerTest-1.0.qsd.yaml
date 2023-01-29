@@ -1,0 +1,469 @@
+# This is a generated file, don't edit!
+type: service
+name: BBM_KafkaConsumerTest
+desc: Kafka consumer test
+lang: java
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusService
+class-name: BBM_KafkaConsumerTest
+classes:
+  - BBM_KafkaConsumer
+  - BBM_LogMessage
+  - BBM_ListCache
+groups:
+  - test
+  - bb-test
+version: '1.0'
+servicetype: USER
+code: bbm_kafkaconsumertest_1_0_service/BBM_KafkaConsumerTest.java
+class-connections:
+    KafkaMessageEvent:
+      - class: BBM_KafkaConsumer
+        connector: event
+        trigger: null
+      - class: BBM_ListCache
+        connector: cacheData
+      - class: BBM_LogMessage
+        connector: logMessage
+    start:
+      - class: BBM_KafkaConsumer
+        connector: start
+        trigger: start
+    stop:
+      - class: BBM_KafkaConsumer
+        connector: stop
+        trigger: stop
+    getMessages:
+      - class: BBM_ListCache
+        connector: getData
+        trigger: start
+config-items:
+  - name: kafka-conf-bootstrap.servers
+    value:
+        "localhost:9092"
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-topics
+    value:
+      - quickstart-events
+      - new-topic
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-key.deserializer
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-value.deserializer
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-fetch.min.bytes
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-group.id
+    value:
+        "qorus"
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-heartbeat.interval.ms
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-max.partition.fetch.bytes
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-session.timeout.ms
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-ssl.key.password
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-ssl.keystore.location
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-ssl.keystore.password
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-ssl.keystore.type
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-ssl.truststore.location
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-ssl.truststore.password
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-ssl.protocol
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-ssl.provider
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-ssl.truststore.type
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-ssl.enabled.protocols
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-ssl.cipher.suites
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-ssl.endpoint.identification.algorithm
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-ssl.engine.factory.class
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-ssl.keymanager.algorithm
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-ssl.secure.random.implementation
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-ssl.trustmanager.algorithm
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-sasl.client.callback.handler.class
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-sasl.jaas.config
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-sasl.kerberos.service.name
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-sasl.login.callback.handler.class
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-sasl.login.class
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-sasl.mechanism
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-sasl.kerberos.kinit.cmd
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-sasl.kerberos.min.time.before.relogin
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-sasl.kerberos.ticket.renew.jitter
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-sasl.kerberos.ticket.renew.window.factor
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-sasl.login.refresh.buffer.seconds
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-sasl.login.refresh.min.period.seconds
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-sasl.login.refresh.window.factor
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-sasl.login.refresh.window.jitter
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-batch.size
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-allow.auto.create.topics
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-auto.offset.reset
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+    allowed_values:
+      - "latest"
+      - "earliest"
+      - "none"
+  - name: kafka-conf-client.dns.lookup
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+    allowed_values:
+      - "default"
+      - "use_all_dns_ips"
+      - "resolve_canonical_bootstrap_servers_only"
+  - name: kafka-conf-connections.max.idle.ms
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-default.api.timeout.ms
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-enable.auto.commit
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-exclude.internal.topics
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-fetch.max.bytes
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-group.instance.id
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-isolation.level
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+    allowed_values:
+      - "read_committed"
+      - "read_uncommitted"
+  - name: kafka-conf-max.poll.interval.ms
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-max.poll.records
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-partition.assignment.strategy
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-receive.buffer.bytes
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-request.timeout.ms
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-security.protocol
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+    allowed_values:
+      - "PLAINTEXT"
+      - "SSL"
+      - "SASL_PLAINTEXT"
+      - "SASL_SSL"
+  - name: kafka-conf-send.buffer.bytes
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-auto.commit.interval.ms
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-check.crcs
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-client.id
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-client.rack
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-fetch.max.wait.ms
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-interceptor.classes
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-metadata.max.age.ms
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-metric.reporters
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-metrics.num.samples
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-metrics.recording.level
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+    allowed_values:
+      - "INFO"
+      - "DEBUG"
+  - name: kafka-conf-metrics.sample.window.ms
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-reconnect.backoff.max.ms
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-reconnect.backoff.ms
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-retry.backoff.ms
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: kafka-conf-security.providers
+    parent:
+        interface-type: class
+        interface-name: BBM_KafkaConsumer
+        interface-version: '1.0'
+  - name: log-message-level
+    parent:
+        interface-type: class
+        interface-name: BBM_LogMessage
+        interface-version: '1.0'
+    allowed_values:
+      - "ALL"
+      - "TRACE"
+      - "DEBUG"
+      - "INFO"
+      - "WARN"
+      - "ERROR"
+      - "FATAL"
+      - "OFF"
+  - name: log-message-string
+    value:
+        "msg: %y"
+    parent:
+        interface-type: class
+        interface-name: BBM_LogMessage
+        interface-version: '1.0'
+  - name: log-message-args
+    value:
+        "$local:input"
+    parent:
+        interface-type: class
+        interface-name: BBM_LogMessage
+        interface-version: '1.0'
+    is_value_templated_string: true
+    value_true_type: string
+  - name: list-cache-data
+    parent:
+        interface-type: class
+        interface-name: BBM_ListCache
+        interface-version: '1.0'
+methods:
+  - name: start
+    desc: Start receiving messages
+  - name: stop
+    desc: Stop the service
+  - name: getMessages
+    desc: Returns all messages received

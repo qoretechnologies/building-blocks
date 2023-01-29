@@ -1,0 +1,45 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_DeleteFilePathTest inherits QorusJob {
+    private {
+        ####### GENERATED SECTION! DON'T EDIT! ########
+        ClassConnections_BBM_DeleteFilePathTest class_connections();
+        ############ GENERATED SECTION END ############
+    }
+
+    ####### GENERATED SECTION! DON'T EDIT! ########
+    run() {
+        class_connections.run();
+    }
+    ############ GENERATED SECTION END ############
+}
+
+####### GENERATED SECTION! DON'T EDIT! ########
+class ClassConnections_BBM_DeleteFilePathTest {
+    private {
+        # map of prefixed class names to class instances
+        hash<auto> class_map;
+    }
+
+    constructor() {
+        class_map = {
+            "BBM_DeleteFilePath": new BBM_DeleteFilePath(),
+        };
+    }
+
+    auto callClassWithPrefixMethod(string prefixed_class, string method) {
+        UserApi::logDebug("ClassConnections_BBM_DeleteFilePathTest: callClassWithPrefixMethod: method: %s, class: %y", method, prefixed_class);
+        return call_object_method_args(class_map{prefixed_class}, method, argv);
+    }
+
+    auto run(auto params) {
+        UserApi::logDebug("run called with data: %y", params);
+
+        UserApi::logDebug("calling deleteFilePath: %y", params);
+        return callClassWithPrefixMethod("BBM_DeleteFilePath", "deleteFilePath", params);
+    }
+}
+############ GENERATED SECTION END ############

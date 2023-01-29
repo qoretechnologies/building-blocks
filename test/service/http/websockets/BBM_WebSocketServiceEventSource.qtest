@@ -1,0 +1,52 @@
+#!/usr/bin/env qore
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%require-types
+%strict-args
+%new-style
+%enable-all-warnings
+
+%exec-class BBM_WebSocketServiceEventSource
+
+%requires QorusInterfaceTest
+%requires WebSocketClient
+
+class BBM_WebSocketServiceEventSource inherits QorusServiceTest {
+    private {
+        const ServiceName = "BBM_WebSocketServiceEventSourceTest";
+    }
+
+    constructor() : QorusServiceTest(ServiceName, "1.0", \ARGV, Opts) {
+        addTestCase("test", \test());
+        set_return_value(main());
+    }
+
+    private usageIntern(int offset = OffsetColumn) {
+        TestReporter::usageIntern(OffsetColumn);
+    }
+
+    test() {
+        qrest.put("services/" + ServiceName + "/load");
+        on_exit {
+            qrest.put("services/" + ServiceName + "/unload");
+        }
+
+        Counter cnt(1);
+        code callback = sub (data msg) {
+            cnt.dec();
+        };
+        string url = qorus_get_local_url() + "/websocket-service-event-test";
+        url =~ s/^http/ws/;
+        WebSocketClient ws(callback, {"url": url});
+        ws.connect();
+
+        string str = get_random_string();
+        ws.send(str);
+
+        cnt.waitForZero(10s);
+
+        *hash<auto> event = qrest.put("services/" + ServiceName + "/getLastEvent/call");
+        on_error printf("event: %N\n", event);
+        assertEq(str, event.msg);
+    }
+}

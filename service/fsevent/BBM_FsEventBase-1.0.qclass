@@ -1,0 +1,58 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+%requires FsEventPoller
+
+#! Base filesystem event streaming base class
+class BBM_FsEventBase inherits AbstractDelayedFsEventPoller, Observable, BBM_RegularExpressions {
+    #! Creates the object and starts even streaming
+    constructor() : AbstractDelayedFsEventPoller(UserApi::getConfigItemValue("fsevent-root-path"), BBM_FsEventBase::getOptions()) {
+        initImpl();
+        start();
+    }
+
+    #! Override in child classes for custom initialization code
+    initImpl() {
+        # this method intentionally left empty
+    }
+
+    #! Notify observer of event
+    fileEvent(hash<FsEventInfo> event) {
+        UserApi::logDebug("file event: %y", event);
+        notifyObservers("BBM_FsEventBase::fileEvent", event);
+    }
+
+    #! Builds constructor options from config items
+    static private hash<FsDelayedEventPollerOptionInfo> getOptions() {
+        hash<FsDelayedEventPollerOptionInfo> rv(cast<hash<FsDelayedEventPollerOptionInfo>>({
+            "log_info": \UserApi::logInfo(),
+            "log_detail": \UserApi::logInfo(),
+            "log_debug": \UserApi::logDebug(),
+            "start_thread": \ServiceApi::startThread(),
+            "actions": (ADD,),
+            "recursive": UserApi::getConfigItemValue("fsevent-recursive"),
+            "minage": UserApi::getConfigItemValue("fsevent-min-age-secs"),
+        }));
+
+        string mask_type = UserApi::getConfigItemValue("fsevent-mask-type");
+
+        if (exists (*string val = UserApi::getConfigItemValue("fsevent-mask"))) {
+            if (mask_type == "GLOB") {
+                rv.mask = val;
+            } else {
+                rv.regex_mask = val;
+            }
+        }
+
+        if (mask_type == "REGEX" && exists (*string val = UserApi::getConfigItemValue("fsevent-regex-opts"))) {
+            rv.reopts = MAP{val};
+        }
+
+        UserApi::logInfo("using options: %y", {
+            "root_path": UserApi::getConfigItemValue("fsevent-root-path"),
+        } + (rv - ("log_info", "log_detail", "log_debug", "start_thread",)));
+        return rv;
+    }
+}

@@ -1,0 +1,74 @@
+# This is a generated file, don't edit!
+type: job
+name: bbm-data-provider-create-test
+desc: tests the BBM_DataProviderCreate building block
+lang: qore
+active: false
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusJob
+class-name: BbmDataProviderCreateTest
+classes:
+  - BBM_DataProviderRecordCreate
+remote: false
+schedule:
+    minutes: "0"
+    hours: "0"
+    days: "1"
+    months: "1"
+    dow: "*"
+version: '1.0'
+code: bbm-data-provider-create-test-1.0.qjob
+class-connections:
+    Connection_1:
+      - class: BBM_DataProviderRecordCreate
+        connector: DataProvider Record Create
+        trigger: run
+config-items:
+  - name: dataprovider-create-provider-path
+    value:
+        "datasource/omquser/bb_local"
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRecordCreate
+        interface-version: '1.0'
+  - name: dataprovider-create-input
+    value:
+      -
+          remote_id: a1
+          remote_batch_id: b1
+          qorus_wfiid: 1
+      -
+          remote_id: a2
+          remote_batch_id: b2
+          qorus_wfiid: 2
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRecordCreate
+        interface-version: '1.0'
+    value_true_type: list
+  - name: dataprovider-create-mapper
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRecordCreate
+        interface-version: '1.0'
+  - name: dataprovider-create-options
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRecordCreate
+        interface-version: '1.0'
+  - name: dataprovider-create-duplicate-handling
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRecordCreate
+        interface-version: '1.0'
+  - name: dataprovider-create-output-data
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRecordCreate
+        interface-version: '1.0'
+  - name: dataprovider-create-upsert
+    parent:
+        interface-type: class
+        interface-name: BBM_DataProviderRecordCreate
+        interface-version: '1.0'

@@ -1,0 +1,28 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+#! Defines the output of the service method caller \c callServiceMethod connector
+hashdecl ServiceMethodCallResultInfo {
+    #! The result of making the service call
+    auto result;
+}
+
+class BBM_QorusServiceMethodCaller {
+    #! Calls a service method and returns the result as a hash
+    /** @param input available in the \a input key of local context data (i.e. <tt>$local:input</tt> when looking up
+        config item values)
+
+        @return the result of making the service call; the return value of the call is returned in the \c result key
+    */
+    hash<ServiceMethodCallResultInfo> callServiceMethod(auto input) {
+        hash<auto> local_context = {"input": input};
+        return <ServiceMethodCallResultInfo>{
+            "result": UserApi::callRestApi("PUT", "services/" +
+                UserApi::getConfigItemValue("service-method-call-service-name", local_context) + "/" +
+                UserApi::getConfigItemValue("service-method-call-service-method", local_context) + "/call",
+                {"args": UserApi::getConfigItemValue("service-method-call-service-args", local_context)})
+        };
+    }
+}

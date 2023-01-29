@@ -1,0 +1,76 @@
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+%requires RestClient
+%requires Swagger
+
+#! this step building block creates an object in a remote REST server
+/** This step building block is transaction safe; in case of an error, the validation logic will query the server
+    using a unique key provided in the request if the config item \c rest-supports-recovery is present
+    to determine if the object was actually created in the original request or not
+
+    The request mapper is provided the following additional keys to give workflow and order context information:
+    - \c static: the static data for the workflow order
+    - \c dymamic: the dynamic data for the workflow order
+    - \c orderkeys: the workflow order keys
+    .
+    plus any sensitive data provided by the \c rest-sensitive-alias-input configuration item
+
+    Validation will determine that the REST call must be retried if one of the two conditions occurs:
+    - A <tt>404 Not Found</tt> response is provided when queried with the recovery URI path
+      (config item \c rest-recovery-uri)
+    - The request succeeds but the unique response ID (identified with config item \c rest-id-location) is not
+      provided in the response
+
+    If either of these conditions occur, the validation method will return @ref OMQ::StatRetry.
+
+    @see @ref BBM_RestActionWithRecovery and @ref RestAction for information on supported configuration items, plus the
+    following configuration item supplied by this class:
+    - \c rest-sensitive-alias-input
+*/
+class BBM_RestActionStep inherits QorusNormalStep, BBM_RestActionWithRecovery {
+    #! the primary step logic: create the object in the remote REST server
+    primary() {
+        makeRestRequest();
+    }
+
+    # query the server to check if the original message was delivered
+    /** this logic guarantees that we never create the object twice for the same request
+    */
+    string validation() {
+        return recovery();
+    }
+
+    #! returns the input data for the mapper that creates the REST request body, if any
+    /** adds workflow data to the input data for the mapper with the following keys:
+        - \c static: workflow static data
+        - \c dynamic: workflow dynamic data
+        - \c orderkeys: workflow order keys
+    */
+    private hash<auto> getRestInputData() {
+        # setup sensitive input if required
+        hash<auto> sensitive_input;
+        {
+            *string aliases = getConfigItemValue("rest-sensitive-alias-input");
+            if (aliases) {
+                foreach string str in (aliases.split(",")) {
+                    (*string key, *string alias) = (str =~ x/([^:]+):(.*)$/);
+                    if (!key.val() || !alias.val()) {
+                        throw "ALIAS-CONFIG-ERROR", sprintf("config item \"rest-sensitive-alias-input\" has "
+                            "invalid value %y; expected a comma-separated list of <key>:<alias> values", str);
+                    }
+                    sensitive_input{key} = getSensitiveDataFromAlias(alias);
+                }
+            }
+        }
+
+        # setup raw data for making the REST API call
+        return BBM_RestAction::getRestInputData() + {
+            "static": getStaticData(),
+            "dynamic": getDynamicData(),
+            "orderkeys": getOrderKeys(),
+        } + sensitive_input;
+    }
+}

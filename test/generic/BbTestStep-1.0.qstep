@@ -1,0 +1,9 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BbTestStep inherits QorusNormalStep {
+    primary() {
+    }
+}

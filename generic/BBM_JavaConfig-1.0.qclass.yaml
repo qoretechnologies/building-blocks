@@ -1,0 +1,14 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_JavaConfig
+desc: |-
+    ## Summary
+
+    Helper class that sets Java configuration based on configuration items
+
+    It does not provide any connectors; it is entirely driven by configuration.
+lang: java
+author:
+  - Qore Technologies, s.r.o.
+version: '1.0'
+code: bbm_javaconfig_1_0_class/BBM_JavaConfig.java

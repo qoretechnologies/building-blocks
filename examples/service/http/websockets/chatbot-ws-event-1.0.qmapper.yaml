@@ -1,0 +1,25 @@
+# This is a generated file, don't edit!
+type: mapper
+name: chatbot-ws-input
+desc: maps WS input events for text analysis processing
+options:
+    mapper-input:
+        type: type
+        name: qoretechnologies
+        path: /building-blocks/websockets/recv-event
+        can_manage_fields: false
+        custom-fields: {}
+    mapper-output:
+        type: type
+        name: qoretechnologies
+        path: /building-blocks/text-analysis/input-event
+        custom-fields: {}
+mappertype: Mapper
+version: '1.0'
+author:
+  - Qore Technologies, s.r.o.
+fields:
+    id:
+        name: cid
+    msg:
+        name: msg

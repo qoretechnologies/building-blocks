@@ -1,0 +1,106 @@
+# This is a generated file, don't edit!
+type: class
+name: BBM_OutputData
+desc: >-
+    ## Summary
+
+
+    Writes output data to locations provided by config item `output-data-hash`,
+    which should be assigned a hash in the following format:
+
+    - **key**: *data to store* -> **value**: *location to store it in*
+
+
+    The keys in the hash are expanded with calls to
+    `UserApi::expandTemplatedValue()`
+
+
+    **NOTE**:  This building block's functionality has been superceded by an API
+    (request - response) data provider; it's recommended to use the
+    `util/write-output` API data provider in the `qorus-api` factory instead
+
+
+    ## Connectors
+
+
+    ### Input/Output Connector `writeOutput`
+
+
+    This connector executes the output write data operation.
+
+
+    Input data is available as `$local:input` when resolving config items with
+    this connector.
+
+
+    It is recommended to use this connector instead of the similar
+    `writeOutputData` connector, as this connector support standard handling of
+    the local input data, and the `writeOutputData` connector does not.
+
+
+    ### Input/Output Connector `writeOutputData`
+
+
+    This connector executes the output write data operation.
+
+
+    Local data for the call to `UserApi::expandTemplatedValue()` is the input
+    argument data for the connector; if the input data is a hash, then it is
+    used directly as the local context data for the `$local:` template.  If the
+    input data is not a hash, then it is stored in the `input` key of the local
+    data hash.
+
+
+    This connector differs from `writeOutput` only in the non-standard handling
+    of the local input data.
+
+
+    It is recommended to use the `writeOutput` connector instead, as it uses
+    standard input data handling.
+
+
+    ## `output-data-hash` Config Item Examples
+
+
+    - `$local:input: $dynamic:data` -> store the input data in the `data` key of
+    dynamic data
+
+    - `'$info:started': '$pstate:started'` -> store the `started` key from the
+    `$info:` template into the `started` key of the persistent state hash for
+    the current interface
+
+    - `'$local:*': '$jinfo:result'` -> store the entire local context data hash
+    in the `result` key of the `$jinfo:` (job info) hash
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+class-connectors:
+  - name: writeOutputData
+    method: writeOutputData
+    type: input-output
+  - name: writeOutput
+    method: writeOutput
+    type: input-output
+version: '1.0'
+code: BBM_OutputData-1.0.qclass
+config-items:
+  - name: output-data-hash
+    config_group: Output Data
+    description: >-
+        A hash where keys describe the data, and the values describe the target
+        location for the data.
+    
+    
+        Keys will be processed with `UserApi::expandTemplatedValue()`; ex:
+    
+        ```
+    
+        {"$info:started": "$pstate:last_execution_date"}
+    
+        ```
+    
+    
+        In a job, this will store the `started` info attribute into the
+        `last_execution_date` key of the job's persistent state data.
+    strictly_local: true
+    type: hash

@@ -1,0 +1,59 @@
+# This is a generated file, don't edit!
+type: job
+name: bbm-qorus-service-method-caller-test
+desc: Tests the `BBM_QorusServiceMethodCaller` building block
+lang: qore
+active: false
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: QorusJob
+class-name: BBM_QorusServiceMethodCallerTest
+classes:
+  - BBM_QorusServiceMethodCaller
+  - BBM_OutputData
+remote: false
+schedule:
+    minutes: "0"
+    hours: "0"
+    days: "*"
+    months: "*"
+    dow: "*"
+version: '1.0'
+code: bbm-qorus-service-method-caller-test-1.0.qjob
+class-connections:
+    run:
+      - class: BBM_QorusServiceMethodCaller
+        connector: callServiceMethod
+        trigger: run
+      - class: BBM_OutputData
+        connector: writeOutputData
+config-items:
+  - name: output-data-hash
+    value:
+        '$local:result': '$jinfo:test'
+    parent:
+        interface-type: class
+        interface-name: BBM_OutputData
+        interface-version: '1.0'
+  - name: service-method-call-service-name
+    value:
+        "info"
+    parent:
+        interface-type: class
+        interface-name: BBM_QorusServiceMethodCaller
+        interface-version: '1.0'
+  - name: service-method-call-service-method
+    value:
+        "getClassFromName"
+    parent:
+        interface-type: class
+        interface-name: BBM_QorusServiceMethodCaller
+        interface-version: '1.0'
+  - name: service-method-call-service-args
+    value:
+        "BBM_QorusServiceMethodCaller"
+    parent:
+        interface-type: class
+        interface-name: BBM_QorusServiceMethodCaller
+        interface-version: '1.0'
+    value_true_type: string

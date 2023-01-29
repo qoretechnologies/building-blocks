@@ -1,0 +1,50 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+%requires CsvUtil
+
+class BBM_CsvReadDataProvider {
+    public {
+        # map config item names to data provider options
+        const KeyMap = map {
+            ("csv-read-" + regex_subst($1, "_", "-", RE_Global)): $1,
+        }, keys CsvReadDataProvider::ConstructorOptions;
+    }
+
+    #! alias for searchRecordsConnector()
+    static *list<hash<auto>> searchRecords(auto input) {
+        return BBM_CsvReadDataProvider::searchRecordsConnector(input);
+    }
+
+    #! Search records connector
+    /** The CSV data provider is created on demand with each request
+
+        @param input available in the \a input key of local context data (i.e. <tt>$local:input</tt> when looking up
+        config item values)
+
+        @return output data: list of record hashes
+    */
+    static *list<hash<auto>> searchRecordsConnector(auto input) {
+        hash<auto> local_context = {"input": input};
+        CsvReadDataProvider prov(BBM_CsvReadDataProvider::getOptions(local_context));
+        return map $1, prov.searchRecords(
+            UserApi::getConfigItemValue("csv-read-search-where", local_context),
+            UserApi::getConfigItemValue("csv-read-search-options", local_context),
+        );
+    }
+
+    static hash<auto> getOptions(*hash<auto> local_context) {
+        # map from config item names to data provider names in the option hash; remove empty values
+        hash<auto> opts = map {$1.value: UserApi::getConfigItemValue($1.key, local_context)}, KeyMap.pairIterator();
+        # remove null options
+        map remove opts{$1.key}, opts.pairIterator(), !exists $1.value;
+        if (!opts.path && !opts.stream) {
+            throw "CSV-READ-ERROR", sprintf("either the 'csv-read-path' or 'csv-read-stream' option is required; "
+                "options provided: %y", keys opts);
+        }
+        UserApi::logInfo("csv read options: %y", opts);
+        return opts;
+    }
+}

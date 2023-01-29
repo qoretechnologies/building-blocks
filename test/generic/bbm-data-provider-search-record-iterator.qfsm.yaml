@@ -1,0 +1,62 @@
+# This is a generated file, don't edit!
+type: fsm
+name: bbm-data-provider-search-record-iterator
+desc: test FSM
+groups:
+  - bb-test
+  - test
+states:
+    '1':
+        position:
+            x: 31
+            'y': 69.46249389648438
+        initial: true
+        name: Get Iterator
+        desc: ''
+        type: state
+        id: IqS5H90KG
+        action:
+            type: connector
+            value:
+                class: BBM_DataProviderSearchRecordIterator
+                connector: getIterator
+        execution_order: 1
+        transitions:
+            -
+                state: '2'
+                language: qore
+        config-items:
+          - name: search-processor-provider-path
+            value:
+                "datasource/omquser/bb_remote"
+            parent:
+                interface-type: class
+                interface-name: BBM_DataProviderSearchRecordIterator
+                interface-version: '1.0'
+          - name: search-processor-criteria
+            parent:
+                interface-type: class
+                interface-name: BBM_DataProviderSearchRecordIterator
+                interface-version: '1.0'
+          - name: search-processor-options
+            parent:
+                interface-type: class
+                interface-name: BBM_DataProviderSearchRecordIterator
+                interface-version: '1.0'
+          - name: search-processor-block-size
+            parent:
+                interface-type: class
+                interface-name: BBM_DataProviderSearchRecordIterator
+                interface-version: '1.0'
+    '2':
+        position:
+            x: 295
+            'y': 71.46249389648438
+        initial: false
+        name: Map and Insert Data
+        desc: ''
+        type: state
+        id: rqswbyTov
+        action:
+            type: pipeline
+            value: bbm-data-provider-search-record-iterator

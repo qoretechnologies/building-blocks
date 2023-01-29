@@ -1,0 +1,37 @@
+#!/usr/bin/env qore
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%require-types
+%strict-args
+%new-style
+%enable-all-warnings
+
+%exec-class BBM_DataSerialization
+
+%requires QorusInterfaceTest
+
+class BBM_DataSerialization inherits QorusJobTest {
+    private {
+        const JobName = "bbm-data-serialization-test";
+
+        const Xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<test>
+  <a>1</a>
+  <b>2</b>
+</test>
+";
+    }
+
+    constructor() : QorusJobTest(JobName, "1.0", \ARGV, Opts) {
+        addTestCase("test", \test());
+        set_return_value(main());
+    }
+
+    test() {
+        RunJobResult job(OMQ::StatComplete);
+        exec(job);
+        hash<auto> result = exec(job).getJobResult();
+        hash<auto> info = getJobResultHash(result.job_instanceid);
+        assertEq(Xml, info.info.result.output);
+    }
+}

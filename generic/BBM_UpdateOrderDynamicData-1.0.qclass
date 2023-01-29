@@ -1,0 +1,34 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+class BBM_UpdateOrderDynamicData {
+    #! Connector for updating data in the given order's dynamic data hash
+    /** @param input available in the \a input key of local context data (i.e. <tt>$local:input</tt> when looking up
+        config item values)
+
+        @return the hash used for the dynamic data update
+
+        The \c update-dynamic-data config item is used to provide a hash that is merged into the given order's
+        dynamic data
+
+        @note
+        - updates are only performed \c update-dynamic-data resolves to a non-empty hash
+        - an atomic API is used to effect the update
+    */
+    hash<auto> update(auto input) {
+        hash<auto> local_context = {"input": input};
+        int wfiid = UserApi::getConfigItemValue("update-dynamic-instance-id", local_context);
+        *hash<auto> dd = UserApi::getConfigItemValue("update-dynamic-data", local_context);
+
+        if (dd) {
+            UserApi::updateDynamicOrderData(wfiid, dd);
+            UserApi::logInfo("updating dynamic data: workflow_instanceid: %y data: %y", wfiid, dd);
+        } else {
+            UserApi::logInfo("updating dynamic data: workflow_instanceid: %y data: %y (skipping update)", wfiid, dd);
+        }
+
+        return dd;
+    }
+}
