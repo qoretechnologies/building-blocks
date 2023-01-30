@@ -47,6 +47,7 @@ jobs:
       - name: Run initial scripts
         run: |
           . /opt/qorus/bin/env.sh
+          echo $QORUS_SRC_DIR
           . ./test/docker_test/get_external_apps.sh
           . ./test/docker/setup.sh
           . ./test/docker_test/init.sh
