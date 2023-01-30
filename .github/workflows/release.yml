@@ -20,7 +20,7 @@ jobs:
       SFTP_DIR: sftp_root
       SFTP_USER: foo
       SFTP_PASS: pass
-      WORKDIR: /opt
+      WORKDIR: "`pwd`"
       QORUS_SRC_DIR: .
     services:
       postgres:
@@ -52,9 +52,9 @@ jobs:
           export QORUS_LOG_DIR="`pwd`/log"
           echo $WORKDIR
           echo $QORUS_SRC_DIR
-          . ./test/docker/setup.sh
-          . ./test/docker_test/init.sh
-          . ./test/docker_test/launch_qorus.sh
+          . /test/docker/setup.sh
+          . /test/docker_test/init.sh
+          . /test/docker_test/launch_qorus.sh
           apt-get update
           apt install make -y
       - name: Build and test
