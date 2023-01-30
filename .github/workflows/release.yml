@@ -16,12 +16,6 @@ jobs:
       OMQ_DB_HOST: postgres
       OMQ_DB_USER: postgres
       OMQ_DB_PASS: omq
-      POSTGRES_PASSWORD: omq
-      OMQ_DB_NAME: postgres
-      OMQ_DB_TYPE: pgsql
-      OMQ_DB_HOST: postgres
-      OMQ_DB_USER: postgres
-      OMQ_DB_PASS: omq
       SFTP_HOST: local-sftp
       SFTP_DIR: sftp_root
       SFTP_USER: foo
@@ -58,4 +52,3 @@ jobs:
           apt install make -y
           make load-all -f Makefile
           make test -f Makefile
-
