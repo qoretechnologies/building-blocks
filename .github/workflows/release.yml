@@ -21,7 +21,7 @@ jobs:
       SFTP_USER: foo
       SFTP_PASS: pass
       WORKDIR: /opt
-      QORUS_SRC_DIR: /opt/qorus
+      QORUS_SRC_DIR: .
     services:
       postgres:
         image: postgres:11
