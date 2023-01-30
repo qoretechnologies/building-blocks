@@ -35,6 +35,8 @@ jobs:
       sftp:
         image: atmoz/sftp:alpine
         env:
+          SFTP_HOST: local-sftp
+          SFTP_DIR: sftp_root
           SFTP_USER: foo
           SFTP_PASS: pass
         ports:
@@ -45,7 +47,7 @@ jobs:
       - name: Build and test
         run: |
           . /opt/qorus/bin/env.sh
-          cat /opt/qorus/etc/option*
+          ls -l /opt/qorus
           apt-get update
           apt install make -y
           pwd
