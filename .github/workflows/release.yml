@@ -48,6 +48,7 @@ jobs:
         run: |
           . /opt/qorus/bin/env.sh
           echo $QORUS_SRC_DIR
+          echo $WORKDIR
           . ./test/docker_test/get_external_apps.sh
           . ./test/docker/setup.sh
           . ./test/docker_test/init.sh
