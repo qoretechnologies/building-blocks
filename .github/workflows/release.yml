@@ -20,6 +20,7 @@ jobs:
       SFTP_DIR: sftp_root
       SFTP_USER: foo
       SFTP_PASS: pass
+      WORKDIR: /opt
     services:
       postgres:
         image: postgres:11
@@ -47,7 +48,8 @@ jobs:
       - name: Run initial scripts
         run: |
           . /opt/qorus/bin/env.sh
-          echo $QORUS_SRC_DIR
+          export QORUS_LOG_DIR="`pwd`/log"
+          export WORKDIR=/opt
           echo $WORKDIR
           . ./test/docker_test/get_external_apps.sh
           . ./test/docker/setup.sh
