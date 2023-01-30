@@ -48,6 +48,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Run initial scripts
         run: |
+          ls ./
           . /opt/qorus/bin/env.sh
           export QORUS_LOG_DIR="`pwd`/log"
           echo $WORKDIR
