@@ -56,8 +56,6 @@ jobs:
           ls -l /opt/qorus
           apt-get update
           apt install make -y
-          pwd
-          ls -l
           make load-all -f Makefile
           make test -f Makefile
 
