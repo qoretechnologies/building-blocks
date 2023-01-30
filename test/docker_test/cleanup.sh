@@ -3,7 +3,7 @@
 set +e
 set +x
 
-. /tmp/env.sh
+. /opt/qorus/bin/env.sh
 
 if [ -z "${OMQ_DIR}" ]; then
     echo "\$OMQ_DIR not defined. Exiting."

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-. /tmp/env.sh
+. /opt/qorus/bin/env.sh
 
 export QORUS_ALLOW_ROOT=1
 

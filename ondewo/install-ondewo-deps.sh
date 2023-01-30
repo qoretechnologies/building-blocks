@@ -30,7 +30,7 @@ go get github.com/fullstorydev/grpcurl/...
 go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
 
 # install ONDEWO BPI dependencies
-REQ_FILE=/tmp/ondewo-requirements.txt
+REQ_FILE=/opt/qorus/bin/ondewo-requirements.txt
 
 cat <<EOF > ${REQ_FILE}
 # The only requirements are included in the ondewo-nlu-client-python and ondewo-logging submodules, make sure they are properly installed.

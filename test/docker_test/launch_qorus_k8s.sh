@@ -34,10 +34,10 @@ if [ "$USE_LOCAL_AWS" != "1" ]; then
         pip3 install --upgrade pip
         pip3 install awscli
         rm -rf /var/cache/apk/*
-    elif [ ! -d /tmp/aws ]; then
+    elif [ ! -d /opt/qorus/bin/aws ]; then
         # install the AWS CLI on standard linux
-        mkdir /tmp/aws
-        cd /tmp/aws
+        mkdir /opt/qorus/bin/aws
+        cd /opt/qorus/bin/aws
         if [ "$arch" = "aarch64" ]; then
             curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
         else
@@ -276,7 +276,7 @@ if [ "$USE_LOCAL_DB" = "1" ]; then
 fi
 
 # prepare qorus config files for k8s
-cp ${QORUS_SRC_DIR}/test/k8s/*yaml /tmp
+cp ${QORUS_SRC_DIR}/test/k8s/*yaml /opt/qorus/bin
 sed -i \
     -e "s,__IMAGE_TAG__,$IMAGE_TAG_REGEX,g" \
     -e "s/__DB_TYPE__/$OMQ_DB_TYPE/g" \
@@ -284,21 +284,21 @@ sed -i \
     -e "s/__DB_PASS__/$OMQ_DB_PASS/g" \
     -e "s/__DB_NAME__/$OMQ_DB_NAME/g" \
     -e "s/__DB_HOST__/$OMQ_DB_HOST/g" \
-    /tmp/*.yaml
+    /opt/qorus/bin/*.yaml
 
 # substitute qorus host path for local testing if applicable
 if [ -n "${USE_QORUS_HOST_PATH}" ]; then
-    sed -i "s,path: \"/opt/qorus\",path: \"${USE_QORUS_HOST_PATH}\"," /tmp/qorus-core-pod.yaml /tmp/qorus-statefulset.yaml
+    sed -i "s,path: \"/opt/qorus\",path: \"${USE_QORUS_HOST_PATH}\"," /opt/qorus/bin/qorus-core-pod.yaml /opt/qorus/bin/qorus-statefulset.yaml
 fi
 
 # apply config
-kubectl apply -f /tmp/qorus-service.yaml
-kubectl apply -f /tmp/qorus-roles.yaml
+kubectl apply -f /opt/qorus/bin/qorus-service.yaml
+kubectl apply -f /opt/qorus/bin/qorus-roles.yaml
 if [ "`kubectl get statefulset qorus --no-headers | wc -l`" = "0" ]; then
-    kubectl apply -f ${QORUS_STATEFULSET:-/tmp/qorus-statefulset.yaml}
+    kubectl apply -f ${QORUS_STATEFULSET:-/opt/qorus/bin/qorus-statefulset.yaml}
 fi
 if [ "`kubectl get pod qorus-core --no-headers | wc -l`" = "0" ]; then
-    kubectl apply -f ${QORUS_CORE_POD:-/tmp/qorus-core-pod.yaml}
+    kubectl apply -f ${QORUS_CORE_POD:-/opt/qorus/bin/qorus-core-pod.yaml}
 fi
 
 # show config
@@ -435,7 +435,7 @@ else
     if [ -n "${SFTPSTORAGE_PKEY}" -a -n "${SFTPSTORAGE_HOST}" -a -n "${SFTPSTORAGE_HOSTKEY}" ]; then
         if [ ! -d ~/.ssh ]; then mkdir -m 0700 -p ~/.ssh; fi
         echo "${SFTPSTORAGE_HOSTKEY}" >> ~/.ssh/known_hosts
-        export KEYFILE=/tmp/sftpstorage-ssh-key
+        export KEYFILE=/opt/qorus/bin/sftpstorage-ssh-key
         echo "${SFTPSTORAGE_PKEY}" > ${KEYFILE}
         chmod 600 ${KEYFILE}
         # copy production image to local SFTP storage
@@ -454,9 +454,9 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 # install grpcurl (NOTE: "go get" requires git for grpcurl)
 RUN apt update && apt install -y git wget openssl ca-certificates --no-install-recommends
-RUN wget https://golang.org/dl/go1.17.2.linux-arm64.tar.gz --no-check-certificate -O /tmp/golang.tar.gz
-RUN tar -C /usr/local -xzf /tmp/golang.tar.gz
-RUN rm /tmp/golang.tar.gz
+RUN wget https://golang.org/dl/go1.17.2.linux-arm64.tar.gz --no-check-certificate -O /opt/qorus/bin/golang.tar.gz
+RUN tar -C /usr/local -xzf /opt/qorus/bin/golang.tar.gz
+RUN rm /opt/qorus/bin/golang.tar.gz
 RUN ln -s /usr/local/go/bin/go /usr/local/bin
 RUN openssl s_client -showcerts -connect proxy.golang.org:443 </dev/null 2>/dev/null|openssl x509 -outform PEM >  ${cert_location}/proxy.golang.crt
 RUN go get github.com/fullstorydev/grpcurl@latest
@@ -464,7 +464,7 @@ RUN go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
 
 RUN apt remove -y wget && apt autoremove -y
 EOF
-        ) > /tmp/dockerfile
+        ) > /opt/qorus/bin/dockerfile
     else
         (
             cat <<EOF
@@ -473,9 +473,9 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 # install grpcurl (NOTE: "go get" requires git for grpcurl)
 RUN apt update && apt install -y git wget openssl ca-certificates --no-install-recommends
-RUN wget https://golang.org/dl/go1.17.2.linux-amd64.tar.gz --no-check-certificate -O /tmp/golang.tar.gz
-RUN tar -C /usr/local -xzf /tmp/golang.tar.gz
-RUN rm /tmp/golang.tar.gz
+RUN wget https://golang.org/dl/go1.17.2.linux-amd64.tar.gz --no-check-certificate -O /opt/qorus/bin/golang.tar.gz
+RUN tar -C /usr/local -xzf /opt/qorus/bin/golang.tar.gz
+RUN rm /opt/qorus/bin/golang.tar.gz
 RUN ln -s /usr/local/go/bin/go /usr/local/bin
 RUN openssl s_client -showcerts -connect proxy.golang.org:443 </dev/null 2>/dev/null|openssl x509 -outform PEM >  ${cert_location}/proxy.golang.crt
 RUN go get github.com/fullstorydev/grpcurl@latest
@@ -483,9 +483,9 @@ RUN go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
 
 RUN apt remove -y wget && apt autoremove -y
 EOF
-        ) > /tmp/dockerfile
+        ) > /opt/qorus/bin/dockerfile
     fi
-    docker build -t ${IMAGE_TAG_GO} -f /tmp/dockerfile .
+    docker build -t ${IMAGE_TAG_GO} -f /opt/qorus/bin/dockerfile .
 
     # get unique file name
     target_name_go=${IMAGE_TAG_GO}.tar
@@ -497,7 +497,7 @@ EOF
     if [ -n "${SFTPSTORAGE_PKEY}" -a -n "${SFTPSTORAGE_HOST}" -a "${SFTPSTORAGE_HOSTKEY}" ]; then
         if [ ! -d ~/.ssh ]; then mkdir -m 0700 -p ~/.ssh; fi
         echo "${SFTPSTORAGE_HOSTKEY}" >> ~/.ssh/known_hosts
-        export KEYFILE=/tmp/sftpstorage-ssh-key
+        export KEYFILE=/opt/qorus/bin/sftpstorage-ssh-key
         echo "${SFTPSTORAGE_PKEY}" > ${KEYFILE}
         chmod 600 ${KEYFILE}
         # copy production image to local SFTP storage

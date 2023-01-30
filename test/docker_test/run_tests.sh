@@ -2,8 +2,8 @@
 
 set -x
 
-if [ -f /tmp/env.sh ]; then
-    . /tmp/env.sh
+if [ -f /opt/qorus/bin/env.sh ]; then
+    . /opt/qorus/bin/env.sh
 elif [ -f /opt/qorus/bin/env.sh ]; then
     . /opt/qorus/bin/env.sh
 fi

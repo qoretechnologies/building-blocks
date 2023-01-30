@@ -6,7 +6,7 @@ echo "================================"
 echo " Qorus Docker Test initializing"
 echo "================================"
 
-. /tmp/env.sh
+. /opt/qorus/bin/env.sh
 
 if [ -z "$QORUS_BUILD_DIR" ]; then
     QORUS_BUILD_DIR=build
@@ -60,8 +60,8 @@ prepare_test_lists() {
         TEST_BLACKLIST="QorusBug2400|QorusDebugTest|qdsp|qwf|SchemaSnapshotsStress|Issue3530Workflow"
     fi
 
-    echo "export TEST_OFFLINE=\"$TEST_OFFLINE\"" >> /tmp/env.sh
-    echo "export TEST_BLACKLIST=\"$TEST_BLACKLIST\"" >> /tmp/env.sh
+    echo "export TEST_OFFLINE=\"$TEST_OFFLINE\"" >> /opt/qorus/bin/env.sh
+    echo "export TEST_BLACKLIST=\"$TEST_BLACKLIST\"" >> /opt/qorus/bin/env.sh
 
     # prepare offline test regex
     TEST_OFFLINE2=""
@@ -71,7 +71,7 @@ prepare_test_lists() {
     # strip trailing |
     TEST_OFFLINE2=${TEST_OFFLINE2%?}
 
-    echo "export TEST_OFFLINE2=\"$TEST_OFFLINE2\"" >> /tmp/env.sh
+    echo "export TEST_OFFLINE2=\"$TEST_OFFLINE2\"" >> /opt/qorus/bin/env.sh
 }
 
 # prepare Qorus system DB schema
@@ -86,7 +86,7 @@ prepare_log_dir() {
         export QORUS_LOG_DIR=${QORUS_SRC_DIR}/log
     fi
     echo "Log dir set to: ${QORUS_LOG_DIR}"
-    echo "export QORUS_LOG_DIR=\"${QORUS_LOG_DIR}\"" >> /tmp/env.sh
+    echo "export QORUS_LOG_DIR=\"${QORUS_LOG_DIR}\"" >> /opt/qorus/bin/env.sh
     mkdir -p ${QORUS_LOG_DIR}
 
     if ! logdir_option_is_set; then

@@ -3,7 +3,7 @@
 set -e
 set -x
 
-. /tmp/env.sh
+. /opt/qorus/bin/env.sh
 
 # source postgres lib
 . ${QORUS_SRC_DIR}/test/docker_test/postgres_lib.sh

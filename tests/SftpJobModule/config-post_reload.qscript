@@ -28,7 +28,7 @@ hash cfg = {
         "new_file_path": "processing/$local:{orig_file_name}.$local:wfiid",
     },
     "workflows/POLLING-TEST-PROCESS-WF/stepinfo/PollingTestProcess_DownloadToLocal": {
-        "local_file_path": "/tmp/$local:sftp_file_name",
+        "local_file_path": "/opt/qorus/bin/$local:sftp_file_name",
     },
     "workflows/POLLING-TEST-PROCESS-WF/stepinfo/PollingTestProcess_UploadFile": {
         "sftp_file_path": "upload/$local:local_file_name",
@@ -62,7 +62,7 @@ hash cfg = {
         "sftp_connection_name": "sftp-local-test",
     },
     "workflows/POLLING-TEST-PROCESS2-WF/stepinfo/PollingTestProcess2_DownloadToLocal": {
-        "local_file_path": "/tmp/$local:sftp_file_name",
+        "local_file_path": "/opt/qorus/bin/$local:sftp_file_name",
         "input_data": '
             sftp_file_path: $static:file_path
             local_file_path: $config:local_file_path

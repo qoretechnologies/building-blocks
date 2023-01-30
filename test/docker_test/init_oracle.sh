@@ -14,14 +14,14 @@ if [ -n "$DOCKER_ORACLE" ]; then
 )" >> /usr/lib/oracle/tnsnames.ora
 
     # setup environment
-    echo export ORACLE_SID=omqsid >> /tmp/env.sh
-    echo export ORACLE_PDB=OMQPDB >> /tmp/env.sh
-    echo export ORACLE_PWD=omq >> /tmp/env.sh
-    echo export SYS_OMQ_DB_STRING=oracle:pdbadmin/omq@oracle >> /tmp/env.sh
-    echo export OMQ_DB_STRING=oracle:omq/omq@oracle >> /tmp/env.sh
-    echo export OMQUSER_DB_STRING=oracle:omq/omq@oracle >> /tmp/env.sh
+    echo export ORACLE_SID=omqsid >> /opt/qorus/bin/env.sh
+    echo export ORACLE_PDB=OMQPDB >> /opt/qorus/bin/env.sh
+    echo export ORACLE_PWD=omq >> /opt/qorus/bin/env.sh
+    echo export SYS_OMQ_DB_STRING=oracle:pdbadmin/omq@oracle >> /opt/qorus/bin/env.sh
+    echo export OMQ_DB_STRING=oracle:omq/omq@oracle >> /opt/qorus/bin/env.sh
+    echo export OMQUSER_DB_STRING=oracle:omq/omq@oracle >> /opt/qorus/bin/env.sh
 
-    . /tmp/env.sh
+    . /opt/qorus/bin/env.sh
     set +e
     waited=0
     echo "Waiting for Oracle DB to start."
@@ -56,16 +56,16 @@ else
   )
 )" >> /usr/lib/oracle/tnsnames.ora
 
-    . /tmp/env.sh
+    . /opt/qorus/bin/env.sh
 
     # setup new env vars
     export ORACLE_USER=omq_docker_test_`qore -lUtil -ne 'printf("%s", get_random_string());'`
-    echo unset ORACLE_PDB >> /tmp/env.sh
-    echo export ORACLE_SID=rippy >> /tmp/env.sh
-    echo export ORACLE_PWD=omq >> /tmp/env.sh
-    echo export ORACLE_USER=${ORACLE_USER} >> /tmp/env.sh
-    echo export OMQ_DB_STRING=oracle:${ORACLE_USER}/omq@rippy%rippy:1521 >> /tmp/env.sh
-    echo export OMQUSER_DB_STRING=oracle:${ORACLE_USER}/omq@rippy%rippy:1521 >> /tmp/env.sh
+    echo unset ORACLE_PDB >> /opt/qorus/bin/env.sh
+    echo export ORACLE_SID=rippy >> /opt/qorus/bin/env.sh
+    echo export ORACLE_PWD=omq >> /opt/qorus/bin/env.sh
+    echo export ORACLE_USER=${ORACLE_USER} >> /opt/qorus/bin/env.sh
+    echo export OMQ_DB_STRING=oracle:${ORACLE_USER}/omq@rippy%rippy:1521 >> /opt/qorus/bin/env.sh
+    echo export OMQUSER_DB_STRING=oracle:${ORACLE_USER}/omq@rippy%rippy:1521 >> /opt/qorus/bin/env.sh
 
     # create user for test
     qore -ne "Datasource ds(\"oracle:system/qore@rippy%rippy:1521\"); ds.exec(\"create user ${ORACLE_USER} identified by omq default tablespace omq_data temporary tablespace temp\"); ds.exec(\"grant create session, create procedure, create sequence, create table, create trigger, create type, create view, unlimited tablespace to ${ORACLE_USER}\"); ds.commit();"

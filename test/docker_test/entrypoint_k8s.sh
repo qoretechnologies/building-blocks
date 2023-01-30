@@ -2,7 +2,7 @@
 set -x
 set -e
 
-. /tmp/env.sh
+. /opt/qorus/bin/env.sh
 
 # setup QORUS_SRC_DIR env var
 cwd=`pwd`

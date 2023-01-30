@@ -4,7 +4,7 @@ set -e
 set -x
 
 prep_image() {
-    ENV_FILE=/tmp/env.sh
+    ENV_FILE=/opt/qorus/bin/env.sh
 
     # setup QORUS_SRC_DIR env var
     cwd=`pwd`

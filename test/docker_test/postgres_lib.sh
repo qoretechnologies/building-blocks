@@ -38,14 +38,14 @@ setup_postgres_on_rippy() {
     # add env vars to environment file and load it
     # NOTE: must convert to lower case only, or the psql commands below will fail
     user=omq_test_`qore -lUtil -ne 'printf("%s", get_random_string(10));' | tr A-Z a-z`
-    echo export OMQ_DB_USER=${user} >> /tmp/env.sh
-    echo export OMQ_DB_PASS=omq >> /tmp/env.sh
-    echo export OMQ_DB_NAME=${user} >> /tmp/env.sh
-    echo export OMQ_DB_HOST=${RUNNER_HOST:=rippy} >> /tmp/env.sh
+    echo export OMQ_DB_USER=${user} >> /opt/qorus/bin/env.sh
+    echo export OMQ_DB_PASS=omq >> /opt/qorus/bin/env.sh
+    echo export OMQ_DB_NAME=${user} >> /opt/qorus/bin/env.sh
+    echo export OMQ_DB_HOST=${RUNNER_HOST:=rippy} >> /opt/qorus/bin/env.sh
     systemdb=pgsql:${user}/omq@${user}%${RUNNER_HOST:=rippy}
-    echo export OMQ_SYSTEMDB=${systemdb} >> /tmp/env.sh
+    echo export OMQ_SYSTEMDB=${systemdb} >> /opt/qorus/bin/env.sh
 
-    . /tmp/env.sh
+    . /opt/qorus/bin/env.sh
 
     # create user for test
     cat <<EOF | psql -Upostgres

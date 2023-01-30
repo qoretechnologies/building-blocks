@@ -2,7 +2,7 @@
 
 set -x
 
-. /tmp/env.sh
+. /opt/qorus/bin/env.sh
 
 # run offline tests
 RESULTS=""

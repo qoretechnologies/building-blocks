@@ -3,7 +3,7 @@
 set -e
 
 get_external_apps() {
-    ENV_FILE=/tmp/env.sh
+    ENV_FILE=/opt/qorus/bin/env.sh
     . ${ENV_FILE}
 
     # prepare OMQ_DIR
@@ -14,7 +14,7 @@ get_external_apps() {
     if [ -n "${SFTPSTORAGE_PKEY}" -a -n "${SFTPSTORAGE_HOST}" -a -n "${SFTPSTORAGE_HOSTKEY}" ]; then
         if [ ! -d ~/.ssh ]; then mkdir -m 0700 -p ~/.ssh; fi
         echo "${SFTPSTORAGE_HOSTKEY}" >> ~/.ssh/known_hosts
-        export KEYFILE=/tmp/sftpstorage-ssh-key
+        export KEYFILE=/opt/qorus/bin/sftpstorage-ssh-key
         echo "${SFTPSTORAGE_PKEY}" > ${KEYFILE}
         chmod 600 ${KEYFILE}
         echo "Downloading Prometheus build from ${SFTPSTORAGE_HOST}..."
@@ -31,8 +31,8 @@ get_external_apps() {
             rm -rf /var/cache/apk/*
         else
             # install the AWS CLI on standard linux
-            mkdir /tmp/aws
-            cd /tmp/aws
+            mkdir /opt/qorus/bin/aws
+            cd /opt/qorus/bin/aws
 
             # get CPU architecture
             arch=`uname -m`

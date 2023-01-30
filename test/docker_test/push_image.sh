@@ -18,7 +18,7 @@ process_image() {
     if [ -n "${SFTPSTORAGE_PKEY}" -a -n "${SFTPSTORAGE_HOST}" -a -n "${SFTPSTORAGE_HOSTKEY}" ]; then
         if [ ! -d ~/.ssh ]; then mkdir -m 0700 -p ~/.ssh; fi
         echo "${SFTPSTORAGE_HOSTKEY}" >> ~/.ssh/known_hosts
-        export KEYFILE=/tmp/sftpstorage-ssh-key
+        export KEYFILE=/opt/qorus/bin/sftpstorage-ssh-key
         echo "${SFTPSTORAGE_PKEY}" > ${KEYFILE}
         chmod 600 ${KEYFILE}
         scp -i ${KEYFILE} ${SFTPSTORAGE_USER:-sftpstorage}@${SFTPSTORAGE_HOST}:qorus-test-images/$source_name $source_name
@@ -61,7 +61,7 @@ delete_image() {
     source_name=$tag-$1.tar
     if [ -n "${SFTPSTORAGE_PKEY}" -a -n "${SFTPSTORAGE_HOST}" ]; then
         # delete image from local SFTP storage
-        ssh -i ${KEYFILE:-/tmp/sftpstorage-ssh-key} ${SFTPSTORAGE_USER:-sftpstorage}@${SFTPSTORAGE_HOST} rm qorus-test-images/$source_name
+        ssh -i ${KEYFILE:-/opt/qorus/bin/sftpstorage-ssh-key} ${SFTPSTORAGE_USER:-sftpstorage}@${SFTPSTORAGE_HOST} rm qorus-test-images/$source_name
     else
         # delete image from s3
         aws s3 rm s3://qorus-test-images/$source_name
@@ -79,8 +79,8 @@ if [ "$MANUAL_IMAGE" != "1" ]; then
             rm -rf /var/cache/apk/*
         else
             # install the AWS CLI on standard linux
-            mkdir /tmp/aws
-            cd /tmp/aws
+            mkdir /opt/qorus/bin/aws
+            cd /opt/qorus/bin/aws
 
             if [ "$arch" = "aarch64" ]; then
                 curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"

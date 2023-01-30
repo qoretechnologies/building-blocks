@@ -3,7 +3,7 @@
 set -e
 set -x
 
-. /tmp/env.sh
+. /opt/qorus/bin/env.sh
 
 # turn on core dumps
 ulimit -c unlimited

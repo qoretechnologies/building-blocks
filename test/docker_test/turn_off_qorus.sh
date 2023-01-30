@@ -2,7 +2,7 @@
 
 set -e
 
-. /tmp/env.sh
+. /opt/qorus/bin/env.sh
 
 set -x
 
