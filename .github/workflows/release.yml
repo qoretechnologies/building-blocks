@@ -1,0 +1,63 @@
+# Release to master pull request
+name: "Release building-blocks"
+on:
+  pull_request:
+    branches:
+      - master
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: public.ecr.aws/qorus/qorus-ce:latest
+    env:
+      POSTGRES_PASSWORD: omq
+      OMQ_DB_NAME: postgres
+      OMQ_DB_TYPE: pgsql
+      OMQ_DB_HOST: postgres
+      OMQ_DB_USER: postgres
+      OMQ_DB_PASS: omq
+      POSTGRES_PASSWORD: omq
+      OMQ_DB_NAME: postgres
+      OMQ_DB_TYPE: pgsql
+      OMQ_DB_HOST: postgres
+      OMQ_DB_USER: postgres
+      OMQ_DB_PASS: omq
+      SFTP_HOST: local-sftp
+      SFTP_DIR: sftp_root
+      SFTP_USER: foo
+      SFTP_PASS: pass
+    services:
+      postgres:
+        image: postgres:11
+        env:
+          POSTGRES_PASSWORD: omq
+          OMQ_DB_NAME: postgres
+          OMQ_DB_TYPE: pgsql
+          OMQ_DB_HOST: postgres
+          OMQ_DB_USER: postgres
+          OMQ_DB_PASS: omq
+        ports:
+          - 5432:5432
+      sftp:
+        image: atmoz/sftp:alpine
+        env:
+          SFTP_HOST: local-sftp
+          SFTP_DIR: sftp_root
+          SFTP_USER: foo
+          SFTP_PASS: pass
+        ports:
+          - 2222:22
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Build and test
+        run: |
+          . /opt/qorus/bin/env.sh
+          ls -l /opt/qorus
+          apt-get update
+          apt install make -y
+          pwd
+          ls -l
+          make load-all -f Makefile
+          make test -f Makefile
+
