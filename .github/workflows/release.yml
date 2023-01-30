@@ -46,23 +46,13 @@ jobs:
         uses: actions/checkout@v2
       - name: Build and test
         run: |
-          echo "Printing /opt/qorus/bin"
-          ls /opt/qorus/bin
-          echo "Printing /test/docker_test"
-          ls ./test/docker_test
+          . /opt/qorus/bin/env.sh
+          . ./test/docker_test/get_external_apps.sh
+          . ./test/docker_test/setup.sh
+          . ./test/docker_test/init.sh
+          . ./test/docker_test/launch_qorus.sh
+          ls -l /opt/qorus
           apt-get update
           apt install make -y
           make load-all -f Makefile
           make test -f Makefile
-
-# run: |
-#           . /opt/qorus/bin/env.sh
-#           . ./test/docker_test/get_external_apps.sh
-#           . ./test/docker_test/setup.sh
-#           . ./test/docker_test/init.sh
-#           . ./test/docker_test/launch_qorus.sh
-#           ls -l /opt/qorus
-#           apt-get update
-#           apt install make -y
-#           make load-all -f Makefile
-#           make test -f Makefile
