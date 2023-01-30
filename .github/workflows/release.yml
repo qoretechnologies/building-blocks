@@ -47,10 +47,10 @@ jobs:
       - name: Build and test
         run: |
           . /opt/qorus/bin/env.sh
-          . /test/docker_test/get_external_apps.sh
-          . /test/docker_test/setup.sh
-          . /test/docker_test/init.sh
-          . /test/docker_test/launch_qorus.sh
+          . ./test/docker_test/get_external_apps.sh
+          . ./test/docker_test/setup.sh
+          . ./test/docker_test/init.sh
+          . ./test/docker_test/launch_qorus.sh
           ls -l /opt/qorus
           apt-get update
           apt install make -y
