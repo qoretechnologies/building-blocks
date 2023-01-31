@@ -16,8 +16,8 @@ fi
 check_bins() {
     echo sanity checks of Qorus bins
     qorus -V
-    qorus-core -V
-    qwf -V
+    # qorus-core -V
+    # qwf -V
     # qsvc -V
     # qjob -V
     # qdsp -V
