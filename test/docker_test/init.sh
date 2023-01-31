@@ -255,16 +255,16 @@ do_init_steps() {
     prepare_schema
 
     # check qorus bins
-    check_bins
+    # check_bins
 
     # load system jobs, services etc.
-    # load_system_services
+    load_system_services
 
     # load the omquser datasource; must happen before tests are loaded
-    # check_load_omquser
+    check_load_omquser
 
     # load test code
-    # load_tests
+    load_tests
 
     # prepare_test_lists
 
