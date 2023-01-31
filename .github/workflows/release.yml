@@ -24,7 +24,7 @@ jobs:
       QORUS_SRC_DIR: .
     services:
       postgres:
-        image: postgres:11
+        image: postgres:15
         env:
           POSTGRES_PASSWORD: omq
           OMQ_DB_NAME: postgres

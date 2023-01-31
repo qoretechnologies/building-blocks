@@ -12,7 +12,7 @@ start_postgres() {
     printf "waiting on PostgreSQL server: "
     waited=0
     while true; do
-        ver=`qore -ne 'try { printf("%s", (new Datasource("pgsql:postgres/omq@postgres%localhost:5432")).getServerVersion()); } catch () { echo "ERROR: $@"; }'`
+        ver=`qore -l Util -ne 'try { printf("%s", (new Datasource("pgsql:postgres/omq@postgres%localhost:5432")).getServerVersion()); } catch (hash<ExceptionInfo> ex) { printf("%s\n", get_exception_string(ex)); }'`
         if [ -n "$ver" ]; then
             echo ": started server version $ver"
             break
