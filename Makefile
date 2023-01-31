@@ -40,7 +40,7 @@ MAKE_RELEASE ?= make-release
 
 load-env:
 	@echo "loading environment variables from .env"
-	. /opt/qorus/bin/env.sh
+	source /opt/qorus/bin/env.sh
 
 all:
 	@echo "usage: make release|load-all|load-building-blocks|load-tests|test"
