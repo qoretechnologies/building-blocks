@@ -50,11 +50,11 @@ jobs:
         run: |
           . /opt/qorus/bin/env.sh
           ls -l ./test/docker_test
-      - name: Run initial scripts
+      - name: Run Setup
         run: |
-          docker ps
-          docker container ls
           . ./test/docker/setup.sh
+      - name: Initialize and launch qorus
+        run: |
           . ./test/docker_test/init.sh
           . ./test/docker_test/launch_qorus.sh
           apt-get update
