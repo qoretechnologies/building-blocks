@@ -96,13 +96,6 @@ prepare_log_dir() {
     chown -R ${QORUS_UID}:${QORUS_GID} ${QORUS_LOG_DIR}
 }
 
-# update admin user's password
-update_admin_user() {
-    echo "Updating Qorus admin user"
-    # user already created by schema-tool
-    #user-tool -A admin:admin:superuser:admin
-    user-tool -d "admin:pass=admin"
-}
 
 # load job, service etc. files from OMQ_DIR/system directory
 load_system_services() {
@@ -260,9 +253,6 @@ do_init_steps() {
 
     # prepare DB schema
     prepare_schema
-
-    # update admin user password
-    update_admin_user
 
     # check qorus bins
     check_bins
