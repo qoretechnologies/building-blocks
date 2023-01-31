@@ -16,13 +16,13 @@ fi
 check_bins() {
     echo sanity checks of Qorus bins
     qorus -V
-    # qorus-core -V
-    # qwf -V
-    # qsvc -V
-    # qjob -V
-    # qdsp -V
-    # qctl -V
-    # qbugreport -V
+    qorus-core -V
+    qwf -V
+    qsvc -V
+    qjob -V
+    qdsp -V
+    qctl -V
+    qbugreport -V
 }
 
 # return if systemdb option is set in options file
@@ -255,7 +255,7 @@ do_init_steps() {
     prepare_schema
 
     # check qorus bins
-    check_bins
+    # check_bins
 
     # load system jobs, services etc.
     # load_system_services
