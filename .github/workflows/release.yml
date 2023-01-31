@@ -39,7 +39,7 @@ jobs:
       - name: Install Docker and Wget
         run: |
           apt-get update
-          apt-get install ca-certificates curl gnupg lsb-release wget make -y
+          apt-get install ca-certificates curl gnupg lsb-release wget -y
           mkdir -p /etc/apt/keyrings
           curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
           echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
@@ -61,5 +61,7 @@ jobs:
           . ./test/docker_test/launch_qorus.sh
       - name: Build and test
         run: |
+          apt-get update
+          apt-get install -y make
           make load-all -f Makefile
           make test -f Makefile
