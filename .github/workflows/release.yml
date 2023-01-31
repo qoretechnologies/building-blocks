@@ -39,23 +39,26 @@ jobs:
       - name: Install Docker and Wget
         run: |
           apt-get update
-          apt-get install ca-certificates curl gnupg lsb-release wget -y
+          apt-get install ca-certificates curl gnupg lsb-release wget make -y
           mkdir -p /etc/apt/keyrings
           curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
           echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
           apt-get update
           apt-get -y install docker-ce docker-ce-cli containerd.io docker-compose-plugin -y
           docker run hello-world
-      - name: Setup environment
+      - name: Add environment variables
         run: |
           . /opt/qorus/bin/env.sh
           ls -l ./test/docker_test
-      - name: Run Setup
+      - name: Setup environment
         run: |
           . ./test/docker/setup.sh
-      - name: Initialize and launch qorus
+      - name: Initialize qorus
         run: |
           . ./test/docker_test/init.sh
+      - name: Launch qorus
+        run: |
+          . ./test/docker_test/launch_qorus.sh
       - name: Build and test
         run: |
           make load-all -f Makefile
