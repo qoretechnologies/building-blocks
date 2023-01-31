@@ -3,13 +3,6 @@
 set -e
 set -x
 
-# start postgres and setup up env vars
-if [ -n "$DOCKER_NETWORK" ]; then
-    setup_postgres_on_rippy
-else
-    start_postgres
-fi
-
 start_postgres() {
     docker run --name=postgres --network=host -e POSTGRES_PASSWORD=omq -e TZ=Europe/Prague -e PGTZ=Europe/Prague -d postgres:15
 
@@ -87,7 +80,12 @@ EOF
     fi
 }
 
-
+# start postgres and setup up env vars
+if [ -n "$DOCKER_NETWORK" ]; then
+    setup_postgres_on_rippy
+else
+    start_postgres
+fi
 
 # setup Kafka
 echo --- downloading Kafka
