@@ -49,7 +49,7 @@ jobs:
       - name: Setup environment
         run: |
           . /opt/qorus/bin/env.sh
-          ls -l ./test
+          ls -l ./test/docker_test
       - name: Run initial scripts
         run: |
           docker ps
