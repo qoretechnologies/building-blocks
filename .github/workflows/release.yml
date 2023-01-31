@@ -48,12 +48,12 @@ jobs:
         uses: actions/checkout@v2
       - name: Run initial scripts
         run: |
+          . ./test/docker/setup.sh
           ls ./test/docker
           . /opt/qorus/bin/env.sh
           export QORUS_LOG_DIR="`pwd`/log"
           echo $WORKDIR
           echo $QORUS_SRC_DIR
-          . ./test/docker/setup.sh
           . test/docker_test/init.sh
           . test/docker_test/launch_qorus.sh
           apt-get update
