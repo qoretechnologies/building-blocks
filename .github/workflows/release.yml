@@ -56,9 +56,6 @@ jobs:
       - name: Initialize and launch qorus
         run: |
           . ./test/docker_test/init.sh
-          . ./test/docker_test/launch_qorus.sh
-          apt-get update
-          apt install make -y
       - name: Build and test
         run: |
           make load-all -f Makefile
