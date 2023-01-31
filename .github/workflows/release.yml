@@ -61,6 +61,7 @@ jobs:
           . ./test/docker_test/launch_qorus.sh
       - name: Build and test
         run: |
+          . /opt/qorus/bin/env.sh
           apt-get update
           apt-get install -y make
           make load-all -f Makefile
