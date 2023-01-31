@@ -32,7 +32,7 @@ start_postgres() {
     export OMQ_DB_USER=postgres
     export OMQ_DB_PASS=omq
     export OMQ_DB_NAME=postgres
-    export OMQ_DB_HOST=`qore -ne 'printf("%s", (map $1.address, get_netif_list(), $1.family == AF_INET && $1.address !~ /^127/ && $1.address !~ /\.0$/)[0]);'`
+    export OMQ_DB_HOST=postgres
     export OMQ_SYSTEMDB=pgsql:${OMQ_DB_USER}/${OMQ_DB_PASS}@${OMQ_DB_NAME}%${OMQ_DB_HOST}
 
     # make sure we can access the DB
