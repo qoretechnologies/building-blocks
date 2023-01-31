@@ -1,4 +1,4 @@
-. /opt/qorus/bin/env.sh
+
 
 # current date
 DATE=$(shell qore -nX 'now().format("YYYY-MM-DD")')
@@ -37,6 +37,10 @@ RELDIR := /opt/qorus/bin/release-$(shell qore -lUtil -nX 'get_random_string()')
 OLOAD ?= oload
 #MAKE_RELEASE=~/src/Qorus/git/qorus-docker/remote/python/make-release.py
 MAKE_RELEASE ?= make-release
+
+load-env:
+	@echo "loading environment variables from .env"
+	. /opt/qorus/bin/env.sh
 
 all:
 	@echo "usage: make release|load-all|load-building-blocks|load-tests|test"
