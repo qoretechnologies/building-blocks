@@ -53,7 +53,7 @@ jobs:
           export QORUS_LOG_DIR="`pwd`/log"
           echo $WORKDIR
           echo $QORUS_SRC_DIR
-          . `pwd`/test/docker/setup.sh
+          . ./test/docker/setup.sh
           . test/docker_test/init.sh
           . test/docker_test/launch_qorus.sh
           apt-get update
