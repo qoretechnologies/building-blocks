@@ -61,6 +61,8 @@ jobs:
           . /opt/qorus/bin/env.sh
       - name: Run initial scripts
         run: |
+          docker ps
+          docker container ls
           . ./test/docker/setup.sh
           . ./test/docker_test/init.sh
           . ./test/docker_test/launch_qorus.sh
