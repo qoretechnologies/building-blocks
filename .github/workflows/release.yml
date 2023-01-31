@@ -10,16 +10,11 @@ jobs:
     container:
       image: public.ecr.aws/qorus/qorus-ce:latest
     env:
-      POSTGRES_PASSWORD: omq
       OMQ_DB_NAME: postgres
       OMQ_DB_TYPE: pgsql
       OMQ_DB_HOST: postgres
       OMQ_DB_USER: postgres
       OMQ_DB_PASS: omq
-      SFTP_HOST: local-sftp
-      SFTP_DIR: sftp_root
-      SFTP_USER: foo
-      SFTP_PASS: pass
       WORKDIR: /opt/qorus
       QORUS_SRC_DIR: .
     services:
@@ -27,11 +22,6 @@ jobs:
         image: postgres:15
         env:
           POSTGRES_PASSWORD: omq
-          OMQ_DB_NAME: postgres
-          OMQ_DB_TYPE: pgsql
-          OMQ_DB_HOST: postgres
-          OMQ_DB_USER: postgres
-          OMQ_DB_PASS: omq
         ports:
           - 5432:5432
       sftp:
