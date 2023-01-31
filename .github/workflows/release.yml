@@ -54,6 +54,7 @@ jobs:
           docker ps
           docker container ls
           . ./test/docker/setup.sh
+          ls -l ./test/docker_test
           . ./test/docker_test/init.sh
           . ./test/docker_test/launch_qorus.sh
           apt-get update
