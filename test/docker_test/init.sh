@@ -264,12 +264,12 @@ do_init_steps() {
     check_load_omquser
 
     # load test code
-    load_tests
+    # load_tests
 
     # prepare_test_lists
 
     # again make sure OMQ_DIR is owned by qorus user and group
-    # chown_omq_dir
+    chown_omq_dir
 }
 
 do_init_steps
