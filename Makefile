@@ -1,3 +1,4 @@
+. /opt/qorus/bin/env.sh
 
 # current date
 DATE=$(shell qore -nX 'now().format("YYYY-MM-DD")')
