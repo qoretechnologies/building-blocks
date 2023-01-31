@@ -255,7 +255,7 @@ do_init_steps() {
     prepare_schema
 
     # check qorus bins
-    # check_bins
+    check_bins
 
     # load system jobs, services etc.
     # load_system_services
