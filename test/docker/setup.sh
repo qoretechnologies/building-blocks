@@ -3,11 +3,6 @@
 set -e
 set -x
 
-. /opt/qorus/bin/env.sh
-
-# source postgres lib
-. ${QORUS_SRC_DIR}/test/docker_test/postgres_lib.sh
-
 # start postgres and setup up env vars
 if [ -n "$DOCKER_NETWORK" ]; then
     setup_postgres_on_rippy
