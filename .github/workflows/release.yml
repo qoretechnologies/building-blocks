@@ -46,9 +46,6 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
-      - name: Setup environment
-        run: |
-          . /opt/qorus/bin/env.sh
       - name: Install Docker
         run: |
           apt-get update
@@ -59,11 +56,14 @@ jobs:
           apt-get update
           apt-get -y install docker-ce docker-ce-cli containerd.io docker-compose-plugin -y
           docker run hello-world
+      - name: Setup environment
+        run: |
+          . /opt/qorus/bin/env.sh
       - name: Run initial scripts
         run: |
           . ./test/docker/setup.sh
-          . test/docker_test/init.sh
-          . test/docker_test/launch_qorus.sh
+          . ./test/docker_test/init.sh
+          . ./test/docker_test/launch_qorus.sh
           apt-get update
           apt install make -y
       - name: Build and test

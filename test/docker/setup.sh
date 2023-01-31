@@ -3,6 +3,8 @@
 set -e
 set -x
 
+. /opt/qorus/bin/env.sh
+
 start_postgres() {
     docker run --name=postgres --network=host -e POSTGRES_PASSWORD=omq -e TZ=Europe/Prague -e PGTZ=Europe/Prague -d postgres:15
 
