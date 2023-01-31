@@ -40,7 +40,7 @@ MAKE_RELEASE ?= make-release
 
 load-env:
 	@echo "loading environment variables from .env"
-	/opt/qorus/bin/env.sh
+	. /opt/qorus/bin/env.sh
 
 all:
 	@echo "usage: make release|load-all|load-building-blocks|load-tests|test"
@@ -113,7 +113,7 @@ rel-ex: ${BB_FILES} ${BB_JAVA} ${BB_MODULES} ${BB_MODULE_DIRS} ${EX_FILES} ${EX_
 	@cd ${RELDIR}; ${MAKE_RELEASE} -mcf -Puser building-blocks-with-examples-$(VERSION) `find .`; cd -
 	@rm -rf ${RELDIR}
 
-load-all: load-building-blocks load-tests load-examples
+load-all: load-env load-building-blocks load-tests load-examples
 
 load-bb-tests: load-building-blocks load-tests
 
