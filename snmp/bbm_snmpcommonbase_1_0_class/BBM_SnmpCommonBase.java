@@ -5,7 +5,7 @@ import org.snmp4j.transport.*;
 import org.snmp4j.security.*;
 import org.snmp4j.mp.*;
 
-import com.qoretechnologies.qorus.UserApi;
+import qore.OMQ.UserApi.UserApi;
 
 public class BBM_SnmpCommonBase {
     public Snmp snmp;

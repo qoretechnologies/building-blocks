@@ -13,7 +13,8 @@ options:
     mapper-output:
         type: type
         name: qoretechnologies
-        path: /qorus-api/workflows/create-order/request
+        path: /qorus-api/workflows/create-order
+        subtype: request
         custom-fields: {}
 mappertype: Mapper
 version: '1.0'
