@@ -73,3 +73,4 @@ jobs:
           make load-bb-tests -f Makefile
           qctl restart
           . ./test/docker/test.sh
+          . ./test/docker_test/turn_off_qorus.sh
