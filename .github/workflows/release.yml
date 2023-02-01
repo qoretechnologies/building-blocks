@@ -21,6 +21,11 @@ jobs:
       postgres:
         image: postgres:15
         env:
+          OMQ_DB_NAME: postgres
+          OMQ_DB_TYPE: pgsql
+          OMQ_DB_HOST: postgres
+          OMQ_DB_USER: postgres
+          OMQ_DB_PASS: omq
           POSTGRES_PASSWORD: omq
         ports:
           - 5432:5432
