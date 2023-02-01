@@ -22,7 +22,7 @@ class BBM_PauseDataPassthru {
             int ms = UserApi::getConfigItemValue("pause-delay-ms", local_context);
             UserApi::logInfo("BBM_PauseDataPassthru: pause %d ms executing", ms);
             try {
-                UserApi::omqusleep(ms * 1000);
+                UserApi::usleep(ms * 1000);
             } catch (hash<ExceptionInfo> ex) {
                 if (ex.err == "STOP-ERROR") {
                     throw "RETRY-ERROR", sprintf("%y received while pausing: %s", ex.err, ex.desc);
@@ -35,3 +35,4 @@ class BBM_PauseDataPassthru {
         return input;
     }
 }
+
