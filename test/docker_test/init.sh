@@ -261,7 +261,7 @@ do_init_steps() {
     load_system_services
 
     # load the omquser datasource; must happen before tests are loaded
-    # check_load_omquser
+    check_load_omquser
 
     # load test code
     # load_tests
