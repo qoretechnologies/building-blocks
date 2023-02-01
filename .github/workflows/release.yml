@@ -73,4 +73,3 @@ jobs:
           make load-bb-tests -f Makefile
           qctl restart
           . ./test/docker/test.sh
-          . ./test/docker/cleanup.sh
