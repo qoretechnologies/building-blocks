@@ -41,6 +41,8 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
+        with:
+          path: "building-blocks"
       - name: Install Docker and Wget
         run: |
           apt-get update
@@ -69,5 +71,7 @@ jobs:
           . /opt/qorus/bin/env.sh
           apt-get update
           apt-get install -y make
-          make load-all -f Makefile
-          make test -f Makefile
+          make load-bb-tests -f Makefile
+          qctl restart
+          . ./test/docker/test.sh
+          . ./test/docker/cleanup.sh
