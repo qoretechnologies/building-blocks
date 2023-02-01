@@ -41,8 +41,6 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
-        with:
-          path: "building-blocks"
       - name: Install Docker and Wget
         run: |
           apt-get update
