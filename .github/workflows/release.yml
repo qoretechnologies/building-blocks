@@ -10,13 +10,13 @@ jobs:
     container:
       image: public.ecr.aws/qorus/qorus-ce:latest
     env:
-      OMQ_DB_NAME: postgres
+      MQ_DB_NAME: postgres
       OMQ_DB_TYPE: pgsql
       OMQ_DB_HOST: postgres
       OMQ_DB_USER: postgres
       OMQ_DB_PASS: omq
+      TZ: Europe/Prague
       WORKDIR: /opt/qorus
-      QORUS_SRC_DIR: .
     services:
       postgres:
         image: postgres:15
@@ -27,6 +27,8 @@ jobs:
           OMQ_DB_USER: postgres
           OMQ_DB_PASS: omq
           POSTGRES_PASSWORD: omq
+          TZ: Europe/Prague
+          PGTZ: Europe/Prague
         ports:
           - 5432:5432
       sftp:

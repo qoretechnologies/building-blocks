@@ -60,8 +60,8 @@ prepare_test_lists() {
         TEST_BLACKLIST="QorusBug2400|QorusDebugTest|qdsp|qwf|SchemaSnapshotsStress|Issue3530Workflow"
     fi
 
-    echo "export TEST_OFFLINE=\"$TEST_OFFLINE\"" >> /opt/qorus/bin/env.sh
-    echo "export TEST_BLACKLIST=\"$TEST_BLACKLIST\"" >> /opt/qorus/bin/env.sh
+    echo "export TEST_OFFLINE=\"$TEST_OFFLINE\"" >>/opt/qorus/bin/env.sh
+    echo "export TEST_BLACKLIST=\"$TEST_BLACKLIST\"" >>/opt/qorus/bin/env.sh
 
     # prepare offline test regex
     TEST_OFFLINE2=""
@@ -71,7 +71,7 @@ prepare_test_lists() {
     # strip trailing |
     TEST_OFFLINE2=${TEST_OFFLINE2%?}
 
-    echo "export TEST_OFFLINE2=\"$TEST_OFFLINE2\"" >> /opt/qorus/bin/env.sh
+    echo "export TEST_OFFLINE2=\"$TEST_OFFLINE2\"" >>/opt/qorus/bin/env.sh
 }
 
 # prepare Qorus system DB schema
@@ -83,19 +83,18 @@ prepare_schema() {
 prepare_log_dir() {
     echo "Preparing log dir"
     if [ -z "${QORUS_LOG_DIR}" ]; then
-        export QORUS_LOG_DIR=${QORUS_SRC_DIR}/log
+        export QORUS_LOG_DIR=./log
     fi
     echo "Log dir set to: ${QORUS_LOG_DIR}"
-    echo "export QORUS_LOG_DIR=\"${QORUS_LOG_DIR}\"" >> /opt/qorus/bin/env.sh
+    echo "export QORUS_LOG_DIR=\"${QORUS_LOG_DIR}\"" >>/opt/qorus/bin/env.sh
     mkdir -p ${QORUS_LOG_DIR}
 
     if ! logdir_option_is_set; then
-        echo "qorus.logdir: ${QORUS_LOG_DIR}" >> ${OMQ_DIR}/etc/options
+        echo "qorus.logdir: ${QORUS_LOG_DIR}" >>${OMQ_DIR}/etc/options
     fi
 
     chown -R ${QORUS_UID}:${QORUS_GID} ${QORUS_LOG_DIR}
 }
-
 
 # load job, service etc. files from OMQ_DIR/system directory
 load_system_services() {
@@ -106,7 +105,7 @@ load_system_services() {
 # load regression test code
 load_tests() {
     echo "Loading test code"
-    cd ${QORUS_SRC_DIR}/"$QORUS_BUILD_DIR"
+    cd ./"$QORUS_BUILD_DIR"
     make install-test
 }
 
@@ -116,7 +115,7 @@ chown_omq_dir() {
 }
 
 parse_db_type_from_db_string() {
-    OMQ_DB_TYPE=`echo "${OMQ_DB_STRING}" | cut -d: -f1`
+    OMQ_DB_TYPE=$(echo "${OMQ_DB_STRING}" | cut -d: -f1)
 }
 
 check_db_string_env_var() {
@@ -172,8 +171,8 @@ check_write_db_tablespace() {
     if [ -n "${OMQ_DB_TABLESPACE}" ]; then
         echo "Writing system DB tablespace to options file: ${OMQ_DIR}/etc/options"
         echo "DB tablespace: '${OMQ_DB_TABLESPACE}'"
-        echo "qorus-client.omq-data-tablespace: ${OMQ_DB_TABLESPACE}" >> ${OMQ_DIR}/etc/options
-        echo "qorus-client.omq-index-tablespace: ${OMQ_DB_TABLESPACE}" >> ${OMQ_DIR}/etc/options
+        echo "qorus-client.omq-data-tablespace: ${OMQ_DB_TABLESPACE}" >>${OMQ_DIR}/etc/options
+        echo "qorus-client.omq-index-tablespace: ${OMQ_DB_TABLESPACE}" >>${OMQ_DIR}/etc/options
     fi
 }
 
@@ -185,7 +184,7 @@ write_systemdb_option() {
         systemdb_string="${OMQ_DB_STRING}"
     fi
     echo "Connection string: '${systemdb_string}'"
-    echo "qorus.systemdb: ${systemdb_string}" >> ${OMQ_DIR}/etc/options
+    echo "qorus.systemdb: ${systemdb_string}" >>${OMQ_DIR}/etc/options
 }
 
 check_load_omquser() {
@@ -276,4 +275,5 @@ do_init_steps
 
 echo "================================="
 echo " Qorus Docker Test init complete"
-echo "================================="; echo
+echo "================================="
+echo
