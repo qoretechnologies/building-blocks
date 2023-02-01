@@ -16,7 +16,7 @@ jobs:
       OMQ_DB_USER: postgres
       OMQ_DB_PASS: omq
       WORKDIR: /opt/qorus
-      # QORUS_SRC_DIR: .
+      QORUS_SRC_DIR: .
     services:
       postgres:
         image: postgres:15
@@ -54,8 +54,6 @@ jobs:
       - name: Add environment variables
         run: |
           . /opt/qorus/bin/env.sh
-          echo "printing source directory"
-          echo $QORUS_SRC_DIR
           ls -l ./test/docker_test
       - name: Setup environment
         run: |
