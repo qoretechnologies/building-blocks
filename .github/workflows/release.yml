@@ -10,7 +10,7 @@ jobs:
     container:
       image: public.ecr.aws/qorus/qorus-ce:latest
     env:
-      MQ_DB_NAME: postgres
+      OMQ_DB_NAME: postgres
       OMQ_DB_TYPE: pgsql
       OMQ_DB_HOST: postgres
       OMQ_DB_USER: postgres
