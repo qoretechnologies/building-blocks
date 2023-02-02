@@ -268,7 +268,7 @@ do_init_steps() {
     # prepare_test_lists
 
     # again make sure OMQ_DIR is owned by qorus user and group
-    chown_omq_dir
+    # chown_omq_dir
 }
 
 do_init_steps
