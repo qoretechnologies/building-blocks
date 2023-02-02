@@ -45,7 +45,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Print running processes
         run: |
-          ps -T
+          lsof -i -P -n | grep LISTEN
       - name: Install Wget
         run: |
           apt-get update
