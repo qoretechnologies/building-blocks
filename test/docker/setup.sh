@@ -2,7 +2,7 @@
 
 set -e
 set -x
-
+set -x beforehand - so - in
 . /opt/qorus/bin/env.sh
 
 start_postgres() {
@@ -34,33 +34,11 @@ start_postgres() {
     qore -nX "(new Datasource(\"${OMQ_SYSTEMDB}\")).getServerVersion()"
 }
 
-wait_for_qorus() {
-    # wait for Qorus to start
-    printf "waiting on Qorus to start:"
-    waited=0
-    while true; do
-        pid=$(qrest system/pid 2>/dev/null)
-        if [ $? -eq 0 ]; then
-            echo " Qorus started"
-            break
-        fi
-
-        # 30 second time limit
-        if [ $waited -eq 30 ]; then
-            echo && echo "Waited too long to connect to Qorus; aborting build."
-            exit 1
-        fi
-        printf .
-        # sleep for 1 second
-        sleep 1
-        waited=$((waited + 1))
-    done
-}
-
 start_postgres
 
-/opt/qorus/bin/entrypoint.sh &
-wait_for_qorus
+start_postgresset -x
+. /opt/qorus/bin/init.sh
+qctl start
 
 # setup Kafka
 echo --- downloading Kafka
