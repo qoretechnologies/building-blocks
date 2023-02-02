@@ -45,6 +45,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Print running processes
         run: |
+          apt install net-tools 
           netstat -tulpn | grep LISTEN
       - name: Install Wget
         run: |
