@@ -11,7 +11,7 @@ start_postgres() {
     printf "waiting on PostgreSQL server: "
     waited=0
     while true; do
-        ver=$(qore -l Util -ne 'try { printf("%s", (new Datasource("pgsql:postgres/omq@postgres%localhost:5432")).getServerVersion()); } catch (hash<ExceptionInfo> ex) { printf("%s\n", get_exception_string(ex)); }')
+        ver=$(qore -l Util -ne 'try { printf("%s", (new Datasource("pgsql:postgres/omq@postgres%localhost:5432")).selectRow("select version()").version); } catch (hash<ExceptionInfo> ex) { printf("%s\n", get_exception_string(ex)); }')
         if [ -n "$ver" ]; then
             echo ": started server version $ver"
             break
@@ -57,7 +57,8 @@ wait_for_qorus() {
 
 start_postgres
 
-/opt/qorus/bin/entrypoint.sh & wait_for_qorus
+/opt/qorus/bin/entrypoint.sh &
+wait_for_qorus
 
 # setup Kafka
 echo --- downloading Kafka
