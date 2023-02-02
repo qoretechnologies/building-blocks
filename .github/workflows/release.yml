@@ -29,8 +29,6 @@ jobs:
           POSTGRES_PASSWORD: omq
           TZ: Europe/Prague
           PGTZ: Europe/Prague
-        ports:
-          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -43,8 +41,6 @@ jobs:
           SFTP_DIR: sftp_root
           SFTP_USER: foo
           SFTP_PASS: pass
-        ports:
-          - 2222:22
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
