@@ -36,6 +36,9 @@ start_postgres() {
 
 start_postgres
 
+# enable test execution
+echo qorus-client.allow-test-execution: true >> /opt/qorus/etc/options
+
 . /opt/qorus/bin/init.sh
 qctl start
 
