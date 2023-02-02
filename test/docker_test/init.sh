@@ -245,7 +245,7 @@ do_init_steps() {
     # prepare_log_dir
 
     # make OMQ_DIR owned by qorus user and group
-    chown_omq_dir
+    # chown_omq_dir
 
     # configure database connection
     db_config
