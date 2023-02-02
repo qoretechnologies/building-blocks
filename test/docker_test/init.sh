@@ -248,7 +248,7 @@ do_init_steps() {
     # chown_omq_dir
 
     # configure database connection
-    # db_config
+    db_config
 
     # prepare DB schema
     prepare_schema
