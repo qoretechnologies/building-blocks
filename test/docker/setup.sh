@@ -28,15 +28,36 @@ start_postgres() {
         waited=$((waited + 1))
     done
 
-    export OMQ_DB_USER=postgres
-    export OMQ_DB_PASS=omq
-    export OMQ_DB_NAME=postgres
-    export OMQ_DB_HOST=postgres
     export OMQ_SYSTEMDB=pgsql:${OMQ_DB_USER}/${OMQ_DB_PASS}@${OMQ_DB_NAME}%${OMQ_DB_HOST}
 
     # make sure we can access the DB
     qore -nX "(new Datasource(\"${OMQ_SYSTEMDB}\")).getServerVersion()"
 }
+
+wait_for_qorus() {
+    # wait for Qorus to start
+    printf "waiting on Qorus to start:"
+    waited=0
+    while true; do
+        pid=$(qrest system/pid 2>/dev/null)
+        if [ $? -eq 0 ]; then
+            echo " Qorus started"
+            break
+        fi
+
+        # 30 second time limit
+        if [ $waited -eq 30 ]; then
+            echo && echo "Waited too long to connect to Qorus; aborting build."
+            exit 1
+        fi
+        printf .
+        # sleep for 1 second
+        sleep 1
+        waited=$((waited + 1))
+    done
+}
+
+wait_for_qorus
 
 start_postgres
 
