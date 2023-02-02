@@ -43,12 +43,13 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
+      - name: Install Wget
+        run: |
+          apt-get update
+          apt-get install wget -y
       - name: Setup environment
         run: |
           . ./test/docker/setup.sh
-      - name: Initialize qorus
-        run: |
-          . ./test/docker_test/init.sh
       - name: Build and test
         run: |
           . /opt/qorus/bin/env.sh
