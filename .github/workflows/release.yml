@@ -56,7 +56,7 @@ jobs:
           docker run hello-world
       - name: Setup environment
         run: |
-          . ./test/docker/setup.sh
+          bash ./test/docker/setup.sh
       - name: Build and test
         run: |
           . /opt/qorus/bin/env.sh
