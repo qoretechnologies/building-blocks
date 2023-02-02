@@ -248,7 +248,7 @@ do_init_steps() {
     # chown_omq_dir
 
     # configure database connection
-    db_config
+    # db_config
 
     # prepare DB schema
     prepare_schema
@@ -257,7 +257,7 @@ do_init_steps() {
     # check_bins
 
     # load system jobs, services etc.
-    load_system_services
+    # load_system_services
 
     # load the omquser datasource; must happen before tests are loaded
     check_load_omquser
