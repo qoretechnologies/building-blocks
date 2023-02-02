@@ -28,12 +28,6 @@ start_postgres() {
         waited=$((waited + 1))
     done
 
-    export OMQ_DB_USER=postgres
-    export OMQ_DB_PASS=omq
-    export OMQ_DB_NAME=postgres
-    export OMQ_DB_HOST=postgres
-    export OMQ_SYSTEMDB=pgsql:${OMQ_DB_USER}/${OMQ_DB_PASS}@${OMQ_DB_NAME}%${OMQ_DB_HOST}
-
     # make sure we can access the DB
     qore -nX "(new Datasource(\"${OMQ_SYSTEMDB}\")).getServerVersion()"
 }
