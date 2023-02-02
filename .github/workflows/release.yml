@@ -56,9 +56,6 @@ jobs:
       - name: Setup environment
         run: |
           . ./test/docker/setup.sh
-      - name: Initialize qorus
-        run: |
-          . ./test/docker_test/init.sh
       - name: Launch qorus
         run: |
           . ./test/docker_test/launch_qorus.sh
@@ -68,6 +65,4 @@ jobs:
           apt-get update
           apt-get install -y make
           make load-bb-tests -f Makefile
-          qctl restart
           . ./test/docker/test.sh
-          . ./test/docker_test/turn_off_qorus.sh
