@@ -1,5 +1,0 @@
-smtp-local-test = (
-   desc = Local test env with SMTP,
-   url = esmtp://fake_smtp:25,
-)
-
