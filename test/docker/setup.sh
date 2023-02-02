@@ -57,9 +57,10 @@ wait_for_qorus() {
     done
 }
 
+/opt/qorus/bin/entrypoint.sh & wait_for_qorus
+
 start_postgres
 
-wait_for_qorus
 
 # setup Kafka
 echo --- downloading Kafka
