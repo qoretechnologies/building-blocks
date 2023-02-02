@@ -36,7 +36,6 @@ start_postgres() {
 
 start_postgres
 
-start_postgresset -x
 . /opt/qorus/bin/init.sh
 qctl start
 
