@@ -43,6 +43,10 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
+      - name: Install Docker and Wget
+        run: |
+          apt-get update
+          apt-get install ca-certificates curl gnupg lsb-release wget -y
       - name: Setup environment
         run: |
           . ./test/docker/setup.sh

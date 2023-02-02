@@ -27,9 +27,6 @@ start_postgres() {
         sleep 1
         waited=$((waited + 1))
     done
-
-    export OMQ_SYSTEMDB=pgsql:${OMQ_DB_USER}/${OMQ_DB_PASS}@${OMQ_DB_NAME}%${OMQ_DB_HOST}
-
     # make sure we can access the DB
     qore -nX "(new Datasource(\"${OMQ_SYSTEMDB}\")).getServerVersion()"
 }
@@ -57,10 +54,10 @@ wait_for_qorus() {
     done
 }
 
-
 start_postgres
 
-/opt/qorus/bin/entrypoint.sh & wait_for_qorus
+/opt/qorus/bin/entrypoint.sh &
+wait_for_qorus
 
 # setup Kafka
 echo --- downloading Kafka
