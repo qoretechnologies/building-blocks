@@ -46,9 +46,6 @@ jobs:
       - name: Setup environment
         run: |
           . ./test/docker/setup.sh
-      - name: Initialize qorus
-        run: |
-          . ./test/docker_test/init.sh
       - name: Build and test
         run: |
           . /opt/qorus/bin/env.sh
