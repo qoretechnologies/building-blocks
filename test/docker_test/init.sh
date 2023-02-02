@@ -242,7 +242,7 @@ db_config() {
 
 do_init_steps() {
     # prepare the log dir
-    prepare_log_dir
+    # prepare_log_dir
 
     # make OMQ_DIR owned by qorus user and group
     chown_omq_dir
