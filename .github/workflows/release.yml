@@ -15,19 +15,17 @@ jobs:
       OMQ_DB_HOST: postgres
       OMQ_DB_USER: postgres
       OMQ_DB_PASS: omq
+      SFTP_HOST: local-sftp
+      SFTP_DIR: sftp_root
+      SFTP_USER: foo
+      SFTP_PASS: pass
       TZ: Europe/Prague
       WORKDIR: /opt/qorus
     services:
       postgres:
         image: postgres:15
         env:
-          OMQ_DB_NAME: postgres
-          OMQ_DB_TYPE: pgsql
-          OMQ_DB_HOST: postgres
-          OMQ_DB_USER: postgres
-          OMQ_DB_PASS: omq
           POSTGRES_PASSWORD: omq
-          TZ: Europe/Prague
           PGTZ: Europe/Prague
         options: >-
           --health-cmd pg_isready
@@ -36,11 +34,6 @@ jobs:
           --health-retries 5
       sftp:
         image: atmoz/sftp:alpine
-        env:
-          SFTP_HOST: local-sftp
-          SFTP_DIR: sftp_root
-          SFTP_USER: foo
-          SFTP_PASS: pass
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
@@ -48,12 +41,6 @@ jobs:
         run: |
           apt-get update
           apt-get install ca-certificates curl gnupg lsb-release wget -y
-          mkdir -p /etc/apt/keyrings
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-          apt-get update
-          apt-get -y install docker-ce docker-ce-cli containerd.io docker-compose-plugin -y
-          docker run hello-world
       - name: Setup environment
         run: |
           bash ./test/docker/setup.sh
