@@ -36,12 +36,7 @@ jobs:
       local-sftp:
         image: atmoz/sftp:alpine
         env:
-          SFTP_HOST: local-sftp
-          SFTP_DIR: sftp_root
-          SFTP_USER: foo
-          SFTP_PASS: pass
-        options: >-
-          --health-cmd foo:pass:::sftp_root
+          SFTP_USERS: foo:pass:::sftp_root
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
