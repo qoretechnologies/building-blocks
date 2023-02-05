@@ -33,7 +33,7 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-      sftp:
+      local-sftp:
         image: atmoz/sftp:alpine
         env:
           SFTP_HOST: local-sftp
