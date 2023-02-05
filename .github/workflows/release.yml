@@ -26,6 +26,7 @@ jobs:
         image: postgres:15
         env:
           POSTGRES_PASSWORD: omq
+          TZ: Europe/Prague
           PGTZ: Europe/Prague
         options: >-
           --health-cmd pg_isready
@@ -34,6 +35,11 @@ jobs:
           --health-retries 5
       sftp:
         image: atmoz/sftp:alpine
+        env:
+          SFTP_HOST: local-sftp
+          SFTP_DIR: sftp_root
+          SFTP_USER: foo
+          SFTP_PASS: pass
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
