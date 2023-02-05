@@ -1,5 +1,4 @@
 
-
 # current date
 DATE=$(shell qore -nX 'now().format("YYYY-MM-DD")')
 
@@ -32,7 +31,7 @@ EX_OTHER_CHATBOT=examples/service/http/websockets/saved_model \
 	examples/service/http/websockets/intents.json
 EX_OTHER=${EX_OTHER_CHATBOT}
 
-RELDIR := /opt/qorus/bin/release-$(shell qore -lUtil -nX 'get_random_string()')
+RELDIR := /tmp/release-$(shell qore -lUtil -nX 'get_random_string()')
 
 OLOAD ?= oload
 #MAKE_RELEASE=~/src/Qorus/git/qorus-docker/remote/python/make-release.py
@@ -144,19 +143,19 @@ load-building-blocks: ${BB_FILES} ${BB_JAVA} ${BB_JAVA_STRIP}
 	    cp -apR $$mod ${OMQ_DIR}/user/modules; \
 	done
 	# make a temporary load file
-	${MAKE_RELEASE} -l/opt/qorus/bin/building-blocks.qrf -U. $^
+	${MAKE_RELEASE} -l/tmp/building-blocks.qrf -U. $^
 	# load the release
-	${OLOAD} /opt/qorus/bin/building-blocks.qrf -lvRA
+	${OLOAD} /tmp/building-blocks.qrf -lvRA
 	# delete the temporary load file
-	rm /opt/qorus/bin/building-blocks.qrf
+	rm /tmp/building-blocks.qrf
 
 load-tests: ${TEST_FILES}
 	# make a temporary load file
-	${MAKE_RELEASE} -l/opt/qorus/bin/building-blocks-tests.qrf -U. $^
+	${MAKE_RELEASE} -l/tmp/building-blocks-tests.qrf -U. $^
 	# load the release
-	${OLOAD} /opt/qorus/bin/building-blocks-tests.qrf -lvRA
+	${OLOAD} /tmp/building-blocks-tests.qrf -lvRA
 	# delete the temporary load file
-	rm /opt/qorus/bin/building-blocks-tests.qrf
+	rm /tmp/building-blocks-tests.qrf
 
 load-examples: ${EX_FILES} ${EX_OTHER}
 	# copy models and other info to ${OMQ_DIR}/user
@@ -166,11 +165,11 @@ load-examples: ${EX_FILES} ${EX_OTHER}
 		cp -apR $$f $${OMQ_DIR}/user/building-blocks/$${dir}; \
 	done
 	# make a temporary load file
-	${MAKE_RELEASE} -l/opt/qorus/bin/building-blocks-examples.qrf -U. ${EX_FILES}
+	${MAKE_RELEASE} -l/tmp/building-blocks-examples.qrf -U. ${EX_FILES}
 	# load the release
-	${OLOAD} /opt/qorus/bin/building-blocks-examples.qrf -lvRA
+	${OLOAD} /tmp/building-blocks-examples.qrf -lvRA
 	# delete the temporary load file
-	rm /opt/qorus/bin/building-blocks-examples.qrf
+	rm /tmp/building-blocks-examples.qrf
 
 rel-ondewo: ${BB_ONDEWO} ${BB_ONDEWO_MODULE_DIRS}
 	@echo using release dir: ${RELDIR}
@@ -193,11 +192,11 @@ load-ondewo: ${BB_ONDEWO} ${BB_ONDEWO_MODULE_DIRS}
 	    cp -apR $$mod ${OMQ_DIR}/user/modules; \
 	done
 	# make a temporary load file
-	${MAKE_RELEASE} -l/opt/qorus/bin/ondewo-building-blocks.qrf -U. ${BB_ONDEWO}
+	${MAKE_RELEASE} -l/tmp/ondewo-building-blocks.qrf -U. ${BB_ONDEWO}
 	# load the release
-	${OLOAD} /opt/qorus/bin/ondewo-building-blocks.qrf -lvRA
+	${OLOAD} /tmp/ondewo-building-blocks.qrf -lvRA
 	# delete the temporary load file
-	rm /opt/qorus/bin/ondewo-building-blocks.qrf
+	rm /tmp/ondewo-building-blocks.qrf
 
 test: dummy
 	for test in $(TESTS); do echo running $$test; qore $$test -vv; done
