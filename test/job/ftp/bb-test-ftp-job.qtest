@@ -84,7 +84,11 @@ class BBM_TestFtpJob inherits QorusJobTest {
         # create FTP connection
         {
             # FTP connection URL
-            ftp_url = sprintf("ftp://%s:%s@", TestAdminUser, TestAdminPwd);
+            if (!community_edition) {
+                ftp_url = sprintf("ftp://%s:%s@", TestAdminUser, TestAdminPwd);
+            } else {
+                ftp_url = "ftp://";
+            }
 
             ftp_url += ENV.FTP_HOST ?? "localhost";
             ftp_url += ":" + port;
