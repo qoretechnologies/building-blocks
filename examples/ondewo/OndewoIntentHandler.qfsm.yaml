@@ -27,11 +27,12 @@ states:
         config-items:
           - name: output-data-hash
             value:
-                {"$local:*":"$transient:intent"}
+                '$local:*': '$transient:intent'
             parent:
                 interface-type: class
                 interface-name: BBM_OutputData
                 interface-version: '1.0'
+            is_value_templated_string: false
     '2':
         position:
             x: 291

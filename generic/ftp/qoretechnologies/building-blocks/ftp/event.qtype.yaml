@@ -1,0 +1,236 @@
+# This is a generated file, don't edit!
+type: type
+path: qoretechnologies/building-blocks/ftp/event
+typeinfo:
+    base_type: hash<auto>
+    name: hash<auto>
+    can_manage_fields: true
+    fields:
+        tmp_filename:
+            name: tmp_filename
+            desc: >-
+                the temporary filename used to store the file until the post action;
+                only present if the `ftp-polling-file-connection` config item is set
+            type:
+                typename: '*string'
+                name: '*string'
+                desc: Qore data type "*string"
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                    string.encoding:
+                        type: string
+                        desc: the output encoding when writing to the type
+                    string.max_size_chars:
+                        type: integer
+                        desc: the maximum length of the string in characters
+                    string.empty_to_nothing:
+                        type: bool
+                        desc: if an empty string should be converted to no value
+                options: null
+                base_type: string
+                mandatory: false
+                types_accepted:
+                    - string
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - string
+                    - nothing
+                fields: {}
+                can_manage_fields: false
+                tags: null
+            isCustom: true
+            canBeNull: true
+            firstCustomInHierarchy: true
+        tmp_path:
+            name: tmp_path
+            desc: >-
+                the temporary path on the filesystem of the file used during the
+                initial file transfer; only present if the
+                `ftp-polling-file-connection` config item is set
+            type:
+                typename: '*string'
+                name: '*string'
+                desc: Qore data type "*string"
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                    string.encoding:
+                        type: string
+                        desc: the output encoding when writing to the type
+                    string.max_size_chars:
+                        type: integer
+                        desc: the maximum length of the string in characters
+                    string.empty_to_nothing:
+                        type: bool
+                        desc: if an empty string should be converted to no value
+                options: null
+                base_type: string
+                mandatory: false
+                types_accepted:
+                    - string
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - string
+                    - nothing
+                fields: {}
+                can_manage_fields: false
+                tags: null
+            isCustom: true
+            canBeNull: true
+            firstCustomInHierarchy: true
+        local_path:
+            name: local_path
+            desc: >-
+                this key is set to a string giving the local path where the file's
+                data is stored; only present if the `ftp-polling-file-connection`
+                config item is set
+            type:
+                typename: '*string'
+                name: '*string'
+                desc: Qore data type "*string"
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                    string.encoding:
+                        type: string
+                        desc: the output encoding when writing to the type
+                    string.max_size_chars:
+                        type: integer
+                        desc: the maximum length of the string in characters
+                    string.empty_to_nothing:
+                        type: bool
+                        desc: if an empty string should be converted to no value
+                options: null
+                base_type: string
+                mandatory: false
+                types_accepted:
+                    - string
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - string
+                    - nothing
+                fields: {}
+                can_manage_fields: false
+                tags: null
+            isCustom: true
+            canBeNull: true
+            firstCustomInHierarchy: true
+        transfer_time:
+            name: transfer_time
+            desc: >-
+                a relative date/time value giving the time it took to transfer the
+                file; only present if the `ftp-polling-file-connection` config item
+                is set
+            type:
+                typename: '*date'
+                name: '*date'
+                desc: Qore data type "*date"
+                supported_options: null
+                options: null
+                base_type: date
+                mandatory: false
+                types_accepted:
+                    - date
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - date
+                    - nothing
+                fields: {}
+                can_manage_fields: false
+                tags: null
+            isCustom: true
+            canBeNull: true
+            firstCustomInHierarchy: true
+            isMapperChild: false
+            level: 0
+            path: transfer_time
+            parentPath: false
+        remote_status:
+            name: remote_status
+            desc: >-
+                a string giving the disposition of the file on the remote server;
+                either `DELETED` or `MOVED`
+            type:
+                typename: string
+                name: string
+                desc: Qore data type "string"
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                    string.encoding:
+                        type: string
+                        desc: the output encoding when writing to the type
+                    string.max_size_chars:
+                        type: integer
+                        desc: the maximum length of the string in characters
+                options:
+                    qore.no_null: true
+                base_type: string
+                mandatory: true
+                types_accepted:
+                    - string
+                types_returned:
+                    - string
+                fields: {}
+                can_manage_fields: false
+                tags: null
+            isCustom: true
+            canBeNull: false
+            firstCustomInHierarchy: true
+        remote_move_targert:
+            name: remote_move_targert
+            desc: >-
+                a string giving the target file name for moved files; only present
+                when `remote_status` is `MOVED`
+            type:
+                typename: '*string'
+                name: '*string'
+                desc: Qore data type "*string"
+                supported_options:
+                    qore.no_null:
+                        type: bool
+                        desc: >-
+                            if True then NULL is not supported on input if NOTHING
+                            is also not accepted
+                    string.encoding:
+                        type: string
+                        desc: the output encoding when writing to the type
+                    string.max_size_chars:
+                        type: integer
+                        desc: the maximum length of the string in characters
+                    string.empty_to_nothing:
+                        type: bool
+                        desc: if an empty string should be converted to no value
+                options: null
+                base_type: string
+                mandatory: false
+                types_accepted:
+                    - string
+                    - nothing
+                    - 'null'
+                types_returned:
+                    - string
+                    - nothing
+                fields: {}
+                can_manage_fields: false
+                tags: null
+            isCustom: true
+            canBeNull: true
+            firstCustomInHierarchy: true

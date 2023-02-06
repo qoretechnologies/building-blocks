@@ -5,7 +5,7 @@ import java.util.Map.Entry;
 
 import org.qore.jni.Hash;
 
-import com.qoretechnologies.qorus.UserApi;
+import qore.OMQ.UserApi.UserApi;
 
 class BBM_JavaConfig {
     /** the required config type

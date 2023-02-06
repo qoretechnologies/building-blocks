@@ -12,11 +12,18 @@ children:
     config-items:
       - name: get-pipeline-data
         value:
-            {"id":["1","2"],"batch_id":["one","two"]}
+            id:
+                - '1'
+                - '2'
+            batch_id:
+                - one
+                - two
         parent:
             interface-type: class
             interface-name: BBM_GetPipelineData
             interface-version: '1.0'
+        value_true_type: hash
+        is_value_templated_string: false
     children:
       - type: processor
         name: BBM_DataProviderRecordCreateProcessor

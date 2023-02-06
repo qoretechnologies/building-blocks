@@ -1,0 +1,60 @@
+# Release to master pull request
+name: "Release building-blocks"
+on:
+  pull_request:
+    branches:
+      - master
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: public.ecr.aws/qorus/qorus-ce:latest
+    env:
+      OMQ_DB_NAME: postgres
+      OMQ_DB_TYPE: pgsql
+      OMQ_DB_HOST: postgres
+      OMQ_DB_USER: postgres
+      OMQ_DB_PASS: omq
+      SFTP_HOST: local-sftp
+      SFTP_DIR: sftp_root
+      SFTP_USER: foo
+      SFTP_PASS: pass
+      TZ: Europe/Prague
+      WORKDIR: /opt/qorus
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: omq
+          TZ: Europe/Prague
+          PGTZ: Europe/Prague
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      local-sftp:
+        image: atmoz/sftp:alpine
+        env:
+          SFTP_USERS: foo:pass:::sftp_root
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Install wget and make
+        run: |
+          apt-get update
+          apt-get install -y wget make
+      - name: Setup environment
+        run: |
+          bash ./test/docker/setup.sh
+      - name: Build and test
+        run: |
+          . /opt/qorus/bin/env.sh
+          make load-bb-tests -f Makefile
+          . ./test/docker/test.sh
+      - name: Upload log artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: qorus-logs
+          path: /opt/qorus/log/
+          retention-days: 5

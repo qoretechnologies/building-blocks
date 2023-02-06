@@ -29,6 +29,8 @@ class BBM_TestFtpJob inherits QorusJobTest {
         # set of files must be pushed to a remote FTP server
         string ftp_url;
 
+        bool community_edition;
+
         const JobName = "bb-test-ftp-job";
 
         const WorkflowName = "BB-TEST-FTP-WORKFLOW";
@@ -53,14 +55,19 @@ class BBM_TestFtpJob inherits QorusJobTest {
     }
 
     globalSetUp() {
-        # create temporary admin user
-        try qrest.del("users/" + TestAdminUser); catch() {}
-        qrest.post("users", {
-            "user": TestAdminUser,
-            "roles": "superuser",
-            "desc": "FTP test user",
-            "pass": TestAdminPwd,
-        });
+        hash<auto> info = qrest.get("system");
+        if (info.edition != "Community") {
+            # create temporary admin user
+            try qrest.del("users/" + TestAdminUser); catch() {}
+            qrest.post("users", {
+                "user": TestAdminUser,
+                "roles": "superuser",
+                "desc": "FTP test user",
+                "pass": TestAdminPwd,
+            });
+        } else {
+            community_edition = True;
+        }
 
         # set FTP root dir
         {
@@ -77,7 +84,11 @@ class BBM_TestFtpJob inherits QorusJobTest {
         # create FTP connection
         {
             # FTP connection URL
-            ftp_url = sprintf("ftp://%s:%s@", TestAdminUser, TestAdminPwd);
+            if (!community_edition) {
+                ftp_url = sprintf("ftp://%s:%s@", TestAdminUser, TestAdminPwd);
+            } else {
+                ftp_url = "ftp://";
+            }
 
             ftp_url += ENV.FTP_HOST ?? "localhost";
             ftp_url += ":" + port;
@@ -113,7 +124,9 @@ class BBM_TestFtpJob inherits QorusJobTest {
     globalTearDown() {
         qrest.put("services/bb-ftp-test/unload");
         try { qrest.del("remote/user/" + ftp_conn_name); } catch () {}
-        try { qrest.del("users/" + TestAdminUser); } catch () {}
+        if (!community_edition) {
+            try { qrest.del("users/" + TestAdminUser); } catch () {}
+        }
     }
 
     ftpJobMoveTest() {

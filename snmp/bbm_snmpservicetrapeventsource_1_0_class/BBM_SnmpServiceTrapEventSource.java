@@ -7,8 +7,8 @@ import org.snmp4j.mp.*;
 
 import org.qore.jni.Hash;
 
-import com.qoretechnologies.qorus.UserApi;
-import com.qoretechnologies.qorus.Observable;
+import qore.OMQ.UserApi.UserApi;
+import qore.OMQ.Observable;
 
 public class BBM_SnmpServiceTrapEventSource extends Observable {
     private BBM_SnmpCommonBase snmp;

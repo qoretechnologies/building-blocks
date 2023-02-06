@@ -1,9 +1,0 @@
-# TODO remove or rewrite to new YAML syntax (this syntax is not supported)
-workflow:
-    name: "POLLING-TEST-REJECTION-WF"
-    author: "Qore Technologies s.r.o."
-    version: "1.0"
-    desc: "XXX"
-    workflow-modules: ["SftpWorkflowModule",]
-    keylist: ["file_name", "parent_jiid",]
-    steps: ["class:PollingTestRejection_MoveFileToRejected:1.0"]

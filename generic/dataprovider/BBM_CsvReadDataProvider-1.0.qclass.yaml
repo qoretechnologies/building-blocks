@@ -73,6 +73,7 @@ config-items:
         if `true` (the default) then if `headers` are provided, then data fields are
         reordered to follow headers config_group: CSV Read Data Provider Header
         Options
+    config_group: CSV Read Data Provider Header Options
     type: bool
   - name: csv-read-headers
     default_value:
@@ -87,7 +88,7 @@ config-items:
         null
     description: |-
         The end of line characters used in the input data.
-    
+
         If not set the end of line characters will be automatically detected.
     config_group: CSV Read Data Provider Field Options
     type: "*string"
@@ -130,7 +131,7 @@ config-items:
         null
     description: |-
         The date format to use when parsing date/time values (ex: `DD.MM.YYYY`).
-    
+
         If not set then ISO-8601 format is assumed (i.e. `YYYY-MM-DD HH:mm:SS`)
     config_group: CSV Read Data Provider Data Options
     type: "*string"
@@ -139,7 +140,7 @@ config-items:
         null
     description: |-
         The character encoding used for the input data.
-    
+
         If not set then \c UTF-8 is assumed
     config_group: CSV Read Data Provider Data Options
     type: "*string"
@@ -172,8 +173,8 @@ config-items:
     description: >-
         The timezone region to use when creating date/time values (ex:
         `Europe/Prague`).
-    
-    
+
+
         If not set then all dates are assumed to be in the server's time zone.
     config_group: CSV Read Data Provider Data Options
     type: "*string"
