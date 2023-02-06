@@ -54,9 +54,12 @@ jobs:
           apt-get install -y make
           make load-bb-tests -f Makefile
           . ./test/docker/test.sh
+      - name: show log
+        if: failure()
+        run: tail -200 /opt/qorus/log/*bb-test-ftp-job*log
       - name: Upload log artifacts
         uses: actions/upload-artifact@v3
         with:
           name: qorus-logs
-          path: /opt/qorus/log/*
+          path: opt/qorus/log/
           retention-days: 5
