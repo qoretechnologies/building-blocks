@@ -2,16 +2,15 @@
 
 set -e
 set -x
-set -x beforehand - so - in
+
 . /opt/qorus/bin/env.sh
 
-start_postgres() {
-
+wait_for_postgres() {
     # wait for PostgreSQL server to start
     printf "waiting on PostgreSQL server: "
     waited=0
     while true; do
-        ver=$(qore -l Util -ne 'try { printf("%s", (new Datasource("pgsql:postgres/omq@postgres%localhost:5432")).selectRow("select version()").version); } catch (hash<ExceptionInfo> ex) { printf("%s\n", get_exception_string(ex)); }')
+        ver=$(qore -l Util -ne 'try { printf("%s", (new Datasource("pgsql:postgres/omq@postgres%localhost:5432")).selectRow("select version()").version); } catch (hash<ExceptionInfo> ex) { /*printf("%s\n", get_exception_string(ex));*/ }')
         if [ -n "$ver" ]; then
             echo ": started server version $ver"
             break
@@ -34,7 +33,7 @@ start_postgres() {
     qore -nX "(new Datasource(\"${OMQ_SYSTEMDB}\")).getServerVersion()"
 }
 
-start_postgres
+wait_for_postgres
 
 # enable test execution
 echo qorus-client.allow-test-execution: true >> /opt/qorus/etc/options
