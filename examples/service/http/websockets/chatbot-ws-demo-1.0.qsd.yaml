@@ -2,13 +2,12 @@
 type: service
 name: chatbot-ws-demo
 desc: AI / NLP Chatbot Demo Server
-lang: java
+lang: python
 author:
   - Qore Technologies, s.r.o.
 base-class-name: QorusService
 class-name: ChatbotWsDemo
 classes:
-  - BBM_WebSocketServiceBase
   - BBM_WebSocketServiceEventSource
   - BBM_TextAnalysis
   - BBM_QorusUiExtension
@@ -34,7 +33,7 @@ system-options:
         value: 4MB
 version: '1.0'
 servicetype: USER
-code: chatbot_ws_demo_1_0_service/ChatbotWsDemo.java
+code: chatbot-ws-demo-1.0.qsd.py
 class-connections:
     UI_Extension:
       - class: BBM_QorusUiExtension
@@ -51,90 +50,6 @@ class-connections:
         connector: webSocketSendEvent
         mapper: chatbot-ws-output:1.0
 config-items:
-  - name: http-listener-bind-address
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
-  - name: http-listener-cert-location
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
-  - name: http-listener-cert-format
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
-  - name: http-listener-key-location
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
-  - name: http-listener-key-format
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
-  - name: http-listener-key-password
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
-  - name: http-listener-ssl-mode
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
-  - name: http-listener-accept-all-certs
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
-  - name: http-listener-capture-client-certs
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
-  - name: websockets-root-uri
-    value:
-        "ai-chatbot"
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
-  - name: websockets-auth-name
-    value:
-        "permissive"
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
-  - name: websockets-cors-enable
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
-  - name: websockets-cors-methods
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
-  - name: websockets-cors-max-age
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
-  - name: websockets-cors-headers
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
-  - name: websockets-cors-credentials
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
   - name: text-analysis-intents
     value:
         "resource://intents.json"
@@ -202,25 +117,105 @@ config-items:
         interface-type: class
         interface-name: BBM_QorusUiExtension
         interface-version: '1.0'
-  - name: websockets-auth-cookie
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
-  - name: websockets-auth-redirect
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
-  - name: http-listener-allow-sharing
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
   - name: test-analysis-input
     parent:
         interface-type: class
         interface-name: BBM_TextAnalysis
+        interface-version: '1.0'
+  - name: http-listener-bind-address
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: http-listener-cert-location
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: http-listener-cert-format
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: http-listener-key-location
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: http-listener-key-format
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: http-listener-key-password
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: http-listener-ssl-mode
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: http-listener-accept-all-certs
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: http-listener-capture-client-certs
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-root-uri
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-auth-name
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-cors-enable
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-cors-methods
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-cors-max-age
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-cors-headers
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-cors-credentials
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-auth-cookie
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-auth-redirect
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: http-listener-allow-sharing
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
         interface-version: '1.0'
 methods:
   - name: init
