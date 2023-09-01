@@ -19,7 +19,7 @@ BB_ONDEWO_MODULE_DIRS=ondewo/OndewoNluClientConnection \
 BB_JAVA=$(shell find ${BB_SUBDIRS} -name \*.jar -type f | sort)
 BB_JAVA_STRIP=$(shell find ExcelDataProvider/building-blocks/excel/jar -name \*.jar -type f | sort)
 
-BB_MODULES=$(shell find modules -name \*.qm -type f | grep -v Excel | sort)
+#BB_MODULES=$(shell find modules -name \*.qm -type f | grep -v Excel | sort)
 BB_MODULE_DIRS=ExcelDataProvider/qlib/ExcelDataProvider mqtt-paho/MqttPahoClientConnection
 
 TEST_FILES=$(shell find test -name \*.q\* -o -name \*.yaml | sort)
