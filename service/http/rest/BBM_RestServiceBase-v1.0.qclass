@@ -50,6 +50,70 @@ class BBM_CorsRest inherits BBM_CorsBase {
 
 #! The base request handler class
 class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
+    #! helper method that helps acquiring int argument values
+    static *int doGetInt(*hash<auto> ah, string key, *bool optional) {
+        switch (ah{key}.typeCode()) {
+            case NT_NOTHING:
+                if (optional) {
+                    return;
+                }
+                break;
+
+            case NT_STRING:
+                if (ah{key}.intp()) {
+                    return ah{key}.toInt();
+                }
+                break;
+
+            case NT_INT:
+                return ah{key};
+        }
+
+        # will be converted to a 400 Bad Request response
+        throw "REST-ARG-ERROR", sprintf("missing required int argument %y (got type %y)", key, ah{key}.type());
+    }
+
+    #! helper method that helps acquiring number argument values
+    static *softnumber doGetNumber(*hash<auto> ah, string key, *bool optional) {
+        switch (ah{key}.typeCode()) {
+            case NT_NOTHING:
+                if (optional) {
+                    return;
+                }
+                break;
+
+            case NT_STRING:
+                if (ah{key}.intp()) {
+                    return ah{key};
+                }
+                break;
+
+            case NT_INT:
+            case NT_FLOAT:
+            case NT_NUMBER:
+                return ah{key};
+        }
+
+        # will be converted to a 400 Bad Request response
+        throw "REST-ARG-ERROR", sprintf("missing required number argument %y (got type %y)", key, ah{key}.type());
+    }
+
+    #! helper method that helps acquiring string argument values
+    static *string doGetString(*hash<auto> ah, string key, *bool optional) {
+        switch (ah{key}.typeCode()) {
+            case NT_NOTHING:
+                if (optional) {
+                    return;
+                }
+                break;
+
+            case NT_STRING:
+                return ah{key};
+        }
+
+        # will be converted to a 400 Bad Request response
+        throw "REST-ARG-ERROR", sprintf("missing required string argument %y (got type %y)", key, ah{key}.type());
+    }
 }
 
 #! The base REST handler class
