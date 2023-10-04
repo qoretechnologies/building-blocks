@@ -116,6 +116,102 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
     }
 }
 
+#! Attribute REST class
+class BBM_AttributeRestClass inherits BBM_RestClass {
+    public {
+        const DefaultKeyRegexList = ("name$", "id$");
+        const DefaultName = "attribute";
+    }
+
+    private {
+        auto info;
+        string key;
+        softstring name;
+    }
+
+    constructor(auto info, *string key) {
+        self.info = info;
+        setName(info, key);
+    }
+
+    private setName(auto info, *string key) {
+        if (info.strp()) {
+            name = info;
+            if (name.val()) {
+                return;
+            }
+        }
+
+        if (info.typeCode() == NT_HASH) {
+            if (key.val() && info{key}.str()) {
+                name = info{key};
+                if (name.val()) {
+                    return;
+                }
+            }
+
+            string anykey;
+            softstring anyname;
+
+            # if no name is set, try to find an identifier in the hash data
+            foreach hash<auto> i in (info.pairIterator()) {
+                foreach string regex in (DefaultKeyRegexList) {
+                    if (i.value.strp()) {
+                        if (!anyname.val()) {
+                            anykey = i.key;
+                            anyname = i.value;
+                        }
+                        if (Qore::regex(i.key, regex, RE_Caseless)) {
+                            name = i.value;
+                            if (name.val()) {
+                                key = i.key;
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            # if no name is set, take the value of the first field that can be converted to a string
+            if (anyname.val()) {
+                key = anykey;
+                name = anyname;
+                return;
+            }
+        }
+
+        # if no name is set, set the default name
+        name = DefaultName;
+    }
+
+    *AbstractRestClass subClassImpl(string name, hash<auto> cx, *hash<auto> ah) {
+        if (info.typeCode() == NT_HASH) {
+            if (info.hasKey(name)) {
+                return new BBM_AttributeRestClass(info{name});
+            }
+        } else if (key.val() && info.typeCode() == NT_LIST && info[0].typeCode() == NT_HASH) {
+            # try to find the element requested
+            foreach hash<auto> h in (info) {
+                if (h{key} == name) {
+                    return new BBM_AttributeRestClass(h - key);
+                }
+            }
+        }
+    }
+
+    softstring name() {
+        return name;
+    }
+
+    hash<HttpHandlerResponseInfo> get(hash<auto> cx, *hash<auto> ah) {
+        return RestHandler::makeResponse(200, info);
+    }
+
+    hash<HttpHandlerResponseInfo> put(hash<auto> cx, *hash<auto> ah) {
+        return RestHandler::makeResponse(200, info);
+    }
+}
+
 #! The base REST handler class
 class BBM_RestHandlerBase inherits AbstractServiceRestHandler, BBM_HttpAuthenticatorBase, BBM_CorsRest {
     #! Creates the object
