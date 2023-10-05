@@ -173,6 +173,7 @@ The following building blocks are available:
 |---|---|
 |[BBM_WebSocketServiceBase](service/http/websockets/BBM_WebSocketServiceBase-v1.0.qclass.yaml)|base class for WebSocket handler services
 |[BBM_WebSocketServiceEventSource](service/http/websockets/BBM_WebSocketServiceEventSource-v1.0.qclass.yaml)|base class for WebSocket handler services with an event connector
+|[BBM_WebSocketServiceDataEventSource](service/http/websockets/BBM_WebSocketServiceDataEventSource-v1.0.qclass.yaml)|base class for WebSocket handler services with an event connector based on serialized event data (JSON or YAML)
 
 ### WSGi Server Building Blocks
 

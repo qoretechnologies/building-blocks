@@ -11,7 +11,7 @@ hashdecl WebSocketReceivedEventInfo {
     #! connection context
     hash<auto> cx;
     #! connection ID string: this ID must be used when sending a message
-    string cid;
+    softstring cid;
     #! unique event ID
     int event_id;
     #! event type: \c "STRING" or \c "BINARY"
@@ -23,7 +23,7 @@ hashdecl WebSocketReceivedEventInfo {
 #! Send event info
 hashdecl WebSocketSendEventInfo {
     #! connection ID string
-    string cid;
+    softstring cid;
     #! message to send
     data msg;
 }

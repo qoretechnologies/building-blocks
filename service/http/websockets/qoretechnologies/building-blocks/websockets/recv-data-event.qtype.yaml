@@ -1,6 +1,6 @@
 # This is a generated file, don't edit!
 type: type
-path: qoretechnologies/building-blocks/websockets/recv-event
+path: qoretechnologies/building-blocks/websockets/recv-data-event
 typeinfo:
     base_type: hash<auto>
     name: hash<auto>
@@ -276,11 +276,9 @@ typeinfo:
         type:
             name: type
             desc: |-
-                the message payload type:
+                the original message payload type:
                 - `STRING`
                 - `BINARY`
-
-                This determines the type of the `msg` key
             type:
                 typename: string
                 name: string
@@ -312,8 +310,7 @@ typeinfo:
         msg:
             name: msg
             desc: >-
-                The actual message from the remote WebSocket client - either
-                `string` or `binary` depending on the `type` value
+                The actual message from the remote WebSocket client - any type that can be deserialized
             type:
                 typename: any
                 name: auto

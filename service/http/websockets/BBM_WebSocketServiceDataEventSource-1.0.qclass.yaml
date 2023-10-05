@@ -1,19 +1,24 @@
 # This is a generated file, don't edit!
 type: class
-name: BBM_WebSocketServiceEventSource
+name: BBM_WebSocketServiceDataEventSource
 desc: >-
     ## Summary
 
 
-    An event source for WebSocket events in Qorus services
-
-
-    This class is designed to be used as an event source for services.
+    A data event source for WebSocket events in Qorus services, supporting
+    serialized data for events.
 
 
     The class's constructor initializes the object, so if it's used as an event
     source (or generally in any connection) or as the primary service class,
     there is no need to use the `init` connector.
+
+
+    ## Data Serialization
+
+
+    The default data serialization is `json`, as this is the most common
+    serialization used; `yaml` is also supported.
 
 
     ## Connectors
@@ -58,18 +63,18 @@ base-class-name: BBM_WebSocketServiceBase
 class-connectors:
   - name: webSocketReceiveEvent
     type: event
-    method: event (ignored)
+    method: event
     output-provider:
         type: type
         name: qoretechnologies
-        path: /building-blocks/websockets/recv-event
+        path: /building-blocks/websockets/recv-data-event
   - name: webSocketSendEvent
     type: input-output
     method: sendMessage
     input-provider:
         type: type
         name: qoretechnologies
-        path: /building-blocks/websockets/send-event
+        path: /building-blocks/websockets/send-data-event
   - name: init
     type: input-output
     method: init
@@ -79,11 +84,11 @@ class-connectors:
     output-provider:
         type: type
         name: qoretechnologies
-        path: /building-blocks/websockets/broadcast-event
+        path: /building-blocks/websockets/broadcast-data-event
 requires:
   - BBM_WebSocketServiceBase
 version: '1.0'
-code: BBM_WebSocketServiceEventSource-1.0.qclass
+code: BBM_WebSocketServiceDataEventSource-1.0.qclass
 config-items:
   - name: http-listener-bind-address
     parent:
@@ -126,6 +131,11 @@ config-items:
         interface-name: BBM_WebSocketServiceBase
         interface-version: '1.0'
   - name: http-listener-capture-client-certs
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceBase
+        interface-version: '1.0'
+  - name: http-listener-allow-sharing
     parent:
         interface-type: class
         interface-name: BBM_WebSocketServiceBase
@@ -175,8 +185,16 @@ config-items:
         interface-type: class
         interface-name: BBM_WebSocketServiceBase
         interface-version: '1.0'
-  - name: http-listener-allow-sharing
-    parent:
-        interface-type: class
-        interface-name: BBM_WebSocketServiceBase
-        interface-version: '1.0'
+  - name: websockets-event-data
+    default_value:
+        "json"
+    description: |-
+        The data serialization for WebSocket messages:
+        - `none`: no serialization, raw messages
+        - `json`: JSON serialization
+        - `yaml`: YAML serialization
+    allowed_values:
+      - "none"
+      - "json"
+      - "yaml"
+    config_group: WebSocket Event Handler

@@ -1,0 +1,302 @@
+%new-style
+%strict-args
+%require-types
+%enable-all-warnings
+
+%try-module json
+%define NoJson
+%endtry
+%try-module yaml
+%define NoYaml
+%endtry
+
+const WSET_STRING = "STRING";
+const WSET_BINARY = "BINARY";
+
+#! WebSocket received event info hash
+hashdecl WebSocketReceivedEventInfo {
+    #! connection context
+    hash<auto> cx;
+    #! connection ID string: this ID must be used when sending a message
+    softstring cid;
+    #! unique event ID
+    int event_id;
+    #! original WebSocket body payload type: \c "STRING" or \c "BINARY"
+    string type;
+    #! the deserialized event information
+    auto msg;
+}
+
+#! Send event info
+hashdecl WebSocketSendEventInfo {
+    #! connection ID string
+    softstring cid;
+    #! message to serialize and send
+    auto msg;
+}
+
+#! Broadcast event info
+hashdecl WebSocketBroadcastEventInfo {
+    #! message to serialize and broadcast
+    auto msg;
+}
+
+#! Service class
+class BBM_WebSocketServiceDataEventSource inherits BBM_WebSocketServiceBase, ::OMQ::Observable {
+    #! Returns the HTTP handler for the service
+    private AbstractServiceHttpHandler getHandlerImpl() {
+        return new BBM_WebSocketServiceDataEventSourceHandler(self);
+    }
+
+    #! The constructor initializes the class
+    constructor() {
+%ifdef NoJson
+        if (UserApi::getConfigItemValue("websockets-event-data") == "json") {
+            throw "WEBSOCKET-DATA-ERROR", "cannot support JSON data serialization without the JSON module";
+        }
+%endif
+%ifdef NoYaml
+        if (UserApi::getConfigItemValue("websockets-event-data") == "yaml") {
+            throw "WEBSOCKET-DATA-ERROR", "cannot support JSON data serialization without the JSON module";
+        }
+%endif
+
+        init();
+    }
+
+    #! Connection method for sending WebSocket messages to the client
+    /** @param info must be cast<>able to hash<WebSocketSendEventInfo>
+
+        This is listed as an input/output provider to allow it to be chained to other actions, but no output is
+        returned
+    */
+    sendMessage(hash<auto> info) {
+        cast<BBM_WebSocketServiceDataEventSourceHandler>(handler).sendMessage(
+            cast<hash<WebSocketSendEventInfo>>(info)
+        );
+    }
+
+    #! Connection method for sending WebSocket messages to the client
+    /** @param info the message to send
+
+        This is listed as an input/output provider to allow it to be chained to other actions, but no output is
+        returned
+    */
+    sendMessage(hash<WebSocketSendEventInfo> info) {
+        cast<BBM_WebSocketServiceDataEventSourceHandler>(handler).sendMessage(info);
+    }
+
+    #! Connection method for sending WebSocket messages to all clients
+    broadcastMessage(hash<auto> info) {
+        cast<BBM_WebSocketServiceDataEventSourceHandler>(handler).sendAll(info.msg);
+    }
+}
+
+#! Handler class
+class BBM_WebSocketServiceDataEventSourceHandler inherits BBM_WebSocketHandlerBase {
+    public {
+        BBM_WebSocketServiceDataEventSource service;
+    }
+
+    constructor(BBM_WebSocketServiceDataEventSource service) {
+        self.service = service;
+    }
+
+    BBM_WebSocketServiceDataEventSourceConnection getConnectionImpl(hash<auto> cx, hash<auto> hdr, string cid) {
+        return new BBM_WebSocketServiceDataEventSourceConnection(cx, self);
+    }
+
+    #! sends a message to all connected clients
+    /** Messages are automatically encoded with @ref WebSocketUtil::ws_encode_message() before sending.
+    */
+    sendAll(auto msg) {
+        data data_msg;
+        try {
+            data_msg = serialize(msg);
+        } catch (hash<ExceptionInfo> ex) {
+            UserApi::logError("failed to serialize data: %s: %s", ex.err, ex.desc);
+            return;
+        }
+
+        BBM_WebSocketHandlerBase::sendAll(data_msg);
+    }
+
+    #! Method for sending WebSocket messages to the client
+    /** @param info the message to send
+    */
+    sendMessage(hash<WebSocketSendEventInfo> info) {
+        if (!exists info.msg) {
+            # ignore empty messages
+            return;
+        }
+
+        if (!exists info.cid) {
+            throw "WEBSOCKET-CONNECTION-ERROR", "missing connection ID in info arg";
+        }
+
+        data msg;
+        try {
+            msg = serialize(info.msg);
+        } catch (hash<ExceptionInfo> ex) {
+            UserApi::logError("failed to serialize data to send with: %s: %s", ex.err, ex.desc);
+            return;
+        }
+
+        UserApi::logDebug("sending WS msg to %y: %y", info.cid, info.msg);
+
+        rwl.readLock();
+        on_exit rwl.readUnlock();
+
+        *BBM_WebSocketServiceDataEventSourceConnection conn = ch{info.cid};
+        if (!conn) {
+            throw "WEBSOCKET-CONNECTION-ERROR", sprintf("unknown/invalid connection ID %y for outbound message",
+                info.cid);
+        }
+
+        conn.send(msg);
+    }
+
+    #! Serializes the data for sending
+    static data serialize(auto msg) {
+        # serialize message if necessary
+        string data_type = UserApi::getConfigItemValue("websockets-event-data");
+        switch (data_type) {
+            case "none": {
+                int t = msg.typeCode();
+                if (t != NT_STRING && t != NT_BINARY) {
+                    throw "WEBSOCKET-DATA-ERROR", sprintf("message body type must be \"string\" or \"binary\" when "
+                        "\"websockets-event-data\" is \"none\"; got type %y instead", msg.fullType());
+                }
+                return msg;
+            }
+
+            case "json": {
+%ifdef NoJson
+                throw "WEBSOCKET-DATA-ERROR", "cannot support JSON data serialization without the JSON module";
+%else
+                return make_json(msg);
+%endif
+            }
+
+            case "yaml": {
+%ifdef NoYaml
+                throw "WEBSOCKET-DATA-ERROR", "cannot support YAML data serialization without the YAML module";
+%else
+                return make_yaml(msg);
+%endif
+            }
+        }
+
+        throw "DATA-ERROR", sprintf("cannot deserialize with serialization %y; msg: %y", data_type, msg);
+    }
+
+    static auto deserialize(data msg) {
+        string data_type = UserApi::getConfigItemValue("websockets-event-data");
+        switch (data_type) {
+            case "none": return msg;
+            case "yaml": {
+                if (msg.typeCode() == NT_BINARY) {
+                    msg = msg.toString();
+                }
+                return parse_yaml(msg);
+            }
+            case "json": {
+                if (msg.typeCode() == NT_BINARY) {
+                    msg = msg.toString();
+                }
+                return parse_json(msg);
+            }
+        }
+    }
+}
+
+#! Connection class
+class BBM_WebSocketServiceDataEventSourceConnection inherits QorusWebSocketConnection {
+    public {
+        #! Connection event ID string; must match the connection parameters in the YAML metadata
+        const ConnectionEventId = "BBM_WebSocketServiceDataEventSource::event";
+
+        #! Connection closed ID string; must match the connection parameters in the YAML metadata
+        const ConnectionClosedId = "BBM_WebSocketServiceDataEventSource::closed";
+    }
+
+    private {
+        #! Connection context hash
+        /** important values:
+            - \c socket: the bind adddress in qorus-core for the listener that received the event
+            - \c socket-info: a hash of socket information for the listening socket (as returned by
+              @ref Qore::Socket::getSocketInfo())
+            - \c peer-info: a hash of socket information for the remote socket (as returned by
+              @ref Qore::Socket::getPeerInfo())
+            - \c url: a hash of broken-down URL information (as returned from parse_url())
+            - \c id: the unique HTTP connection ID; this ID is also used to identify the websocket client connection
+            - \c listener-id: the HTTP server listener ID (see HttpServer::HttpServer::getListenerInfo())
+            - \c user: the connected Qorus username (if any)
+        */
+        hash<auto> cx;
+
+        #! Event ID counter
+        int event_id = 0;
+
+        #! Context keys captured by this object
+        const WebSocketContextKeys = (
+            "id",
+            "socket",
+            "socket-info",
+            "peer-info",
+            "url",
+            "listener-id",
+            "user",
+        );
+    }
+
+    constructor(hash<auto> cx, BBM_WebSocketServiceDataEventSourceHandler handler)
+            : QorusWebSocketConnection(handler) {
+        self.cx = cx{WebSocketContextKeys};
+    }
+
+    destructor() {
+        cast<BBM_WebSocketServiceDataEventSourceHandler>(handler).service.notifyObservers(ConnectionClosedId,
+            <WebSocketReceivedEventInfo>{
+            "cx": cx,
+            "cid": cx.id.toString(),
+            "event_id": event_id++,
+        });
+    }
+
+    #! Called by the @ref WebSocketHandler::WebSocketHandler "WebSocketHandler" when text messages are received
+    gotMessage(string msg) {
+        doEvent(WSET_STRING, msg);
+    }
+
+    #! Called by the @ref WebSocketHandler::WebSocketHandler "WebSocketHandler" when binary messages are received
+    gotMessage(binary msg) {
+        doEvent(WSET_BINARY, msg);
+    }
+
+    private doEvent(string type, data msg) {
+        auto msg_data;
+        try {
+            msg_data = BBM_WebSocketServiceDataEventSourceHandler::deserialize(msg);
+        } catch (hash<ExceptionInfo> ex) {
+            string err = sprintf("connection %y from %y: failed to deserialize message %y with data type %y: %s",
+                cx.id, cx."peer-info".hostname_desc, msg, UserApi::getConfigItemValue("websockets-event-data"),
+                ex.err, ex.desc);
+            UserApi::logError("%s", err);
+            cast<BBM_WebSocketServiceDataEventSourceHandler>(handler).sendMessage(<WebSocketSendEventInfo>{
+                "cid": cx.id,
+                "msg": err,
+            });
+            return;
+        }
+        UserApi::logDebug("connection: %y msg: %y", ConnectionEventId, msg_data);
+        cast<BBM_WebSocketServiceDataEventSourceHandler>(handler).service.notifyObservers(ConnectionEventId,
+            <WebSocketReceivedEventInfo>{
+            "cx": cx,
+            "cid": cx.id.toString(),
+            "event_id": event_id++,
+            "type": type,
+            "msg": msg_data,
+        });
+    }
+}

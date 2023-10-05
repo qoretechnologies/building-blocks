@@ -41,7 +41,14 @@ effect.**
 data types, etc.**
 
 **NOTE: If step building blocks are subclassed, make sure and either remove the `primary()` or `validation()` method
-or override it and make an explicit call to the parent class method in the child class**
+or override it and make an explicit call to the parent class method in the child class
+
+**NOTE: Qorus implements a significant quantity of powerful generic functionality in data provider factories; the
+`qorus-api` factory implements Qorus-specific functionality
+(see https://qoretechnologies.com/manual/qorus/current/qorus/finite_state_machines.html#fsm_qorus_api_calls), and Qore
+and modules implement other generic functionality as well.  These APIs can be browsed and used in Qorus flows (Finite
+State Machines) in API call states where documentation for each API call (request - response data provider) is also
+displayed.
 
 The following building blocks are available:
 
@@ -100,7 +107,11 @@ The following building blocks are available:
 |[BBM_ListCache](#bbm_listcache-building-block)|a simple cache class holding a list of data items with connectors to control the cache
 |[BBM_PauseDataPassthru](#bbm_pausedatapassthru-building-block)|executes a configurable and optionally skippable pause or delay, includes an input/output connector
 |[BBM_RegularExpressions](#bbm_regularexpressions-building-block)|helper building block used by other building blocks for for regular expression configuration item handling
-util/throw-exception
+
+### HTTP Server Building Blocks
+
+|Building Block|Description|
+|---|---|
 |[BBM_AwsSnsServiceBase](#bbm_awssnsservicebase-building-block)|Base AWS Simple Notification Service abstract class building block
 |[BBM_AwsSnsServiceEventSource](#bbm_awssnsserviceeventsource-building-block)|AWS Simple Notification Service class building block with an event-based connection
 |[BBM_CorsBase](#bbm_corsbase-building-block)|base class for CORS functionality used by other building blocks
@@ -148,7 +159,7 @@ util/throw-exception
 |---|---|
 |[BBM_SftpPollerBase](#bbm_sftppollerbase-building-block)|generic base class for polling for files from an SFTP server with a polling connector
 |[BBM_SftpPollerCreateOrder](#bbm_sftppollercreateorder-building-block)|class for polling for files from an SFTP server and creating a workflow order from them
-|[BBM_SftpPollerCreateOrderJob]util/throw-exception(#bbm_sftppollercreateorderjob-building-block)|base class for SFTP polling jobs that create workflow orders for files received
+|[BBM_SftpPollerCreateOrderJob](#bbm_sftppollercreateorderjob-building-block)|base class for SFTP polling jobs that create workflow orders for files received
 
 ### SNMP Building Blocks
 
@@ -162,6 +173,7 @@ util/throw-exception
 |---|---|
 |[BBM_WebSocketServiceBase](#bbm_websocketservicebase-building-block)|base class for WebSocket handler services
 |[BBM_WebSocketServiceEventSource](#bbm_websocketserviceeventsource-building-block)|base class for WebSocket handler services with an event connector
+|[BBM_WebSocketServiceDataEventSource](#bbm_websocketservicedataeventsource-building-block)|base class for WebSocket handler services with an event connector based on serialized event data (JSON or YAML)
 
 ### WSGi Server Building Blocks
 
@@ -349,6 +361,8 @@ This building block uses the input data for binding; for a building block that b
 
 This building block is useful only in limited use cases; `BBM_BindSubworkflowStatic` can do everything this building block can do and more; it's recommended to use `BBM_BindSubworkflowStatic` instead.
 
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `util/workflow/bind-subworkflow` API data provider in the `qorus-api` factory instead
+
 ## Connectors
 
 ### Input/Output Connector `bindSubworkflow`
@@ -363,6 +377,8 @@ ___
 Binds a subworkflow in a subworkflow step based on configuration.
 
 This building block uses configuration for all binding data; for a building block that binds purely based on input data, see `BBM_BindSubworkflow`
+
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `util/workflow/bind-subworkflow` API data provider in the `qorus-api` factory instead
 
 ## Connectors
 
@@ -380,6 +396,8 @@ ___
 Building block that throws an `FSM-BREAK` exception to provide a `break` action when executing an FSM.
 
 There is no configuration
+
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `util/break` API data provider in the `qorus-api` factory instead
 
 ## Connectors
 
@@ -399,6 +417,8 @@ Building block that throws an `FSM-CONTINUE` exception to provide a `continue` a
 
 There is no configuration
 
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `util/continue` API data provider in the `qorus-api` factory instead
+
 ## Connectors
 
 ### Input Connector doContinue
@@ -411,7 +431,7 @@ ___
 
 ## **BBM_CorsBase Building Block**
 
-## Summary
+## Summary 
 
 Base class for HTTP CORS handlers; there is no configuration and no connectors; this class is a helper class meant to be used by classes providing HTTP handling functionality.
 ___
@@ -425,6 +445,8 @@ Building block for creating a workflow order from input data.
 This building block uses the input data for creating the new workflow order; for a building block that binds based on configuration, see `BBM_CreateOrderStatic`
 
 This building block is useful only in limited use cases; `BBM_CreateOrderStatic` can do everything this building block can do and more; it's recommended to use `BBM_CreateOrderStatic` instead.
+
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `workflows/create-order` API data provider in the `qorus-api` factory instead
 
 ## Connectors
 
@@ -440,6 +462,8 @@ ___
 Building block for creating a workflow order from configuration.
 
 This building block uses configuration to create the new workflow order; for a building block that binds purely based on input data, see `BBM_CreateOrder`
+
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `workflows/create-order` API data provider in the `qorus-api` factory instead
 
 ## Connectors
 
@@ -479,6 +503,8 @@ description: $static:description
 
 For a data provider supporting the `returning` create option (like `DbTableDataProvider`, for example), the output data can return values created implicitly in the record creation action such as column values populated by sequences from a trigger using the `dataprovider-create-options` config item - ex: `returning: customer_id`
 
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `data-provider/create` API data provider in the `qorus-api` factory instead
+
 ## Connectors
 
 ### Input/Output Connector `DataProvider Record Create`
@@ -505,6 +531,8 @@ ___
 Base class for building block classes for creating records in record-based data providers.
 
 This base class has no configuration; see `BBM_DataProviderRecordCreate` for a usable building block with connectors and configuration.
+
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `data-provider/create` API data provider in the `qorus-api` factory instead
 
 ## References
 
@@ -541,6 +569,8 @@ Used to make an update in a record-based data provider based on input data provi
 
 The output data is a hash with the single key `count` giving the number of records updated.
 
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `data-provider/update` API data provider in the `qorus-api` factory instead
+
 ### Input/Output Connector `updateDataProviderRecordFromConfig`
 
 Used to make an update in a record-based data provider based on config item `dataprovider-update-set ` providing the update hash.
@@ -554,6 +584,8 @@ ___
 ## **BBM_DataProviderRecordUpdateBase Building Block**
 
 building block for record-based data providers
+
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `data-provider/update` API data provider in the `qorus-api` factory instead
 ___
 
 ## **BBM_DataProviderRequest Building Block**
@@ -561,6 +593,8 @@ ___
 ## Summary
 
 Building block base class for request-reply-based data providers.
+
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `data-provider/do-request` API data provider in the `qorus-api` factory instead
 
 ## Connectors
 
@@ -585,6 +619,8 @@ ___
 
 Base class for using the data-provider request API to make requests; no configuration
 
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `data-provider/do-request` API data provider in the `qorus-api` factory instead
+
 ## References
 
 See `BBM_DataProviderRequest` and `BBM_DataProviderRequestWithRecovery` forbuilding blocks with configuration and connectors based on this base class.
@@ -595,6 +631,8 @@ ___
 ## Summary
 
 Building block for request-based data providers with recovery logic; supports recovery with a single request
+
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `data-provider/do-request` API data provider in the `qorus-api` factory instead
 
 ## Connectors
 
@@ -623,6 +661,8 @@ ___
 Building block for request-based data providers with recovery logic; supports recovery with a single request
 
 This class has no connectors as it is meant to be directly usable as a normal step class; the `primary()` and `validation()` logic is implemented already in this class.
+
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `data-provider/do-request` API data provider in the `qorus-api` factory instead
 ___
 
 ## **BBM_DataProviderSearch Building Block**
@@ -630,6 +670,8 @@ ___
 ## Summary
 
 Performs a search in a record-based data provider and returns the result
+
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `data-provider/search` API data provider in the `qorus-api` factory instead
 
 ## Connectors
 
@@ -673,6 +715,8 @@ ___
 
 Base class for using the data provider search API; no configuration or connectors
 
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `data-provider/search` API data provider in the `qorus-api` factory instead
+
 ## References
 
 See `BBM_DataProviderSearch`
@@ -711,7 +755,7 @@ Use the `data-serialization-verbose-output` config item to use multi-line serial
 
 ### Input/Output Connector `serialize`
 
-Input data is available as local context data during the resolution of all config item as `$local:input`.
+Input data is available as local context data during the resolution of all config item as `$local:input`.  
 
 The output data includes the serialized data in the `output` key of the hash returned.
 
@@ -722,6 +766,8 @@ ___
 ## Summary
 
 Deletes a file from the filesystem
+
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `delete` API data provider in the `file` factory instead
 
 ## Connectors
 
@@ -755,6 +801,8 @@ Executes a synchronous workflow order and returns the results.
 
 This building block is useful only in limited use cases;`BBM_ExecSyncWorkflowStatic` can do everything this building block can do and more; it's recommended to use `BBM_ExecSyncWorkflowStatic` instead.
 
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `workflows/exec-sync` API data provider in the `qorus-api` factory instead
+
 ## Connectors
 
 ### Input/Output Connector `execSyncWorkflow`
@@ -768,10 +816,11 @@ ___
 
 Class for executing a synchronous workflow order from configuration.
 
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `workflows/exec-sync` API data provider in the `qorus-api` factory instead
+
 ## Connectors
 
 ### Input/Output Connector `execSyncWorkflowStatic`
-
 
 Creates and executes a workflow order synchronously from the configuration data.
 
@@ -806,13 +855,13 @@ Used to poll for files once and return file data as output for all files polled;
 
 ### Input/Output Connector `start`
 
-This connector can be used in a service to poll in a service's `start()` method in a background thread.  In order to use this class's `ftpFileEvent` connector, this connector must be used as the service's `start()` method.
+This connector can be used in a service to poll in a service's `start()` method in a background thread.  In order to use this class's `ftpFileEvent` connector, this connector must be used as the service's `start()` method.  
 
 Input data is ignored and passed through to the output data.
 
 ### Input/Output Connector `stop`
 
-This connector can be used in a service to stop polling in a service's `stop()` method.   In order to use this class's `ftpFileEvent` connector, this connector must be used as the service's `stop()` method.
+This connector can be used in a service to stop polling in a service's `stop()` method.   In order to use this class's `ftpFileEvent` connector, this connector must be used as the service's `stop()` method.  
 
 Input data is ignored and passed through to the output data.
 
@@ -831,13 +880,13 @@ ___
 
 ## **BBM_FtpPollerCreateOrder Building Block**
 
-## Summary
+## Summary 
 
 Building block class for polling for files from an FTP server and creating a workflow order from files polled.
 
 The local context data for the internal workflow order creation call is the file event data as described by data type `qoretechnologies/building-blocks/ftp/event`; therefore this information can be used when creating the order; for example `create-workflow-staticdata` = `$local:*` would set the initial static order data to the file event hash.
 
-Duplicates can be detected from order keys, i.e. if one of the following config items is used:
+Duplicates can be detected from order keys, i.e. if one of the following config items is used: 
 - `create-workflow-specific-unique-key`
 - `create-workflow-unique-key`
 - `create-workflow-global-unique-key`
@@ -851,13 +900,13 @@ ___
 
 ## **BBM_FtpPollerCreateOrderJob Building Block**
 
-## Summary
+## Summary 
 
 Building block job base class for polling for files from an FTP server and creating a workflow order from files polled.
 
 The local context data for the internal workflow order creation call is the file event data as described by data type `qoretechnologies/building-blocks/ftp/event`; therefore this information can be used when creating the order; for example `create-workflow-staticdata` = `$local:*` would set the initial static order data to the file event hash.
 
-Duplicates can be detected from order keys, i.e. if one of the following config items is used:
+Duplicates can be detected from order keys, i.e. if one of the following config items is used: 
 - `create-workflow-specific-unique-key`
 - `create-workflow-unique-key`
 - `create-workflow-global-unique-key`
@@ -912,6 +961,8 @@ ___
 
 Returns data from configuration data
 
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `util/get-data` API data provider in the `qorus-api` factory instead
+
 ## Connectors
 
 ### Input/Output Connector `getData`
@@ -959,7 +1010,7 @@ A generic building block for HTTP file handling for use in Qorus services.
 
 This class can be used to expose files from the filesystem to HTTP clients iin a Qorus service.
 
-It contains no connectors; it is driven entirely by configuration.
+It contains no connectors; it is driven entirely by configuration.  
 
 Initialization is performed automatically when the class is instantiated.
 ___
@@ -997,7 +1048,7 @@ ___
 
 ## Summary
 
-Building block that allows for iteration of internal data; converts a hash with an internal list into a list of hashes having common top-level data with the interior element repeated
+Building block that allows for iteration of internal data; converts a hash with an internal list into a list of hashes having common top-level data with the interior element repeated 
 
 ## Connectors
 
@@ -1098,6 +1149,8 @@ ___
 ## Summary
 
 Output a message to the current log file.
+
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `util/log-message` API data provider in the `qorus-api` factory instead
 
 ## Connectors
 
@@ -1223,6 +1276,8 @@ Writes output data to locations provided by config item `output-data-hash`, whic
 
 The keys in the hash are expanded with calls to `UserApi::expandTemplatedValue()`
 
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `util/write-output` API data provider in the `qorus-api` factory instead
+
 ## Connectors
 
 ### Input/Output Connector `writeOutput`
@@ -1272,6 +1327,8 @@ ___
 ## **BBM_QorusServiceMethodCaller Building Block**
 
 This building block allows for Qorus service methods to be called based on configuration
+
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `services/call-method` API data provider in the `qorus-api` factory instead
 ___
 
 ## **BBM_QorusUiExtension Building Block**
@@ -1442,13 +1499,13 @@ ___
 
 ## **BBM_SftpPollerCreateOrderJob Building Block**
 
-## Summary
+## Summary 
 
 Building block job base class for polling for files from an SFTP server and creating a workflow order from files polled.
 
 The local context data for the internal workflow order creation call is the file event data as described by data type `qoretechnologies/building-blocks/sftp/event`; therefore this information can be used when creating the order; for example `create-workflow-staticdata` = `$local:*` would set the initial static order data to the file event hash.
 
-Duplicates can be detected from order keys, i.e. if one of the following config items is used:
+Duplicates can be detected from order keys, i.e. if one of the following config items is used: 
 - `create-workflow-specific-unique-key`
 - `create-workflow-unique-key`
 - `create-workflow-global-unique-key`
@@ -1456,6 +1513,12 @@ Duplicates can be detected from order keys, i.e. if one of the following config 
 In this case this object also contains configuration that allows for an alternative "duplicate-file-handling" workflow order to be created.  See config items in the **SFTP Polling Workflow Creation Duplicate File Handling** group for more information.
 
 **Note** The `sftp-polling-interval-secs` config item is always ignored in this class; this class must be used as the base class for a job, and the job's schedule determines the polling interval.
+
+## Connectors
+
+### Input/Output Connector `runJob`
+
+Runs the poll action once.
 ___
 
 ## **BBM_SimpleFilterPipelineData Building Block**
@@ -1489,6 +1552,8 @@ ___
 ## Summary
 
 A building class to send one or more emails through an SMTP server.
+
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `send-email` API data provider in the `smtpclient` factory instead
 
 ## Connectors
 
@@ -1544,6 +1609,8 @@ ___
 
 Throws an exception
 
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `util/throw-exception` API data provider in the `qorus-api` factory instead
+
 ## Connectors
 
 ### Input Connector throwException
@@ -1558,6 +1625,8 @@ ___
 ## Summary
 
 Updates the dynamic data of a workflow order based on configuration.
+
+**NOTE**:  This building block's functionality has been superceded by an API (request - response) data provider; it's recommended to use the `util/write-output` API data provider in the `qorus-api` factory instead
 
 ## Connectors
 
@@ -1579,6 +1648,41 @@ ___
 A base class for WebSocket handler services in Qorus services
 
 There are no connectors; it is entirely driven by configuration, and WebSocket server services are initialized when the object is created.
+___
+
+## **BBM_WebSocketServiceDataEventSource Building Block**
+
+## Summary
+
+A data event source for WebSocket events in Qorus services, supporting serialized data for events.
+
+The class's constructor initializes the object, so if it's used as an event source (or generally in any connection) or as the primary service class, there is no need to use the `init` connector.
+
+## Data Serialization
+
+The default data serialization is `json`, as this is the most common serialization used; `yaml` is also supported.
+
+## Connectors
+
+### Event Connector `webSocketReceiveEvent`
+
+Provides a hash event when a WebSocket message is received from a client.
+
+### Input/Output Connector `init`
+
+Must be used to initialize the object in a service if this class is not used as an event source (or generally in any connection) or as the primary service class.
+
+### Input/Output Connector `webSocketSendEvent`
+
+Sends a message or a response to a client; the client is identified by the `cid` key in the input hash.
+
+No ouput data is provided.
+
+### Input/Output Connector `webSocketBroadcastEvent`
+
+Broadcasts a message to all clients; the message is provided as the `msg` key in the input data.
+
+No ouput data is provided.
 ___
 
 ## **BBM_WebSocketServiceEventSource Building Block**
