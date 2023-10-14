@@ -7,8 +7,8 @@ groups:
 states:
     '1':
         position:
-            x: 47
-            'y': 42
+            x: 11
+            'y': -3
         initial: true
         name: Save Intent Info
         desc: ''
@@ -27,7 +27,7 @@ states:
         config-items:
           - name: output-data-hash
             value:
-                '$local:*': '$transient:intent'
+                {"$local:*":"$transient:intent"}
             parent:
                 interface-type: class
                 interface-name: BBM_OutputData
@@ -35,8 +35,8 @@ states:
             is_value_templated_string: false
     '2':
         position:
-            x: 291
-            'y': 40
+            x: 9
+            'y': 137
         initial: false
         name: Log Intent Info
         desc: ''
@@ -74,8 +74,8 @@ states:
             is_value_templated_string: true
     '3':
         position:
-            x: 95
-            'y': 128
+            x: 5
+            'y': 284
         initial: false
         name: 'Intent: Close Ticket?'
         desc: ''
@@ -93,8 +93,8 @@ states:
                 language: qore
     '4':
         position:
-            x: 280
-            'y': 144
+            x: 431
+            'y': 279
         initial: false
         name: Set Ticket Resolved
         desc: ''
@@ -159,8 +159,8 @@ states:
                 interface-version: '1.0'
     '5':
         position:
-            x: 97
-            'y': 272
+            x: 4
+            'y': 431
         initial: false
         name: 'Intent: Update Ticket Info'
         desc: ''
@@ -178,8 +178,8 @@ states:
                 language: qore
     '6':
         position:
-            x: 283
-            'y': 287
+            x: 436
+            'y': 424
         initial: false
         name: Update Ticket Info
         desc: ''
@@ -210,8 +210,8 @@ states:
                 interface-version: '1.0'
     '7':
         position:
-            x: 99
-            'y': 413
+            x: 5
+            'y': 571
         initial: false
         name: 'Intent: Call Back Later?'
         desc: ''
@@ -225,8 +225,8 @@ states:
                 language: qore
     '8':
         position:
-            x: 291
-            'y': 427
+            x: 436
+            'y': 563
         initial: false
         name: Schedule Followup
         desc: ''
