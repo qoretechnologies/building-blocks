@@ -13,7 +13,7 @@ class BBM_DataProviderRecordUpdateBase {
     */
     auto updateRecordIntern(
         *hash<auto> set,
-        string provider_path_item,
+        string provider_info_item,
         string set_item,
         string where_item,
         string search_options_item,
@@ -24,7 +24,7 @@ class BBM_DataProviderRecordUpdateBase {
         string retry_errors_item,
     ) {
         return {
-            "count": doUpdateRecordIntern(set, provider_path_item, set_item, where_item, search_options_item,
+            "count": doUpdateRecordIntern(set, provider_info_item, set_item, where_item, search_options_item,
                 mapper_name_item, output_item, retries_item, retry_delay_item, retry_errors_item),
         };
     }
@@ -36,7 +36,7 @@ class BBM_DataProviderRecordUpdateBase {
     */
     int doUpdateRecordIntern(
         *hash<auto> set,
-        string provider_path_item,
+        string provider_info_item,
         string set_item,
         string where_item,
         string search_options_item,
@@ -73,12 +73,13 @@ class BBM_DataProviderRecordUpdateBase {
 
         *hash<auto> where_cond = UserApi::getConfigItemValue(where_item);
 
-        string provider_path = UserApi::getConfigItemValue(provider_path_item);
+        hash<auto> provider_info = UserApi::getConfigItemValue(provider_info_item);
         *hash<auto> search_options = UserApi::getConfigItemValue(search_options_item);
-        UserApi::logInfo("update provider: %y set: %y where: %y search opts: %y", provider_path, set, where_cond, search_options);
+        UserApi::logInfo("update provider: %y set: %y where: %y search opts: %y", provider_info, set, where_cond,
+            search_options);
 
         # get the data provider.
-        AbstractDataProvider provider = UserApi::getDataProvider(provider_path);
+        AbstractDataProvider provider = UserApi::getDataProvider(provider_info);
         int rc;
         int retry_count = 0;
         while (True) {

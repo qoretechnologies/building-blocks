@@ -112,9 +112,9 @@ class BBM_WebSocketServiceDataEventSourceHandler inherits BBM_WebSocketHandlerBa
     sendAll(auto msg) {
         data data_msg;
         try {
-            data_msg = serialize(msg);
+            data_msg = BBM_WebSocketServiceDataEventSourceHandler::serialize(msg);
         } catch (hash<ExceptionInfo> ex) {
-            UserApi::logError("failed to serialize data: %s: %s", ex.err, ex.desc);
+            UserApi::logError("failed to serialize data: %s", get_exception_string(ex));
             return;
         }
 
@@ -138,7 +138,7 @@ class BBM_WebSocketServiceDataEventSourceHandler inherits BBM_WebSocketHandlerBa
         try {
             msg = BBM_WebSocketServiceDataEventSourceHandler::serialize(info.msg);
         } catch (hash<ExceptionInfo> ex) {
-            UserApi::logError("failed to serialize data to send with: %s: %s", ex.err, ex.desc);
+            UserApi::logError("failed to serialize data to send with: %s", get_exception_string(ex));
             return;
         }
 

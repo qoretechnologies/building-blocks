@@ -7,14 +7,14 @@ class BBM_DataProviderSearchRecordIterator {
     #! Connector method
     static AbstractDataProviderBulkRecordInterface getIterator(auto input) {
         hash<auto> local_context = {"input": input};
-        string provider_path = UserApi::getConfigItemValue("search-processor-provider-path", local_context);
+        hash<auto> provider_info = UserApi::getConfigItemValue("search-processor-provider-path", local_context);
         *hash<auto> search_options = UserApi::getConfigItemValue("search-processor-options", local_context);
         *hash<auto> search_criteria = UserApi::getConfigItemValue("search-processor-criteria", local_context);
         int block_size = UserApi::getConfigItemValue("search-processor-block-size", local_context);
         UserApi::logInfo("BBM_DataProviderSearchRecordIterator: using data provider: %y options: %y "
-            "search criteria: %y block size: %d", provider_path, search_options, search_criteria, block_size);
+            "search criteria: %y block size: %d", provider_info, search_options, search_criteria, block_size);
 
-        AbstractDataProvider prov = UserApi::getDataProvider(provider_path);
+        AbstractDataProvider prov = UserApi::getDataProvider(provider_info);
         return prov.searchRecordsBulk(block_size, search_criteria, search_options);
     }
 }

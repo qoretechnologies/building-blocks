@@ -9,7 +9,7 @@ class BBM_DataProviderSearchBase {
     /** @return the record data as provided by the data provider
     */
     auto doSearchWithItems(
-        string provider_path_item,
+        string provider_info_item,
         string search_criteria_item,
         string search_options_item,
         string requires_result_item,
@@ -21,7 +21,7 @@ class BBM_DataProviderSearchBase {
     ) {
         *hash<auto> search_criteria = UserApi::getConfigItemValue(search_criteria_item, local_context);
         *hash<auto> search_options = UserApi::getConfigItemValue(search_options_item, local_context);
-        return doSearchWithItemsIntern(search_criteria, search_options, provider_path_item, requires_result_item,
+        return doSearchWithItemsIntern(search_criteria, search_options, provider_info_item, requires_result_item,
             output_item, retries_item, retry_delay_item, retry_errors_item, NOTHING, NOTHING, NOTHING, local_context);
     }
 
@@ -31,7 +31,7 @@ class BBM_DataProviderSearchBase {
     *list<hash<auto>> doSearchWithItemsIntern(
         *hash<auto> search_criteria,
         *hash<auto> search_options,
-        string provider_path_item,
+        string provider_info_item,
         string requires_result_item,
         string output_item,
         string retries_item,
@@ -52,12 +52,12 @@ class BBM_DataProviderSearchBase {
             retry_delay_secs = 0;
         }
 
-        string provider_path = UserApi::getConfigItemValue(provider_path_item, local_context);
-        UserApi::logInfo("provider: %y search criteria: %y options: %y (retries: %d delay: %ds)", provider_path,
+        hash<auto> provider_info = UserApi::getConfigItemValue(provider_info_item, local_context);
+        UserApi::logInfo("provider: %y search criteria: %y options: %y (retries: %d delay: %ds)", provider_info,
             search_criteria, search_options, retries, retry_delay_secs);
 
         # get the data provider
-        AbstractDataProvider provider = UserApi::getDataProvider(provider_path);
+        AbstractDataProvider provider = UserApi::getDataProvider(provider_info);
         # ensure that it supports the search API
         provider.checkRead();
 

@@ -12,7 +12,7 @@ class BBM_DataProviderRequestBase {
         @throw DATA-PROVIDER-RESPONSE-MISSING no value found in response at the location provided
     */
     auto makeRequestIntern(
-        string provider_path_item,
+        string provider_info_item,
         string remove_nulls_item,
         string request_options_item,
         string input_item,
@@ -25,7 +25,7 @@ class BBM_DataProviderRequestBase {
         hash<auto> local_context = {"input": input};
         # the message body for the request
         auto request = UserApi::getConfigItemValue(input_item, local_context);
-        return doRequestIntern(request, provider_path_item, remove_nulls_item, request_options_item, mapper_name_item,
+        return doRequestIntern(request, provider_info_item, remove_nulls_item, request_options_item, mapper_name_item,
             log_item, id_loc_item, output_item, local_context);
     }
 
@@ -37,7 +37,7 @@ class BBM_DataProviderRequestBase {
     */
     auto doRequestIntern(
         auto request,
-        string provider_path_item,
+        string provider_info_item,
         string remove_nulls_item,
         string request_options_item,
         string mapper_name_item,
@@ -46,12 +46,11 @@ class BBM_DataProviderRequestBase {
         string output_item,
         *hash<auto> local_context,
     ) {
-        string provider_path = UserApi::getConfigItemValue(provider_path_item, local_context);
-        UserApi::logDebug("provider: %y request data: %y", provider_path, request);
+        hash<auto> provider_info = UserApi::getConfigItemValue(provider_info_item, local_context);
+        UserApi::logDebug("provider: %y request data: %y", provider_info, request);
 
         # get the data provider
-        AbstractDataProvider provider =
-            UserApi::getDataProvider(provider_path);
+        AbstractDataProvider provider = UserApi::getDataProvider(provider_info);
         # ensure that it supports the request API
         provider.checkRequest();
 
@@ -138,7 +137,7 @@ class BBM_DataProviderRequestBase {
     */
     bool checkRequestIntern(
         auto request,
-        string provider_path_item,
+        string provider_info_item,
         string remove_nulls_item,
         string request_options_item,
         string input_item,
@@ -154,7 +153,7 @@ class BBM_DataProviderRequestBase {
                 # the message body for the request
                 request = UserApi::getConfigItemValue(input_item, local_context);
             }
-            return exists doRequestIntern(request, provider_path_item, remove_nulls_item, request_options_item,
+            return exists doRequestIntern(request, provider_info_item, remove_nulls_item, request_options_item,
                 mapper_name_item, log_item, id_loc_item, output_item, local_context);
         } catch (hash<ExceptionInfo> ex) {
             if (ex.err == "DATA-PROVIDER-RESPONSE-MISSING") {

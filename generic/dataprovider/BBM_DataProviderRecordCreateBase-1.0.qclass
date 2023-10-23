@@ -11,7 +11,7 @@ class BBM_DataProviderRecordCreateBase {
         @throw INVALID-OPERATION the data provider does not support record creation
     */
     auto makeRecordIntern(
-        string provider_path_item,
+        string provider_info_item,
         string create_options_item,
         string duplicate_handling_item,
         string input_item,
@@ -23,7 +23,7 @@ class BBM_DataProviderRecordCreateBase {
         hash<auto> local_context = {"input": input};
         # the message body for the record
         auto input_data = UserApi::getConfigItemValue(input_item, local_context);
-        return doRecordIntern(input_data, provider_path_item, create_options_item, duplicate_handling_item,
+        return doRecordIntern(input_data, provider_info_item, create_options_item, duplicate_handling_item,
             mapper_name_item, output_item, upsert_item, local_context);
     }
 
@@ -35,7 +35,7 @@ class BBM_DataProviderRecordCreateBase {
     */
     hash<auto> doRecordIntern(
         auto input_data,
-        string provider_path_item,
+        string provider_info_item,
         string create_options_item,
         string duplicate_handling_item,
         string mapper_name_item,
@@ -43,9 +43,9 @@ class BBM_DataProviderRecordCreateBase {
         string upsert_item,
         *hash<auto> local_context,
     ) {
-        string provider_path = UserApi::getConfigItemValue(provider_path_item, local_context);
+        hash<auto> provider_info = UserApi::getConfigItemValue(provider_info_item, local_context);
         bool upsert = UserApi::getConfigItemValue(upsert_item, local_context);
-        UserApi::logDebug("provider: %y (upsert: %y) input record data: %y", provider_path, upsert, input_data);
+        UserApi::logDebug("provider: %y (upsert: %y) input record data: %y", provider_info, upsert, input_data);
 
         bool output_list;
 
@@ -71,7 +71,7 @@ class BBM_DataProviderRecordCreateBase {
         }
 
         # get the data provider
-        AbstractDataProvider provider = UserApi::getDataProvider(provider_path);
+        AbstractDataProvider provider = UserApi::getDataProvider(provider_info);
         # ensure that it supports the appropriate API
         if (upsert) {
             provider.checkUpsert();
