@@ -33,7 +33,7 @@ class BBM_DataProviderRecordCreateProcessor inherits AbstractDataProcessor {
 
     # on-demand initialization
     private init() {
-        hash<auto> provider_info = UserApi::getConfigItemValue("record-create-processor-data-provider");
+        string provider_info = UserApi::getConfigItemValue("record-create-processor-data-provider");
         bool upsert = UserApi::getConfigItemValue("record-create-processor-upsert");
 
         prov = UserApi::getDataProvider(provider_info);

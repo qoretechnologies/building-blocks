@@ -52,7 +52,7 @@ class BBM_DataProviderSearchBase {
             retry_delay_secs = 0;
         }
 
-        hash<auto> provider_info = UserApi::getConfigItemValue(provider_info_item, local_context);
+        string provider_info = UserApi::getConfigItemValue(provider_info_item, local_context);
         UserApi::logInfo("provider: %y search criteria: %y options: %y (retries: %d delay: %ds)", provider_info,
             search_criteria, search_options, retries, retry_delay_secs);
 

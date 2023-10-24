@@ -43,7 +43,7 @@ class BBM_DataProviderRecordCreateBase {
         string upsert_item,
         *hash<auto> local_context,
     ) {
-        hash<auto> provider_info = UserApi::getConfigItemValue(provider_info_item, local_context);
+        string provider_info = UserApi::getConfigItemValue(provider_info_item, local_context);
         bool upsert = UserApi::getConfigItemValue(upsert_item, local_context);
         UserApi::logDebug("provider: %y (upsert: %y) input record data: %y", provider_info, upsert, input_data);
 

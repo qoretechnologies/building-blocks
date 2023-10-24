@@ -73,7 +73,7 @@ class BBM_DataProviderRecordUpdateBase {
 
         *hash<auto> where_cond = UserApi::getConfigItemValue(where_item);
 
-        hash<auto> provider_info = UserApi::getConfigItemValue(provider_info_item);
+        string provider_info = UserApi::getConfigItemValue(provider_info_item);
         *hash<auto> search_options = UserApi::getConfigItemValue(search_options_item);
         UserApi::logInfo("update provider: %y set: %y where: %y search opts: %y", provider_info, set, where_cond,
             search_options);

@@ -46,7 +46,7 @@ class BBM_DataProviderRequestBase {
         string output_item,
         *hash<auto> local_context,
     ) {
-        hash<auto> provider_info = UserApi::getConfigItemValue(provider_info_item, local_context);
+        string provider_info = UserApi::getConfigItemValue(provider_info_item, local_context);
         UserApi::logDebug("provider: %y request data: %y", provider_info, request);
 
         # get the data provider
