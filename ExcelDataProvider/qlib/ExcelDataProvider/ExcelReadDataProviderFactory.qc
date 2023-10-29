@@ -34,6 +34,7 @@ public class ExcelReadDataProviderFactory inherits AbstractDataProviderFactory {
         const FactoryInfo = <DataProviderFactoryInfo>{
             "name": "excelread",
             "desc": "MS Excep read data provider factory",
+            "children_can_support_records": True,
         };
     }
 

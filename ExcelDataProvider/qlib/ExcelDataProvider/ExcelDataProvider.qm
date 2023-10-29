@@ -35,6 +35,7 @@
 
 # supports using the DataProvider module
 %requires(reexport) DataProvider
+%requires Util
 
 %module-cmd(jni) add-relative-classpath ../../building-blocks/excel/jar/qore-dataprovider-excel.jar
 %module-cmd(jni) add-relative-classpath ../../building-blocks/excel/jar/poi-5.0.0.jar

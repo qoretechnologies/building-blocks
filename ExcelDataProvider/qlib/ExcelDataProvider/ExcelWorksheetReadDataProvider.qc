@@ -1,7 +1,7 @@
 # -*- mode: qore; indent-tabs-mode: nil -*-
 # Qore ExcelWorksheetReadDataProvider class definition
 
-/*  ExcelWorksheetReadDataProvider.qc Copyright 2021 Qore Technologies, s.r.o.
+/*  ExcelWorksheetReadDataProvider.qc Copyright 2021 - 2023 Qore Technologies, s.r.o.
 
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the "Software"),
@@ -32,25 +32,9 @@ public class ExcelWorksheetReadDataProvider inherits DataProvider::AbstractDataP
             "type": "ExcelWorksheetReadDataProvider",
             "supports_read": True,
             "has_record": True,
-            "constructor_options": ConstructorOptions,
-            "search_options": {
-                "limit": <DataProviderOptionInfo>{
-                    "type": AbstractDataProviderType::get(IntType),
-                    "desc": "the maximum number of records to return",
-                },
-            },
+            "constructor_options": ExcelReadDataProvider::ConstructorOptions,
+            "search_options": ExcelReadDataProvider::SearchOptions,
         };
-
-        #! Constructor options
-        const ConstructorOptions = ExcelReadDataProvider::ConstructorOptions + {
-            "worksheet": <DataProviderOptionInfo>{
-                "type": AbstractDataProviderType::get(StringType),
-                "desc": "the name of the worksheet to iterate; if missing, the first worksheet is processed",
-            },
-        };
-
-        #! EXCEL iteration option list
-        const ExcelIterationOptionList = keys (ConstructorOptions - ("path", "stream"));
     }
 
     private {
@@ -89,6 +73,28 @@ public class ExcelWorksheetReadDataProvider inherits DataProvider::AbstractDataP
         setup(name, sheet, opts);
     }
 
+    #! Creates the object from constructor options
+    constructor(*hash<auto> options) {
+        *hash<auto> copts = ExcelReadDataProvider::processCellOptions(checkOptions("EXCEL-READ-OPTION-ERROR",
+            ExcelReadDataProvider::ConstructorOptions, options));
+        sheet = copts.worksheet ?? "";
+        if (copts.path) {
+            if (copts.stream) {
+                error("EXCEL-READ-OPTION-ERROR", "cannot provide both \"stream\" and \"path\" options; use either "
+                    "one or the other");
+            }
+            i = new ExcelIterator(copts.path, sheet);
+        } else if (copts.stream) {
+            i = new ExcelIterator(copts.stream, sheet);
+        }
+        self.opts = copts - ("stream", "path", "worksheet");
+        if (!i) {
+            # create a dummy interator with no input
+            i = new ExcelIterator(new StringInputStream(""), sheet);
+        }
+        setOptions();
+    }
+
     #! Common constructor code
     private setup(string name, string sheet, *hash<auto> opts) {
         self.name = name;
@@ -117,28 +123,6 @@ public class ExcelWorksheetReadDataProvider inherits DataProvider::AbstractDataP
     #! Returns the object name
     string getName() {
         return sheet;
-    }
-
-    #! Creates the object from constructor options
-    constructor(*hash<auto> options) {
-        *hash<auto> copts = ExcelReadDataProvider::processCellOptions(checkOptions("EXCEL-READ-OPTION-ERROR",
-            ConstructorOptions, options));
-        sheet = copts.worksheet ?? "";
-        if (copts.path) {
-            if (copts.stream) {
-                error("EXCEL-READ-OPTION-ERROR", "cannot provide both \"stream\" and \"path\" options; use either one or "
-                    "the other");
-            }
-            i = new ExcelIterator(copts.path, sheet);
-        } else if (copts.stream) {
-            i = new ExcelIterator(copts.stream, sheet);
-        }
-        self.opts = copts - ("stream", "path", "worksheet");
-        if (!i) {
-            # create a dummy interator with no input
-            i = new ExcelIterator(new StringInputStream(""), sheet);
-        }
-        setOptions();
     }
 
     #! Returns an iterator for zero or more records matching the search options

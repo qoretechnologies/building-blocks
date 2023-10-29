@@ -1,7 +1,7 @@
 # -*- mode: qore; indent-tabs-mode: nil -*-
 # Qore ExcelReadDataProvider class definition
 
-/*  ExcelReadDataProvider.qc Copyright 2021 - 2022 Qore Technologies, s.r.o.
+/*  ExcelReadDataProvider.qc Copyright 2021 - 2023 Qore Technologies, s.r.o.
 
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the "Software"),
@@ -46,8 +46,20 @@ public class ExcelReadDataProvider inherits DataProvider::AbstractDataProvider {
         #! Provider info
         const ProviderInfo = <DataProviderInfo>{
             "type": "ExcelReadDataProvider",
+            "supports_read": True,
+            "has_record": True,
             "supports_children": True,
             "constructor_options": ConstructorOptions,
+            "search_options": SearchOptions,
+            "children_can_support_records": True,
+        };
+
+        #! Search options
+        const SearchOptions = {
+            "limit": <DataProviderOptionInfo>{
+                "type": AbstractDataProviderType::get(IntType),
+                "desc": "the maximum number of records to return",
+            },
         };
 
         #! Constructor options
@@ -87,15 +99,19 @@ public class ExcelReadDataProvider inherits DataProvider::AbstractDataProvider {
                 "desc": "if `true` (default `false`), all automatically-detected header names will be converted to "
                     "lower case letters",
             },
+            "worksheet": <DataProviderOptionInfo>{
+                "type": AbstractDataProviderType::get(StringType),
+                "desc": "the name of the worksheet to iterate; if missing, the first worksheet is processed",
+            },
         };
-
-        #! Excel iteration option list
-        const ExcelIterationOptionList = keys (ConstructorOptions - ("path", "stream"));
     }
 
     private {
         #! The inpjut stream for the Excel data
         InputStream i;
+
+        #! the iterator object
+        ExcelIterator it;
 
         #! The path to the Excel file
         string path;
@@ -103,12 +119,18 @@ public class ExcelReadDataProvider inherits DataProvider::AbstractDataProvider {
         #! The name of the object
         string name;
 
+        #! the name of the worksheet
+        string sheet;
+
+        #! dummy iterator
+        bool dummy;
+
         #! Excel iteration options
         *hash<auto> opts;
     }
 
     #! Creates the ExcelReadDataProvider with the input data path and optionally an option hash
-    /** @param path the input file to iterate
+    /** @param path the input file to iterate; will be subjected to environment variable substitution
         @param opts a hash of optional options
 
         @throw EXCEL-READ-OPTION-ERROR invalid or unknown option; invalid data type for option; \c "header_names"
@@ -117,8 +139,9 @@ public class ExcelReadDataProvider inherits DataProvider::AbstractDataProvider {
     */
     constructor(string path, *hash<auto> opts) {
         name = path;
-        self.path = path;
+        self.path = substitute_env_vars(path);
         self.opts = processCellOptions(checkOptions("EXCEL-READ-OPTION-ERROR", ConstructorOptions, opts));
+        sheet = self.opts.worksheet ?? "";
     }
 
     #! Creates the ExcelReadDataProvider with the input data stream and optionally an option hash
@@ -133,6 +156,7 @@ public class ExcelReadDataProvider inherits DataProvider::AbstractDataProvider {
         i = stream;
         self.opts = processCellOptions(checkOptions("EXCEL-READ-OPTION-ERROR", ConstructorOptions, opts));
         name = sprintf("stream=%s", stream.uniqueHash());
+        sheet = self.opts.worksheet ?? "";
     }
 
     #! Creates the object from constructor options
@@ -143,20 +167,24 @@ public class ExcelReadDataProvider inherits DataProvider::AbstractDataProvider {
     */
     constructor(*hash<auto> options) {
         *hash<auto> copts = processCellOptions(checkOptions("EXCEL-READ-OPTION-ERROR", ConstructorOptions, options));
+        sheet = copts.worksheet ?? "";
         if (copts.path) {
             if (copts.stream) {
-                error("EXCEL-READ-OPTION-ERROR", "cannot provide both \"stream\" and \"path\" options; use either one or "
-                    "the other");
+                error("EXCEL-READ-OPTION-ERROR", "cannot provide both \"stream\" and \"path\" options; use either "
+                    "one or the other");
             }
+            copts.path = substitute_env_vars(copts.path);
             name = path = copts.path;
         } else if (copts.stream) {
             i = copts.stream;
             name = sprintf("stream=%s", i.uniqueHash());
         }
-        self.opts = copts - ("stream", "path");
+        self.opts = copts - ("stream", "path", "worksheet");
         if (!i && !path) {
             # create a dummy interator with no input
             i = new StringInputStream("");
+            name = "dummy";
+            dummy = True;
         }
     }
 
@@ -174,12 +202,12 @@ public class ExcelReadDataProvider inherits DataProvider::AbstractDataProvider {
             opts.data_cells = ExcelReadDataProvider::parseRange(opts.data_cells);
             if (opts.header_cells) {
                 if (opts.header_cells.start.column > opts.data_cells.start.column) {
-                    throw "EXCEL-INVALID-LOCATION", sprintf("start column for header cells (%y) is after the start column for "
-                        "data cells (%y)", opts.header_cells.start, opts.data_cells.start);
+                    throw "EXCEL-INVALID-LOCATION", sprintf("start column for header cells (%y) is after the start "
+                        "column for data cells (%y)", opts.header_cells.start, opts.data_cells.start);
                 }
                 if (opts.header_cells.start.row > opts.data_cells.start.row) {
-                    throw "EXCEL-INVALID-LOCATION", sprintf("start row for header cells (%y) is after the start row for data "
-                        "cells  (%y)", opts.header_cells.start, opts.data_cells.start);
+                    throw "EXCEL-INVALID-LOCATION", sprintf("start row for header cells (%y) is after the start row "
+                        "for data cells  (%y)", opts.header_cells.start, opts.data_cells.start);
                 }
             }
         }
@@ -229,10 +257,59 @@ public class ExcelReadDataProvider inherits DataProvider::AbstractDataProvider {
         return rv;
     }
 
+    #! Common setup code
+    private checkIterator() {
+        if (it) {
+            return;
+        }
+        if (path) {
+            it = new ExcelIterator(path, sheet);
+        } else {
+            it = new ExcelIterator(i, sheet);
+        }
+        if (opts.header_cells) {
+            it.setHeaderCells(opts.header_cells.start.column, opts.header_cells.start.row,
+                opts.header_cells.end.column, opts.header_cells.end.row);
+        } else if (opts.headers) {
+            it.setHeaders(opts.headers);
+        }
+        if (opts.timezone) {
+            it.setZone(opts.timezone);
+        }
+        if (opts.data_cells) {
+            it.setDataCells(opts.data_cells.start.column, opts.data_cells.start.row, opts.data_cells.end.column,
+                opts.data_cells.end.row);
+        }
+    }
+
+    #! Returns an iterator for zero or more records matching the search options
+    /** @param where_cond the search criteria
+        @param search_options the search options after processing by validateSearchOptions()
+    */
+    private AbstractDataProviderRecordIterator searchRecordsImpl(*hash<auto> where_cond, *hash<auto> search_options) {
+        checkIterator();
+        return new DefaultRecordIterator(it, where_cond, search_options, getRecordType());
+    }
+
+    #! Returns the description of the record type, if any
+    private *hash<string, AbstractDataField> getRecordTypeImpl(*hash<auto> search_options) {
+        if (dummy) {
+            return {};
+        }
+        checkIterator();
+        return map {
+            $1: new QoreDataField($1, "Excel sheet " + sheet + " column " + $1,
+                AbstractDataProviderType::anyDataType)
+        }, it.getHeaders();
+    }
+
     #! Returns a list of child data provider names, if any
     /** @return a list of child data provider names, if any
     */
     private *list<string> getChildProviderNamesImpl() {
+        if (dummy) {
+            return;
+        }
         # if we are dealing with a FileInputStream, then we have to reset it after reading the stream
         # otherwise we have to read the entire stream into binary object and reset it with that
         binary b;

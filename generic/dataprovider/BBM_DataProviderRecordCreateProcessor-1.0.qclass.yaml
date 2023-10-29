@@ -33,13 +33,13 @@ code: BBM_DataProviderRecordCreateProcessor-1.0.qclass
 config-items:
   - name: record-create-processor-data-provider
     description: >-
-        The path to the output data processor cuporting record creation:
-    
+        The path to the output data processor supporting record creation:
+
         - `connection/`***name\[/...]***: a user connection supporting the data
         provider API and then optionally the path to the desired data provider
-    
+
         - `datasource/`***name***`/`***table_name***: a datasource / DB connection
-    
+
         - `remote/`***name\[/...]***: the name of a remote Qorus connection and then
         optionally the path to the desired data provider
     config_group: Record Create Processor Config
@@ -50,7 +50,7 @@ config-items:
         false
     description: >-
         If `True` then upsert bulk operations will be used, if `False` (the
-        default). them insert bulk operations are used. 
+        default). then insert bulk operations are used.
     config_group: Record Create Processor Config
     type: bool
     strictly_local: true
