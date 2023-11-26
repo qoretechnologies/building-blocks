@@ -5,7 +5,7 @@ desc: >-
     ## Summary
 
 
-    Qorus web UI extension handlindler service building block.   Allows a Qorus
+    Qorus web UI extension handler service building block.  Allows a Qorus
     service to provide a UI extension with configuration.
 
 
@@ -20,7 +20,7 @@ desc: >-
     ### Input/Output Connector `init`
 
 
-    Initializes the service according to configurqation; input data is returned
+    Initializes the service according to configuration; input data is returned
     as-is but is otherwise ignored.
 lang: qore
 author:
@@ -35,7 +35,7 @@ config-items:
   - name: ui-extension-group
     description: |-
         The top-level group name for this extension.
-    
+
         All UI extensions in the same group will be presented together
     config_group: Qorus UI Extension Config
     strictly_local: true
@@ -52,7 +52,7 @@ config-items:
         null
     description: |-
         The default HTTP service resource for the UI extension.
-    
+
         Use this if the extension is served from service resources automatically.
     config_group: Qorus UI Extension Config
     type: "*string"
