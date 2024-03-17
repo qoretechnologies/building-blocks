@@ -32,9 +32,12 @@ public class ExcelWorksheetReadDataProvider inherits DataProvider::AbstractDataP
             "type": "ExcelWorksheetReadDataProvider",
             "supports_read": True,
             "has_record": True,
-            "constructor_options": ExcelReadDataProvider::ConstructorOptions,
+            "constructor_options": ConstructorOptions,
             "search_options": ExcelReadDataProvider::SearchOptions,
         };
+
+        #! Constructor options
+        const ConstructorOptions = ExcelReadDataProvider::ConstructorOptions;
     }
 
     private {

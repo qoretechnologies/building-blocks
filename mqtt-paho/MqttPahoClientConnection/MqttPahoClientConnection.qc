@@ -220,22 +220,19 @@ public class MqttPahoClientConnection inherits AbstractConnectionWithInfo {
         @throw CONNECTION-OPTION-ERROR missing or invalid connection option
     */
     constructor(string name, string desc, string url, hash<auto> attributes = {}, hash<auto> options = {})
-        : AbstractConnectionWithInfo(name, desc, url, attributes, options) {
+            : AbstractConnectionWithInfo(name, desc, url, attributes, options) {
         if (*list<auto> invalid_uris = map $1, opts."server-uris", $1.typeCode() != NT_STRING) {
             throw "CONNECTION-OPTION-ERROR", sprintf("invalid values in 'server-uris': %y; all entries must be "
                 "strings");
         }
-        mqtt_uri = url;
-        if (!urlh.port) {
-            mqtt_uri += ":";
-            mqtt_uri += opts.secure ? DefaultSecurePort : DefaultInsecurePort;
-        }
-        if (opts.secure) {
-            mqtt_uri =~ s/^mqttpaho:\/\//ssl:\/\//;
-        } else {
-            mqtt_uri =~ s/^mqttpaho:\/\//tcp:\/\//;
-        }
+        setRealUrl(url);
     }
+
+    /*
+    constructor(hash<auto> config, *hash<auto> attr) : AbstractConnectionWithInfo(config, attr) {
+        setRealUrl(url);
+    }
+    */
 
     #! returns \c "mqttpaho"
     string getType() {
@@ -301,6 +298,24 @@ public class MqttPahoClientConnection inherits AbstractConnectionWithInfo {
             "info": "OK",
         };
     }
+
+    #! Called by the constructor to set the real URL
+    /** @path the new URL
+
+        sets the real HTTP URL for HTTP-based connections
+    */
+    private setRealUrl(string url) {
+        mqtt_uri = url;
+        if (!urlh.port) {
+            mqtt_uri += ":";
+            mqtt_uri += opts.secure ? DefaultSecurePort : DefaultInsecurePort;
+        }
+        if (opts.secure) {
+            mqtt_uri =~ s/^mqttpaho:\/\//ssl:\/\//;
+        } else {
+            mqtt_uri =~ s/^mqttpaho:\/\//tcp:\/\//;
+        }
+   }
 }
 
 public class ConnectionOptions {

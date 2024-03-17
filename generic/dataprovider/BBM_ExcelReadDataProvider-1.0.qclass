@@ -10,7 +10,7 @@ class BBM_ExcelReadDataProvider {
         # map config item names to data provider options
         const KeyMap = map {
             ("excel-read-" + regex_subst($1, "_", "-", RE_Global)): $1,
-        }, keys ExcelWorksheetReadDataProvider::ConstructorOptions;
+        }, keys ExcelReadDataProvider::ConstructorOptions;
     }
 
     #! alias for searchRecordsConnector()

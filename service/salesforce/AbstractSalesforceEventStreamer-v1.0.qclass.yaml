@@ -5,5 +5,7 @@ desc: Event streaming support for Salesforce.com using the streaming API
 lang: qore
 author:
   - Qore Technologies, s.r.o.
+requires:
+  - SalesforceLoginParameters
 version: '1.0'
 code: AbstractSalesforceEventStreamer-v1.0.qclass
