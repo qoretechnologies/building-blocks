@@ -114,6 +114,31 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
         # will be converted to a 400 Bad Request response
         throw "REST-ARG-ERROR", sprintf("missing required string argument %y (got type %y)", key, ah{key}.type());
     }
+
+    #! helper method that helps acquiring boolean argument values
+    static *bool doGetBool(*hash<auto> ah, string key, *bool optional) {
+        switch (ah{key}.typeCode()) {
+            case NT_NOTHING:
+                if (optional) {
+                    return;
+                }
+                break;
+
+            case NT_STRING:
+                return parse_boolean(ah{key});
+
+            case NT_FLOAT:
+            case NT_INT:
+            case NT_NUMBER:
+                return boolean(ah{key});
+
+            case NT_BOOLEAN:
+                return ah{key};
+        }
+
+        # will be converted to a 400 Bad Request response
+        throw "REST-ARG-ERROR", sprintf("missing required boolean argument %y (got type %y)", key, ah{key}.type());
+    }
 }
 
 #! Attribute REST class
