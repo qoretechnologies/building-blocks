@@ -10,6 +10,8 @@ VERSION=1.0-$(DATE)
 BB_SUBDIRS=generic job service step kafka mqtt-paho snmp
 EX_SUBDIRS=examples
 
+BB_FILES_NO_JAVA=$(shell find ${BB_SUBDIRS} -name \*.q* -o -name \*.yaml -o -name \*py | grep -v -i -e salesforce -e excel -e java -e snmp -e kafka -e mqtt | sort)
+
 BB_FILES=$(shell find ${BB_SUBDIRS} -name \*.q* -o -name \*.yaml -o -name \*java -o -name \*py | sort)
 
 BB_ONDEWO=$(shell ls ondewo/*.{yaml,py,qscript})
@@ -39,17 +41,18 @@ MAKE_RELEASE ?= make-release
 
 all:
 	@echo "usage: make release|load-all|load-building-blocks|load-tests|test"
-	@echo "  release:       make the building block release package"
-	@echo "  rel-ex:        make the BB release package with examples"
-	@echo "  rel-ondewo:    make an ONDEWO release package"
-	@echo "  load-all:      load all building blocks, test code, and examples"
-	@echo "  load-bb:       load only building blocks (no tests)"
-	@echo "  load-tests:    load only tests"
-	@echo "  load-bb-tests: load building blocks and tests"
-	@echo "  load-ondewo:   load ONDEWO building blocks"
-	@echo "  load-examples: load only examples (BBs must be already loaded)"
-	@echo "  readme:        make README.md"
-	@echo "  test:          run tests"
+	@echo "  release:         make the building block release package"
+	@echo "  rel-ex:          make the BB release package with examples"
+	@echo "  rel-ondewo:      make an ONDEWO release package"
+	@echo "  load-all:        load all building blocks, test code, and examples"
+	@echo "  load-bb:         load only building blocks (no tests)"
+	@echo "  load-bb-no-java: load only building blocks (no tests)"
+	@echo "  load-tests:      load only tests"
+	@echo "  load-bb-tests:   load building blocks and tests"
+	@echo "  load-ondewo:     load ONDEWO building blocks"
+	@echo "  load-examples:   load only examples (BBs must be already loaded)"
+	@echo "  readme:          make README.md"
+	@echo "  test:            run tests"
 
 dummy:
 
@@ -114,6 +117,8 @@ load-bb-tests: load-building-blocks load-tests
 
 load-bb: load-building-blocks
 
+load-bb-no-java: load-building-blocks-no-java
+
 load-building-blocks: ${BB_FILES} ${BB_JAVA} ${BB_JAVA_STRIP}
 	# copy jar files to the target dir
 	for jar in ${BB_JAVA}; do \
@@ -134,6 +139,22 @@ load-building-blocks: ${BB_FILES} ${BB_JAVA} ${BB_JAVA_STRIP}
 		fi; \
 		cp "$$jar" "$$target_dir"; \
 	done
+	# copy modules to ${OMQ_DIR}/user/modules
+	mkdir -p ${OMQ_DIR}/user/modules
+	for mod in ${BB_MODULES}; do \
+		cp $$mod ${OMQ_DIR}/user/modules; \
+	done
+	for mod in $(BB_MODULE_DIRS); do \
+	    cp -apR $$mod ${OMQ_DIR}/user/modules; \
+	done
+	# make a temporary load file
+	${MAKE_RELEASE} -l/tmp/building-blocks.qrf -U. $^
+	# load the release
+	${OLOAD} /tmp/building-blocks.qrf -lvRA
+	# delete the temporary load file
+	rm /tmp/building-blocks.qrf
+
+load-building-blocks-no-java: ${BB_FILES_NO_JAVA}
 	# copy modules to ${OMQ_DIR}/user/modules
 	mkdir -p ${OMQ_DIR}/user/modules
 	for mod in ${BB_MODULES}; do \
