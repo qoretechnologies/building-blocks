@@ -47,7 +47,7 @@ class BBM_KafkaConsumer extends Observable {
     */
     private boolean running = false;
 
-    // describe the actual types, as kafa will convert from strings to anything, but insists on the correct base type
+    // describe the actual types, as kafka will convert from strings to anything, but insists on the correct base type
     /** keys are the actual configuration names, not the config item names
      */
     public static final Map<String, BBM_JavaConfig.ConfType> PropTypeMap =
