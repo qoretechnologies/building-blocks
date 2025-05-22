@@ -70,7 +70,7 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
         }
 
         # will be converted to a 400 Bad Request response
-        throw "REST-ARG-ERROR", sprintf("missing required int argument %y (got type %y)", key, ah{key}.type());
+        throw "REST-ARG-ERROR", sprintf("missing required int argument %y (got type %y)", key, ah{key}.fullType());
     }
 
     #! helper method that helps acquiring number argument values
@@ -95,7 +95,7 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
         }
 
         # will be converted to a 400 Bad Request response
-        throw "REST-ARG-ERROR", sprintf("missing required number argument %y (got type %y)", key, ah{key}.type());
+        throw "REST-ARG-ERROR", sprintf("missing required number argument %y (got type %y)", key, ah{key}.fullType());
     }
 
     #! helper method that helps acquiring string argument values
@@ -112,7 +112,7 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
         }
 
         # will be converted to a 400 Bad Request response
-        throw "REST-ARG-ERROR", sprintf("missing required string argument %y (got type %y)", key, ah{key}.type());
+        throw "REST-ARG-ERROR", sprintf("missing required string argument %y (got type %y)", key, ah{key}.fullType());
     }
 
     #! helper method that helps acquiring boolean argument values
@@ -137,7 +137,28 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
         }
 
         # will be converted to a 400 Bad Request response
-        throw "REST-ARG-ERROR", sprintf("missing required boolean argument %y (got type %y)", key, ah{key}.type());
+        throw "REST-ARG-ERROR", sprintf("missing required boolean argument %y (got type %y)", key,
+            ah{key}.fullType());
+    }
+
+    #! helper method that helps acquiring date argument values
+    static *date doGetDate(*hash<auto> ah, string key, *bool optional) {
+        switch (ah{key}.typeCode()) {
+            case NT_NOTHING:
+                if (optional) {
+                    return;
+                }
+                break;
+
+            case NT_STRING:
+                return date(ah{key});
+
+            case NT_DATE:
+                return ah{key};
+        }
+
+        # will be converted to a 400 Bad Request response
+        throw "REST-ARG-ERROR", sprintf("missing required date argument %y (got type %y)", key, ah{key}.fullType());
     }
 }
 
