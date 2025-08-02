@@ -9,12 +9,9 @@
         ]
     },
     "source_directories": [
-        "ExcelDataProvider",
         "examples",
         "generic",
         "job",
-        "kafka",
-        "mqtt-paho",
         "ondewo",
         "service",
         "snmp",

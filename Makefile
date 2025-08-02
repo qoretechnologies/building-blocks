@@ -7,10 +7,10 @@ VERSION=1.0-$(DATE)
 
 #top_srcdir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-BB_SUBDIRS=generic job service step kafka mqtt-paho snmp
+BB_SUBDIRS=generic job service step snmp
 EX_SUBDIRS=examples
 
-BB_FILES_NO_JAVA=$(shell find ${BB_SUBDIRS} -name \*.q* -o -name \*.yaml -o -name \*py | grep -v -i -e salesforce -e excel -e java -e snmp -e kafka -e mqtt | sort)
+BB_FILES_NO_JAVA=$(shell find ${BB_SUBDIRS} -name \*.q* -o -name \*.yaml -o -name \*py | grep -v -i -e salesforce -e java -e snmp | sort)
 
 BB_FILES=$(shell find ${BB_SUBDIRS} -name \*.q* -o -name \*.yaml -o -name \*java -o -name \*py | sort)
 
@@ -19,10 +19,6 @@ BB_ONDEWO_MODULE_DIRS=ondewo/OndewoNluClientConnection \
 	ondewo/OndewoVtsiClientConnection
 
 BB_JAVA=$(shell find ${BB_SUBDIRS} -name \*.jar -type f | sort)
-BB_JAVA_STRIP=$(shell find ExcelDataProvider/building-blocks/excel/jar -name \*.jar -type f | sort)
-
-#BB_MODULES=$(shell find modules -name \*.qm -type f | grep -v Excel | sort)
-BB_MODULE_DIRS=ExcelDataProvider/qlib/ExcelDataProvider mqtt-paho/MqttPahoClientConnection
 
 TEST_FILES=$(shell find test -name \*.q\* -o -name \*.yaml | sort)
 
@@ -61,7 +57,7 @@ readme:
 
 docs: readme
 
-release: ${BB_FILES} ${BB_JAVA} ${BB_MODULES} ${BB_MODULE_DIRS}
+release: ${BB_FILES} ${BB_JAVA} ${BB_MODULES}
 	@echo using release dir: ${RELDIR}
 	mkdir -p ${RELDIR}/building-blocks ${RELDIR}/modules
 	for f in ${BB_FILES} ${BB_JAVA}; do \
@@ -73,20 +69,11 @@ release: ${BB_FILES} ${BB_JAVA} ${BB_MODULES} ${BB_MODULE_DIRS}
 		fi; \
 		cp "$${f}" "$${target_dir}"; \
 	done
-	cp -apRxuv ${BB_MODULES} ${BB_MODULE_DIRS} ${RELDIR}/modules
-	for jar in ${BB_JAVA_STRIP}; do \
-		dir=`dirname "$$jar" | cut -f3- -d/`; \
-		target_dir="${RELDIR}/building-blocks/$$dir"; \
-		if [ ! -d "$${target_dir}" ]; then \
-			echo creating "$${target_dir}"; \
-			mkdir -p "$${target_dir}"; \
-		fi; \
-		cp "$$jar" "$${target_dir}"; \
-	done
+	cp -apRxuv ${BB_MODULES} ${RELDIR}/modules
 	cd ${RELDIR}; ${MAKE_RELEASE} -mcf -Puser building-blocks-$(VERSION) `find .`; cd -
 	rm -rf ${RELDIR}
 
-rel-ex: ${BB_FILES} ${BB_JAVA} ${BB_MODULES} ${BB_MODULE_DIRS} ${EX_FILES} ${EX_OTHER}
+rel-ex: ${BB_FILES} ${BB_JAVA} ${BB_MODULES} ${EX_FILES} ${EX_OTHER}
 	@echo using release dir: ${RELDIR}
 	@mkdir -p ${RELDIR}/building-blocks ${RELDIR}/modules
 	@for f in ${BB_FILES} ${BB_JAVA} ${EX_FILES} ${EX_OTHER}; do \
@@ -98,16 +85,7 @@ rel-ex: ${BB_FILES} ${BB_JAVA} ${BB_MODULES} ${BB_MODULE_DIRS} ${EX_FILES} ${EX_
 		fi; \
 		cp -apR "$${f}" "$${target_dir}"; \
 	done
-	@cp -apRxuv ${BB_MODULES} ${BB_MODULE_DIRS} ${RELDIR}/modules
-	@for jar in ${BB_JAVA_STRIP}; do \
-		dir=`dirname "$$jar" | cut -f3- -d/`; \
-		target_dir="${RELDIR}/building-blocks/$$dir"; \
-		if [ ! -d "$${target_dir}" ]; then \
-			echo creating "$${target_dir}"; \
-			mkdir -p "$${target_dir}"; \
-		fi; \
-		cp "$$jar" "$${target_dir}"; \
-	done
+	@cp -apRxuv ${BB_MODULES} ${RELDIR}/modules
 	@cd ${RELDIR}; ${MAKE_RELEASE} -mcf -Puser building-blocks-with-examples-$(VERSION) `find .`; cd -
 	@rm -rf ${RELDIR}
 
@@ -119,19 +97,10 @@ load-bb: load-building-blocks
 
 load-bb-no-java: load-building-blocks-no-java
 
-load-building-blocks: ${BB_FILES} ${BB_JAVA} ${BB_JAVA_STRIP}
+load-building-blocks: ${BB_FILES} ${BB_JAVA}
 	# copy jar files to the target dir
 	for jar in ${BB_JAVA}; do \
 		dir=`dirname "$$jar"`; \
-		target_dir="$${OMQ_DIR}/user/building-blocks/$$dir"; \
-		if [ ! -d "$$target_dir" ]; then \
-			echo creating "$$target_dir"; \
-			mkdir -p "$$target_dir"; \
-		fi; \
-		cp "$$jar" "$$target_dir"; \
-	done
-	for jar in ${BB_JAVA_STRIP}; do \
-		dir=`dirname "$$jar" | cut -f3- -d/`; \
 		target_dir="$${OMQ_DIR}/user/building-blocks/$$dir"; \
 		if [ ! -d "$$target_dir" ]; then \
 			echo creating "$$target_dir"; \
@@ -143,9 +112,6 @@ load-building-blocks: ${BB_FILES} ${BB_JAVA} ${BB_JAVA_STRIP}
 	mkdir -p ${OMQ_DIR}/user/modules
 	for mod in ${BB_MODULES}; do \
 		cp $$mod ${OMQ_DIR}/user/modules; \
-	done
-	for mod in $(BB_MODULE_DIRS); do \
-	    cp -apR $$mod ${OMQ_DIR}/user/modules; \
 	done
 	# make a temporary load file
 	${MAKE_RELEASE} -l/tmp/building-blocks.qrf -U. $^
@@ -159,9 +125,6 @@ load-building-blocks-no-java: ${BB_FILES_NO_JAVA}
 	mkdir -p ${OMQ_DIR}/user/modules
 	for mod in ${BB_MODULES}; do \
 		cp $$mod ${OMQ_DIR}/user/modules; \
-	done
-	for mod in $(BB_MODULE_DIRS); do \
-	    cp -apR $$mod ${OMQ_DIR}/user/modules; \
 	done
 	# make a temporary load file
 	${MAKE_RELEASE} -l/tmp/building-blocks.qrf -U. $^

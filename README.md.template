@@ -122,21 +122,6 @@ The following building blocks are available:
 |[BBM_HttpServiceBase](./service/http/BBM_HttpServiceBase-v1.0.qclass.yaml)|base class for HTTP handler services; can be used directly
 |[BBM_QorusUiExtension](./service/http/BBM_QorusUiExtension-1.0.qclass.yaml)|building block for Qorus UI extension server services
 
-### Kafka Building Blocks
-
-|Building Block|Description|
-|---|---|
-|[BBM_KafkaConsumer](./kafka/BBM_KafkaConsumer-1.0.qclass.yaml)|**[Kafka](https://kafka.apache.org/)** message consumer building block, includes input/output connectors
-|[BBM_KafkaProducer](./kafka/BBM_KafkaProducer-1.0.qclass.yaml)|**[Kafka](https://kafka.apache.org/)** message producer building block, includes input/output connectors
-
-### MQTT Building Blocks
-
-|Building Block|Description|
-|---|---|
-|[BBM_MqttPahoClient](./mqtt-paho/BBM_MqttPahoClient-v1.0.qclass.yaml)|**[MQTT Paho](https://www.eclipse.org/paho/)** client base building block
-|[BBM_MqttPahoPublisher](./mqtt-paho/BBM_MqttPahoPublisher-v1.0.qclass.yaml)|**[MQTT Paho](https://www.eclipse.org/paho/)** client publisher building block with connectors for publishing MQTT messages
-|[BBM_MqttPahoSubscriber](./mqtt-paho/BBM_MqttPahoSubscriber-v1.0.qclass.yaml)|**[MQTT Paho](https://www.eclipse.org/paho/)** client subscriber building block with an event-based connector for listening to MQTT messages / topics
-
 ### REST Building Blocks
 
 |Building Block|Description|
