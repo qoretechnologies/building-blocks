@@ -52,7 +52,8 @@ class BBM_HttpServiceGenericBase inherits QorusService {
         handler = getHandlerImpl();
         setupHandlerIntern(handler);
         hash<HttpBindOptionInfo> bind_opts = getBindOptions();
-        UserApi::logInfo("%s: using HTTP bind options: %y", self.className(), bind_opts);
+        UserApi::logInfo("%s handler %y: using HTTP bind options: %y", self.className(), handler.className(),
+            bind_opts);
         bindHttp(handler, bind_opts);
     }
 
@@ -85,10 +86,11 @@ class BBM_HttpServiceGenericBase inherits QorusService {
     private setupHandlerIntern(AbstractServiceHttpHandler handler) {
         *string bind = ServiceApi::getConfigItemValue("http-listener-bind-address");
         if (!exists bind) {
-            ServiceApi::logInfo("%s: no bind address; binding on global listeners", self.className());
+            ServiceApi::logInfo("%s handler %y: no bind address; binding on global listeners", self.className(),
+                handler.className());
             return;
         }
-        ServiceApi::logInfo("%s: bind address: %y", self.className(), bind);
+        ServiceApi::logInfo("%s handler %y: bind address: %y", self.className(), handler.className(), bind);
         hash<HttpListenerOptionInfo> info = http_get_listener_options_from_bind(bind);
         if (*string location = ServiceApi::getConfigItemValue("http-listener-cert-location")) {
             data cert_data = BBM_HttpServiceGenericBase::getFileData(location, BBM_HttpServiceGenericBase::getFileData(location,
@@ -111,7 +113,8 @@ class BBM_HttpServiceGenericBase inherits QorusService {
             info.get_remote_certs = True;
         }
         info.ssl_verify_flags = SSL_MAP{ServiceApi::getConfigItemValue("http-listener-ssl-mode")};
-        ServiceApi::logInfo("%s: setup %s handler with bind arg: %y", self.className(), getHandlerProtocol(), info);
+        ServiceApi::logInfo("%s handler %y: setup %s handler with bind arg: %y", self.className(),
+            handler.className(), getHandlerProtocol(), info);
         handler.addListener(info);
     }
 
