@@ -310,11 +310,12 @@ class BBM_HttpReverseProxyHandler inherits AbstractServiceHttpHandler, AbstractH
     }
 
     #! returns the AbstractStreamRequest object for handling chunked requests
-    private AbstractStreamRequest getStreamRequestImpl(HttpListenerInterface listener, Socket s, hash<auto> cx, hash<auto> hdr, *data body) {
+    private AbstractStreamRequest getStreamRequestImpl(HttpListenerInterface listener, Socket s, hash<auto> cx,
+            hash<auto> hdr, *data body) {
         return new BBM_HttpReverseProxyRequestHandler(listener, self, s, cx, hdr, body);
     }
 
-    private startImpl(softstring lid, hash<auto> cx, hash<auto> hdr, Socket s) {
+    private bool startImpl(softstring lid, hash<auto> cx, hash<auto> hdr, Socket s) {
         setThreadContext(cx);
         UserApi::logInfo("cid %d: opening raw socket proxy for WebSocket data forwarding", cx.id);
         #UserApi::logDebug("BBM_HttpReverseProxyHandler::startImpl() lid: %y cx: %y hdr: %y", lid, cx, hdr);
@@ -324,6 +325,8 @@ class BBM_HttpReverseProxyHandler inherits AbstractServiceHttpHandler, AbstractH
         on_exit cache.deregister(spc);
 
         spc.proxyTraffic();
+
+        return False;
     }
 }
 
