@@ -115,6 +115,79 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
         throw "REST-ARG-ERROR", sprintf("missing required string argument %y (got type %y)", key, ah{key}.fullType());
     }
 
+    #! helper method that helps acquiring arguments as lists of strings
+    static *list<softstring> doGetStringList(*hash<auto> ah, string key, *bool optional) {
+        switch (ah{key}.typeCode()) {
+            case NT_STRING:
+                # make sure and respect quoted strings to allow for processing file names with spaces
+                return ah{key}.split(" ", "\"", True);
+
+            case NT_NOTHING:
+                if (optional) {
+                    return;
+                }
+                break;
+
+            case NT_LIST:
+                return ah{key};
+        }
+
+        throw "REST-ARG-ERROR", sprintf("Missing or invalid required argument %y (got type %y; expecting "
+            "\"string\" or \"list\")", key, ah{key}.type());
+    }
+
+    #! helper method that helps acquiring arguments as lists of hashes
+    static *list<auto> doGetListOfHashes(*hash<auto> ah, string key, *bool optional) {
+        switch (ah{key}.typeCode()) {
+            case NT_HASH:
+                return (ah{key},);
+
+            case NT_NOTHING:
+                if (optional) {
+                    return;
+                }
+                break;
+
+            case NT_LIST:
+                return ah{key};
+        }
+
+        throw "REST-ARG-ERROR", sprintf("Missing or invalid required argument %y (got type %y; expecting "
+            "\"list\")", key, ah{key}.type());
+    }
+
+    #! helper method that helps acquiring arguments as lists of integers
+    static *list<auto> doGetListOfInts(*hash<auto> ah, string key, *bool optional) {
+        switch (ah{key}.typeCode()) {
+            case NT_NOTHING:
+                if (optional) {
+                    return;
+                }
+                break;
+
+            case NT_INT:
+                return (ah{key},);
+
+            case NT_STRING:
+                ah{key} = ah{key}.split(",");
+                # fall down to next case
+
+            case NT_LIST:
+                foreach auto v in (\ah{key}) {
+                    if (!v.intp()) {
+                        throw "REST-ARG-ERROR", sprintf("Invalid list element %y (%d/%d starting from 1) in argument "
+                            "%y (expected a type convertible to an int; got type %y instead)", v, $# + 1,
+                            ah{key}.size(), key, ah{key}.fullType());
+                    }
+                    v = v.toInt();
+                }
+                return ah{key};
+        }
+
+        throw "REST-ARG-ERROR", sprintf("Missing or invalid required argument %y (got type %y; expecting "
+            "\"list\")", key, ah{key}.type());
+    }
+
     #! helper method that helps acquiring boolean argument values
     static *bool doGetBool(*hash<auto> ah, string key, *bool optional) {
         switch (ah{key}.typeCode()) {
