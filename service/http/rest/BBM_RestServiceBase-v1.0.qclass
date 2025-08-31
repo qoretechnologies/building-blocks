@@ -233,6 +233,36 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
         # will be converted to a 400 Bad Request response
         throw "REST-ARG-ERROR", sprintf("missing required date argument %y (got type %y)", key, ah{key}.fullType());
     }
+
+    static *hash<auto> doGetHash(*hash<auto> ah, string key, *bool optional, *string location) {
+        switch (ah{key}.typeCode()) {
+            case NT_STRING: {
+                try {
+                    auto v = parse_to_qore_value(ah{key});
+                    if (v.typeCode() == NT_HASH) {
+                        return v;
+                    }
+                } catch (hash<ExceptionInfo> ex) {
+                }
+                throw "REST-ARG-ERROR", sprintf("missing or invalid required argument %y%s (got type %y; expecting "
+                    "\"hash\" or \"string\" that can be parsed to a hash)", key,
+                    location ? sprintf(" in the %y option", location) : NOTHING, ah{key}.type());
+            }
+
+            case NT_NOTHING:
+                if (optional) {
+                    return;
+                }
+                break;
+
+            case NT_HASH:
+                return ah{key};
+        }
+
+        throw "REST-ARG-ERROR", sprintf("missing or invalid required argument %y%s (got type %y; expecting "
+            "\"hash\" or \"string\" that can be parsed to a hash)", key,
+            location ? sprintf(" in the %y option", location) : NOTHING, ah{key}.type());
+    }
 }
 
 #! Attribute REST class
