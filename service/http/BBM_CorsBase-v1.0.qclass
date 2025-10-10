@@ -28,7 +28,7 @@ class BBM_CorsBase {
         hash<auto> hdr = {
             "Access-Control-Allow-Methods": (foldl $1 + ", " + $2, UserApi::getConfigItemValue(pfx + "-cors-methods")),
             "Access-Control-Max-Age": UserApi::getConfigItemValue(pfx + "-cors-max-age").toString(),
-            "Access-Control-Allow-Origin": cx.hdr.origin && cx.hdr.authorization ? cx.hdr.origin : "*",
+            "Access-Control-Allow-Origin": cx.hdr.origin ? cx.hdr.origin : "*",
             "Vary": "Origin",
         };
         if (*list<auto> allow_headers = UserApi::getConfigItemValue(pfx + "-cors-headers")) {
