@@ -131,7 +131,8 @@ class BBM_HttpReverseProxyRequestHandler inherits AbstractStreamRequest, BBM_Cor
         #ServiceApi::logDebug("CID %y: remote hdr (lc): %N", cx.id, remote_hdr_lwr);
         #ServiceApi::logDebug("CID %y: remote hdr: %N", cx.id, remote_hdr);
 
-        hash<auto> response_hdr = remote_hdr;
+        # allow CORS headers to be overridden
+        hash<auto> response_hdr = getCorsResponseHeaders(cx) + remote_hdr;
 
         if (!hdr.method != "HEAD" && remote_hdr_lwr."content-length"
             && (remote_hdr_lwr.status_code >= 200) && (remote_hdr_lwr.status_code != 204)
@@ -145,7 +146,6 @@ class BBM_HttpReverseProxyRequestHandler inherits AbstractStreamRequest, BBM_Cor
         if (*hash<auto> hdr_add = ServiceApi::getConfigItemValue("http-reverse-proxy-response-add-headers")) {
             response_hdr += hdr_add;
         }
-        response_hdr += getCorsResponseHeaders(cx);
 
         ServiceApi::logInfo("cid %y: < HTTP/%s %d %s", cx.id, remote_hdr_lwr.http_version, remote_hdr_lwr.status_code,
             remote_hdr_lwr.status_message);

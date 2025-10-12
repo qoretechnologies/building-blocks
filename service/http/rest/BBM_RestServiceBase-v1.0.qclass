@@ -388,7 +388,7 @@ class BBM_RestHandlerBase inherits AbstractServiceRestHandler, BBM_HttpAuthentic
 
     hash<HttpResponseInfo> handleRequest(HttpListenerInterface listener, Socket s, hash<auto> cx, hash<auto> hdr, *data b) {
         hash<HttpResponseInfo> rv = AbstractServiceRestHandler::handleRequest(listener, s, cx, hdr, b);
-        rv.hdr += getCorsResponseHeaders(cx);
+        rv.hdr = getCorsResponseHeaders(cx) + rv.hdr;
         return rv;
     }
 

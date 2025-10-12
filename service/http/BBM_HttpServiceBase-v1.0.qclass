@@ -24,7 +24,7 @@ class BBM_HttpHandlerBase inherits AbstractServiceHttpHandler, BBM_HttpAuthentic
             return handleOptions(cx);
         }
         hash<HttpResponseInfo> rv = AbstractServiceHttpHandler::handleRequest(listener, s, cx, hdr, body);
-        rv.hdr += getCorsResponseHeaders(cx);
+        rv.hdr = getCorsResponseHeaders(cx) + rv.hdr;
         return rv;
     }
 }

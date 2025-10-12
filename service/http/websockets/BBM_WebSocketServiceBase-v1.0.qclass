@@ -19,7 +19,7 @@ class BBM_WebSocketHandlerBase inherits AbstractServiceWebSocketHandler, BBM_Htt
             return handleOptions(cx);
         }
         hash<HttpResponseInfo> rv = AbstractServiceWebSocketHandler::handleRequest(listener, s, cx, hdr, b);
-        rv.hdr += getCorsResponseHeaders(cx);
+        rv.hdr = getCorsResponseHeaders(cx) + rv.hdr;
         return rv;
     }
 }

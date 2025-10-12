@@ -56,7 +56,7 @@ class WsgiHandler inherits BBM_HttpHandlerBase {
         hash<HttpResponseInfo> rv = wsgi.handleRequest(listener, s, cx, hdr, body);
 
         # add CORS headers if appropriate
-        rv.hdr += getCorsResponseHeaders(cx);
+        rv.hdr = getCorsResponseHeaders(cx) + rv.hdr;
 
         return rv;
     }

@@ -50,7 +50,7 @@ class BBM_HttpFileHandlerBase inherits ServiceFileHandler, BBM_HttpAuthenticator
             return handleOptions(cx);
         }
         hash<HttpResponseInfo> rv = ServiceFileHandler::handleRequest(listener, s, cx, hdr, body);
-        rv.hdr += getCorsResponseHeaders(cx);
+        rv.hdr = getCorsResponseHeaders(cx) + rv.hdr;
         return rv;
     }
 }
