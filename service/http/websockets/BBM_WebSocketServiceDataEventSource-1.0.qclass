@@ -48,8 +48,8 @@ class BBM_WebSocketServiceDataEventSource inherits BBM_WebSocketServiceBase, ::O
         return new BBM_WebSocketServiceDataEventSourceHandler(self);
     }
 
-    #! The constructor initializes the class
-    constructor() {
+    #! Initializes the class
+    init() {
 %ifdef NoJson
         if (UserApi::getConfigItemValue("websockets-event-data") == "json") {
             throw "WEBSOCKET-DATA-ERROR", "cannot support JSON data serialization without the JSON module";
@@ -60,8 +60,6 @@ class BBM_WebSocketServiceDataEventSource inherits BBM_WebSocketServiceBase, ::O
             throw "WEBSOCKET-DATA-ERROR", "cannot support JSON data serialization without the JSON module";
         }
 %endif
-
-        init();
     }
 
     #! Connection method for sending WebSocket messages to the client

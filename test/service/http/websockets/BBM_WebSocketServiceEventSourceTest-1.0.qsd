@@ -32,6 +32,7 @@ class EventSource inherits BBM_WebSocketServiceEventSource {
 
     constructor(BBM_WebSocketServiceEventSourceTest service) {
         self.service = service;
+        init();
     }
 
     notifyObservers(string event_id, hash<WebSocketReceivedEventInfo> event) {

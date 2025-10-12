@@ -5,6 +5,8 @@
 %strict-args
 %enable-all-warnings
 
+%requires WebSocketHandler
+
 #! The base WebSocket handler class
 class BBM_WebSocketHandlerBase inherits AbstractServiceWebSocketHandler, BBM_HttpAuthenticatorBase, BBM_CorsBase {
     #! Creates the object

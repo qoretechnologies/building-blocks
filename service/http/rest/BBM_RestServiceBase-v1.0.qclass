@@ -50,6 +50,113 @@ class BBM_CorsRest inherits BBM_CorsBase {
 
 #! The base request handler class
 class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
+    #! Helper method to process REST API arguments according to an option description hash
+    static *hash<auto> doGetOptions(*hash<auto> ah, hash<auto> odesc) {
+        # first check for extra args
+        if (*hash<auto> extra = ah - (keys odesc)) {
+            throw "REST-ARG-ERROR", sprintf("Unknown option(s) provided: %y (known options: %y)", keys extra,
+                keys odesc);
+        }
+        hash<auto> opts;
+        foreach hash<auto> i in (odesc.pairIterator()) {
+            softlist<string> types;
+            bool optional;
+            auto default_value;
+            switch (i.value.typeCode()) {
+                case NT_STRING: {
+                    types = i.value =~ /|/ ? i.value.split("|") : i.value;
+                    break;
+                }
+                case NT_HASH: {
+                    if (i.value.type.typeCode() == NT_STRING) {
+                        types = i.value.type;
+                    } else if (i.value.types.typeCode() == NT_LIST) {
+                        types = i.value.types;
+                    } else {
+                        throw "OPTION-DESC-ERROR", sprintf("Invalid option description for option %y: %y (expecting "
+                            "a hash with a \"type\" or \"types\" key)", i.key, i.value);
+                    }
+                    if (i.value.hasKey("default_value")) {
+                        default_value = i.value.default_value;
+                    }
+                    break;
+                }
+                default:
+                    throw "OPTION-DESC-ERROR", sprintf("Invalid option description for option %y: %y (expecting "
+                        "\"string\" or \"hash\")", i.key, i.value);
+            }
+            if (exists default_value && !optional) {
+                optional = True;
+            }
+            bool multi = types.size() > 1;
+            bool ok;
+            int ocount;
+            foreach string type in (types) {
+                *bool toptional = multi ? True : optional;
+                if (type =~ /^\*/) {
+                    if (!toptional) {
+                        toptional = True;
+                    }
+                    type =~ s/^\*//;
+                }
+                if (toptional) {
+                    ++ocount;
+                }
+                switch (type) {
+                    case "string":
+                        opts{i.key} = doGetString(ah, i.key, toptional, NOTHING, multi);
+                        break;
+
+                    case "bool":
+                        opts{i.key} = doGetBool(ah, i.key, toptional, NOTHING, multi);
+                        break;
+
+                    case "int":
+                        opts{i.key} = doGetInt(ah, i.key, toptional, NOTHING, multi);
+                        break;
+
+                    case "date":
+                        opts{i.key} = doGetDate(ah, i.key, toptional, multi);
+                        break;
+
+                    case "list<string>":
+                        opts{i.key} = doGetStringList(ah, i.key, toptional, multi);
+                        break;
+
+                    case "list<hash>":
+                        opts{i.key} = doGetListOfHashes(ah, i.key, toptional, multi);
+                        break;
+
+                    case "list<int>":
+                        opts{i.key} = doGetListOfInts(ah, i.key, toptional, multi);
+                        break;
+
+                    case "hash":
+                        opts{i.key} = doGetHash(ah, i.key, toptional, NOTHING, multi);
+                        break;
+
+                    case "number":
+                        opts{i.key} = doGetNumber(ah, i.key, toptional, multi);
+                        break;
+                    default:
+                        throw "OPTION-DESC-ERROR", sprintf("Invalid option description for option %y: %y (unknown type)",
+                            i.key, i.value);
+                }
+                if (exists opts{i.key}) {
+                    break;
+                }
+            }
+            if (!exists opts{i.key}) {
+                if (exists default_value) {
+                    opts{i.key} = default_value;
+                } else if (!optional && (ocount != types.size())) {
+                    throw "REST-ARG-ERROR", sprintf("Missing required option %y", i.key);
+                }
+            }
+        }
+        return opts;
+    }
+
     #! helper method that helps acquiring int argument values
     static *int doGetInt(*hash<auto> ah, string key, *bool optional) {
         switch (ah{key}.typeCode()) {
