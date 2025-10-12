@@ -5,6 +5,7 @@
 %strict-args
 %enable-all-warnings
 
+%requires WebSocketUtil
 %requires WebSocketHandler
 
 #! The base WebSocket handler class

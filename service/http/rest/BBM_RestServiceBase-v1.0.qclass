@@ -104,15 +104,15 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
                 }
                 switch (type) {
                     case "string":
-                        opts{i.key} = doGetString(ah, i.key, toptional, NOTHING, multi);
+                        opts{i.key} = doGetString(ah, i.key, toptional, multi);
                         break;
 
                     case "bool":
-                        opts{i.key} = doGetBool(ah, i.key, toptional, NOTHING, multi);
+                        opts{i.key} = doGetBool(ah, i.key, toptional, multi);
                         break;
 
                     case "int":
-                        opts{i.key} = doGetInt(ah, i.key, toptional, NOTHING, multi);
+                        opts{i.key} = doGetInt(ah, i.key, toptional, multi);
                         break;
 
                     case "date":
@@ -158,7 +158,7 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
     }
 
     #! helper method that helps acquiring int argument values
-    static *int doGetInt(*hash<auto> ah, string key, *bool optional) {
+    static *int doGetInt(*hash<auto> ah, string key, *bool optional, *bool no_type_err) {
         switch (ah{key}.typeCode()) {
             case NT_NOTHING:
                 if (optional) {
@@ -176,12 +176,16 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
                 return ah{key};
         }
 
+        if (no_type_err) {
+            return;
+        }
+
         # will be converted to a 400 Bad Request response
         throw "REST-ARG-ERROR", sprintf("missing required int argument %y (got type %y)", key, ah{key}.fullType());
     }
 
     #! helper method that helps acquiring number argument values
-    static *softnumber doGetNumber(*hash<auto> ah, string key, *bool optional) {
+    static *softnumber doGetNumber(*hash<auto> ah, string key, *bool optional, *bool no_type_err) {
         switch (ah{key}.typeCode()) {
             case NT_NOTHING:
                 if (optional) {
@@ -201,12 +205,16 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
                 return ah{key};
         }
 
+        if (no_type_err) {
+            return;
+        }
+
         # will be converted to a 400 Bad Request response
         throw "REST-ARG-ERROR", sprintf("missing required number argument %y (got type %y)", key, ah{key}.fullType());
     }
 
     #! helper method that helps acquiring string argument values
-    static *string doGetString(*hash<auto> ah, string key, *bool optional) {
+    static *string doGetString(*hash<auto> ah, string key, *bool optional, *bool no_type_err) {
         switch (ah{key}.typeCode()) {
             case NT_NOTHING:
                 if (optional) {
@@ -218,12 +226,16 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
                 return ah{key};
         }
 
+        if (no_type_err) {
+            return;
+        }
+
         # will be converted to a 400 Bad Request response
         throw "REST-ARG-ERROR", sprintf("missing required string argument %y (got type %y)", key, ah{key}.fullType());
     }
 
     #! helper method that helps acquiring arguments as lists of strings
-    static *list<softstring> doGetStringList(*hash<auto> ah, string key, *bool optional) {
+    static *list<softstring> doGetStringList(*hash<auto> ah, string key, *bool optional, *bool no_type_err) {
         switch (ah{key}.typeCode()) {
             case NT_STRING:
                 # make sure and respect quoted strings to allow for processing file names with spaces
@@ -239,12 +251,16 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
                 return ah{key};
         }
 
+        if (no_type_err) {
+            return;
+        }
+
         throw "REST-ARG-ERROR", sprintf("Missing or invalid required argument %y (got type %y; expecting "
             "\"string\" or \"list\")", key, ah{key}.type());
     }
 
     #! helper method that helps acquiring arguments as lists of hashes
-    static *list<auto> doGetListOfHashes(*hash<auto> ah, string key, *bool optional) {
+    static *list<auto> doGetListOfHashes(*hash<auto> ah, string key, *bool optional, *bool no_type_err) {
         switch (ah{key}.typeCode()) {
             case NT_HASH:
                 return (ah{key},);
@@ -259,12 +275,16 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
                 return ah{key};
         }
 
+        if (no_type_err) {
+            return;
+        }
+
         throw "REST-ARG-ERROR", sprintf("Missing or invalid required argument %y (got type %y; expecting "
             "\"list\")", key, ah{key}.type());
     }
 
     #! helper method that helps acquiring arguments as lists of integers
-    static *list<auto> doGetListOfInts(*hash<auto> ah, string key, *bool optional) {
+    static *list<auto> doGetListOfInts(*hash<auto> ah, string key, *bool optional, *bool no_type_err) {
         switch (ah{key}.typeCode()) {
             case NT_NOTHING:
                 if (optional) {
@@ -291,12 +311,16 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
                 return ah{key};
         }
 
+        if (no_type_err) {
+            return;
+        }
+
         throw "REST-ARG-ERROR", sprintf("Missing or invalid required argument %y (got type %y; expecting "
             "\"list\")", key, ah{key}.type());
     }
 
     #! helper method that helps acquiring boolean argument values
-    static *bool doGetBool(*hash<auto> ah, string key, *bool optional) {
+    static *bool doGetBool(*hash<auto> ah, string key, *bool optional, *bool no_type_err) {
         switch (ah{key}.typeCode()) {
             case NT_NOTHING:
                 if (optional) {
@@ -316,13 +340,17 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
                 return ah{key};
         }
 
+        if (no_type_err) {
+            return;
+        }
+
         # will be converted to a 400 Bad Request response
         throw "REST-ARG-ERROR", sprintf("missing required boolean argument %y (got type %y)", key,
             ah{key}.fullType());
     }
 
     #! helper method that helps acquiring date argument values
-    static *date doGetDate(*hash<auto> ah, string key, *bool optional) {
+    static *date doGetDate(*hash<auto> ah, string key, *bool optional, *bool no_type_err) {
         switch (ah{key}.typeCode()) {
             case NT_NOTHING:
                 if (optional) {
@@ -337,11 +365,15 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
                 return ah{key};
         }
 
+        if (no_type_err) {
+            return;
+        }
+
         # will be converted to a 400 Bad Request response
         throw "REST-ARG-ERROR", sprintf("missing required date argument %y (got type %y)", key, ah{key}.fullType());
     }
 
-    static *hash<auto> doGetHash(*hash<auto> ah, string key, *bool optional, *string location) {
+    static *hash<auto> doGetHash(*hash<auto> ah, string key, *bool optional, *string location, *bool no_type_err) {
         switch (ah{key}.typeCode()) {
             case NT_STRING: {
                 try {
@@ -350,6 +382,9 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
                         return v;
                     }
                 } catch (hash<ExceptionInfo> ex) {
+                }
+                if (no_type_err) {
+                    return;
                 }
                 throw "REST-ARG-ERROR", sprintf("missing or invalid required argument %y%s (got type %y; expecting "
                     "\"hash\" or \"string\" that can be parsed to a hash)", key,
@@ -366,6 +401,9 @@ class BBM_RestClass inherits AbstractRestClass, BBM_CorsRest {
                 return ah{key};
         }
 
+        if (no_type_err) {
+            return;
+        }
         throw "REST-ARG-ERROR", sprintf("missing or invalid required argument %y%s (got type %y; expecting "
             "\"hash\" or \"string\" that can be parsed to a hash)", key,
             location ? sprintf(" in the %y option", location) : NOTHING, ah{key}.type());

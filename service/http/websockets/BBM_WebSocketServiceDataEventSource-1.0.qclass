@@ -60,6 +60,7 @@ class BBM_WebSocketServiceDataEventSource inherits BBM_WebSocketServiceBase, ::O
             throw "WEBSOCKET-DATA-ERROR", "cannot support JSON data serialization without the JSON module";
         }
 %endif
+        BBM_WebSocketServiceBase::init();
     }
 
     #! Connection method for sending WebSocket messages to the client
