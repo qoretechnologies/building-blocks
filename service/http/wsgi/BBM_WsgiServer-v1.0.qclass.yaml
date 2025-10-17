@@ -114,6 +114,11 @@ config-items:
         interface-type: class
         interface-name: BBM_HttpServiceBase
         interface-version: '1.0'
+  - name: http-cors-allow-origin
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
   - name: wsgi-app
     parent:
         interface-type: class

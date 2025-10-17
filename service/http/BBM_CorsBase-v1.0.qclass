@@ -8,29 +8,54 @@ class BBM_CorsBase {
     private {
         #! the config item prefix
         string pfx;
+
+        #! allow all origins
+        bool allow_all_origins;
+
+        #! List of regexes for allowed origins
+        *list<string> allowed_origins;
     }
 
     #! Creates the object with the given configuration
     constructor(string pfx) {
         self.pfx = pfx;
+        foreach string origin in (UserApi::getConfigItemValue(pfx + "-cors-allow-origin")) {
+            if (origin == "*") {
+                allow_all_origins = True;
+                remove allowed_origins;
+                break;
+            } else {
+                allowed_origins += "^" + glob_to_regex(origin) + "$";
+            }
+        }
     }
 
     #! Returns CORS headers for the request if CORS is enabled, otherwise returns @ref NOTHING
     *hash<auto> getCorsResponseHeaders(hash<auto> cx) {
         if (UserApi::getConfigItemValue(pfx + "-cors-enable")) {
-            # IMPLEMENTME: check origin
-            return getCorsResponseHeadersIntern(cx);
+            if (allow_all_origins) {
+                return getCorsResponseHeadersIntern(cx);
+            } else if (cx.hdr.origin) {
+                foreach string origin_regex in (allowed_origins) {
+                    if (regex(cx.hdr.origin, origin_regex, RE_Caseless)) {
+                        return getCorsResponseHeadersIntern(cx, True);
+                    }
+                }
+            }
         }
     }
 
     #! Returns CORS headers for the request; assumes CORS is enabled and the origin is allowed
-    hash<auto> getCorsResponseHeadersIntern(hash<auto> cx) {
+    hash<auto> getCorsResponseHeadersIntern(hash<auto> cx, *bool exact) {
         hash<auto> hdr = {
-            "Access-Control-Allow-Methods": (foldl $1 + ", " + $2, UserApi::getConfigItemValue(pfx + "-cors-methods")),
+            "Access-Control-Allow-Methods": (foldl $1 + ", " + $2,
+                UserApi::getConfigItemValue(pfx + "-cors-methods")),
             "Access-Control-Max-Age": UserApi::getConfigItemValue(pfx + "-cors-max-age").toString(),
-            "Access-Control-Allow-Origin": cx.hdr.origin ? cx.hdr.origin : "*",
-            "Vary": "Origin",
+            "Access-Control-Allow-Origin": exact ? cx.hdr.origin : "*",
         };
+        if (exact) {
+            hdr."Vary" = "Origin";
+        }
         if (*list<auto> allow_headers = UserApi::getConfigItemValue(pfx + "-cors-headers")) {
             hdr."Access-Control-Allow-Headers" = (foldl $1 + ", " + $2, allow_headers);
         }

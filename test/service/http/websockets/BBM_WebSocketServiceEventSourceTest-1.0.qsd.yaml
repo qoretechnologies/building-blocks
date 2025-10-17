@@ -101,6 +101,11 @@ config-items:
         interface-type: class
         interface-name: BBM_WebSocketServiceEventSource
         interface-version: '1.0'
+  - name: websockets-cors-allow-origin
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
   - name: websockets-auth-cookie
     parent:
         interface-type: class

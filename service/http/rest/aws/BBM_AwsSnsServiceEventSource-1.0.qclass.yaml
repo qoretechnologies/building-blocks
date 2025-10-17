@@ -125,6 +125,11 @@ config-items:
         interface-type: class
         interface-name: BBM_AwsSnsServiceBase
         interface-version: '1.0'
+  - name: rest-cors-allow-origin
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
   - name: rest-auth-cookie
     parent:
         interface-type: class

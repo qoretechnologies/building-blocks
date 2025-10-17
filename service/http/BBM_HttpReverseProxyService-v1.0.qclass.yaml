@@ -175,6 +175,15 @@ config-items:
     description: 'if `true` then the `Access-Control-Allow-Credentials: true` header is sent'
     strictly_local: true
     type: bool
+  - name: http-cors-allow-origin
+    type: "list"
+    default_value:
+        - "*"
+    config_group: HTTP Handler CORS
+    description: >-
+        Allowed origin(s) for CORS; values are treated as glob values; this value is used for
+        the `Access-Control-Allow-Origin` header
+    strictly_local: true
   - name: http-reverse-proxy-target
     config_group: HTTP/S Reverse Proxy Main
     description: The URL target for the reverse proxy

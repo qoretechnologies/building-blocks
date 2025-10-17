@@ -105,6 +105,11 @@ config-items:
         interface-type: class
         interface-name: BBM_RestServiceBase
         interface-version: '1.0'
+  - name: rest-cors-allow-origin
+    parent:
+        interface-type: class
+        interface-name: BBM_RestServiceBase
+        interface-version: '1.0'
   - name: rest-remove-leading-path-components
     parent:
         interface-type: class
