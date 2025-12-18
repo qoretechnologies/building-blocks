@@ -109,6 +109,21 @@ config-items:
         interface-type: class
         interface-name: BBM_HttpServiceBase
         interface-version: '1.0'
+  - name: http-cors-expose-headers
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-cors-opener-policy
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
+  - name: http-cors-resource-policy
+    parent:
+        interface-type: class
+        interface-name: BBM_HttpServiceBase
+        interface-version: '1.0'
   - name: http-cors-credentials
     parent:
         interface-type: class

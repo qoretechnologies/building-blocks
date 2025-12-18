@@ -66,7 +66,7 @@ config-items:
   - name: rest-root-uri
     description: The root URI path for the REST service
     strictly_local: true
-    config_group: Rest Handler
+    config_group: REST Handler
   - name: rest-auth-name
     default_value:
         "default"
@@ -82,11 +82,11 @@ config-items:
          - **`permissive`**: no authentication is required; all requests are automatically accepted
          - **`cookie`**: same as `default` with also support for cookie-based authentication; the cookie name is defined with the `rest-auth-cookie` config item
     strictly_local: true
-    config_group: Rest Handler
+    config_group: REST Handler
   - name: rest-auth-cookie
     default_value:
         "qorus_auth_token"
-    config_group: Rest Handler
+    config_group: REST Handler
     description: >-
         A string providing the name of the cookie for cookie-based authentication,
         only used when `rest-auth-name` is `cookie`
@@ -95,7 +95,7 @@ config-items:
     default_value:
         null
     type: "*string"
-    config_group: Rest Handler
+    config_group: REST Handler
     description: >-
         A string providing the URL to redirect unauthenticated requests; only used
         when `rest-auth-name` is `cookie`
@@ -110,7 +110,7 @@ config-items:
         prefix in the string, then the string will be assumed to be a service
         resource name and will be automatically prefixed with `resource://`
     strictly_local: true
-    config_group: Rest Handler
+    config_group: REST Handler
   - name: rest-remove-leading-path-components
     default_value:
         null
@@ -122,11 +122,11 @@ config-items:
         automatic behavior should cover all practical cases; normally this config item
         does not need to be set.
     strictly_local: true
-    config_group: Rest Handler
+    config_group: REST Handler
   - name: rest-cors-enable
     default_value:
         false
-    config_group: Rest Handler CORS
+    config_group: REST Handler CORS
     description: set to `true` to enable CORS
     strictly_local: true
     type: bool
@@ -138,14 +138,14 @@ config-items:
       - PATCH
       - DELETE
       - OPTIONS
-    config_group: Rest Handler CORS
+    config_group: REST Handler CORS
     description: HTTP methods allowed with CORS; ignored if `rest-cors-enable` is `false`
     strictly_local: true
     type: list
   - name: rest-cors-max-age
     default_value:
         9999999
-    config_group: Rest Handler CORS
+    config_group: REST Handler CORS
     description: the value for the `Access-Control-Max-Age` header
     strictly_local: true
     type: int
@@ -158,14 +158,40 @@ config-items:
       - Accept
       - Accept-Language
       - Authorization
-    config_group: Rest Handler CORS
+    config_group: REST Handler CORS
     description: values for the `Access-Control-Allow-Headers` header
     strictly_local: true
     type: "*list"
+  - name: rest-cors-expose-headers
+    default_value:
+      - Content-Disposition
+    config_group: REST Handler CORS
+    description: Headers returned in the `Access-Control-Expose-Headers` header
+    strictly_local: true
+    type: "*list"
+  - name: rest-cors-opener-policy
+    default_value: same-origin
+    config_group: REST Handler CORS
+    description: Sets the value of the Cross-Origin-Opener-Policy (COOP) HTTP response header
+    allowed_values:
+      - same-origin
+      - same-origin-allow-popups
+      - restrict-properties
+      - unsafe-none
+    strictly_local: true
+  - name: rest-cors-resource-policy
+    default_value: same-origin
+    config_group: REST Handler CORS
+    description: Sets the value of the Cross-Origin-Resource-Policy (CORP) HTTP response header
+    allowed_values:
+      - same-origin
+      - same-site
+      - cross-origin
+    strictly_local: true
   - name: rest-cors-credentials
     default_value:
         false
-    config_group: Rest Handler CORS
+    config_group: REST Handler CORS
     description: 'if `true` then the `Access-Control-Allow-Credentials: true` header is sent'
     strictly_local: true
     type: bool
@@ -173,7 +199,7 @@ config-items:
     type: "list"
     default_value:
         - "*"
-    config_group: Rest Handler CORS
+    config_group: REST Handler CORS
     description: >-
         Allowed origin(s) for CORS; values are treated as glob values; this value is used for
         the `Access-Control-Allow-Origin` header

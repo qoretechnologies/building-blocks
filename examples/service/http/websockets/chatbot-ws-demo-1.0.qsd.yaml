@@ -197,6 +197,21 @@ config-items:
         interface-type: class
         interface-name: BBM_WebSocketServiceEventSource
         interface-version: '1.0'
+  - name: websockets-cors-expose-headers
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-cors-opener-policy
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
+  - name: websockets-cors-resource-policy
+    parent:
+        interface-type: class
+        interface-name: BBM_WebSocketServiceEventSource
+        interface-version: '1.0'
   - name: websockets-cors-credentials
     parent:
         interface-type: class

@@ -168,6 +168,32 @@ config-items:
     description: values for the `Access-Control-Allow-Headers` header
     strictly_local: true
     type: "*list"
+  - name: http-cors-expose-headers
+    default_value:
+      - Content-Disposition
+    config_group: HTTP Handler CORS
+    description: Headers returned in the `Access-Control-Expose-Headers` header
+    strictly_local: true
+    type: "*list"
+  - name: http-cors-opener-policy
+    default_value: same-origin
+    config_group: HTTP Handler CORS
+    description: Sets the value of the Cross-Origin-Opener-Policy (COOP) HTTP response header
+    allowed_values:
+      - same-origin
+      - same-origin-allow-popups
+      - restrict-properties
+      - unsafe-none
+    strictly_local: true
+  - name: http-cors-resource-policy
+    default_value: same-origin
+    config_group: HTTP Handler CORS
+    description: Sets the value of the Cross-Origin-Resource-Policy (CORP) HTTP response header
+    allowed_values:
+      - same-origin
+      - same-site
+      - cross-origin
+    strictly_local: true
   - name: http-cors-credentials
     default_value:
         false

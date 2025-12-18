@@ -9,17 +9,46 @@ class BBM_CorsBase {
         #! the config item prefix
         string pfx;
 
+        #! Is CORS enabled?
+        bool cors_enable;
+
         #! allow all origins
         bool allow_all_origins;
 
         #! List of regexes for allowed origins
         *list<string> allowed_origins;
+
+        #! A list of HTTP methods in all upper case giving the allowed methods in CORS preflight requests
+        *string cors_allow_methods;
+
+        #! Tells HTTP clients how long the results of a preflight request can be cached
+        string cors_max_age;
+
+        #! A list of allowed headers in CORS preflight requests
+        *string cors_allow_headers;
+
+        #! Whether to include the Access-Control-Allow-Credentials header in CORS responses
+        bool cors_allow_credentials;
+
+        #! A list of headers returned in the Access-Control-Expose-Headers header
+        *string cors_expose_headers;
+
+        #! Sets the value of the Cross-Origin-Opener-Policy (COOP) HTTP response header
+        string cors_opener_policy;
+
+        #! Sets the value of the Cross-Origin-Resource-Policy (CORP) HTTP response header
+        string cors_resource_policy;
+
+        #! Static variable to make sure that config for each prefix is only logged once
+        static hash<string, bool> lmap;
     }
 
     #! Creates the object with the given configuration
     constructor(string pfx) {
         self.pfx = pfx;
-        foreach string origin in (UserApi::getConfigItemValue(pfx + "-cors-allow-origin")) {
+        cors_enable = UserApi::getConfigItemValue(pfx + "-cors-enable");
+        *list<string> cors_allow_origin = UserApi::getConfigItemValue(pfx + "-cors-allow-origin");
+        foreach string origin in (cors_allow_origin) {
             if (origin == "*") {
                 allow_all_origins = True;
                 remove allowed_origins;
@@ -28,17 +57,35 @@ class BBM_CorsBase {
                 allowed_origins += "^" + glob_to_regex(origin) + "$";
             }
         }
+
+        cors_allow_methods = foldl $1 + "," + $2, UserApi::getConfigItemValue(pfx + "-cors-methods");
+        cors_max_age = UserApi::getConfigItemValue(pfx + "-cors-max-age").toString();
+        cors_allow_headers = foldl $1 + "," + $2, UserApi::getConfigItemValue(pfx + "-cors-headers");
+        cors_allow_credentials = UserApi::getConfigItemValue(pfx + "-cors-credentials");
+        cors_expose_headers = foldl $1 + "," + $2, UserApi::getConfigItemValue(pfx + "-cors-expose-headers");
+        cors_opener_policy = UserApi::getConfigItemValue(pfx + "-cors-opener-policy");
+        cors_resource_policy = UserApi::getConfigItemValue(pfx + "-cors-resource-policy");
+        if (!lmap{pfx}) {
+            lmap{pfx} = True;
+            UserApi::logInfo("CORS settings for %s: enable: %y allow_all_origins: %y allowed_origins: %y "
+                "allow_methods: %y max_age: %d allow_headers: %y allow_credentials: %y expose_headers: %y "
+                "opener_policy: %y resource_policy: %y",
+                pfx, cors_enable, allow_all_origins, cors_allow_origin, cors_allow_methods, cors_max_age,
+                cors_allow_headers, cors_allow_credentials, cors_expose_headers, cors_opener_policy,
+                cors_resource_policy);
+        }
     }
 
     #! Returns CORS headers for the request if CORS is enabled, otherwise returns @ref NOTHING
     *hash<auto> getCorsResponseHeaders(hash<auto> cx) {
-        if (UserApi::getConfigItemValue(pfx + "-cors-enable")) {
+        UserApi::logInfo("getCorsResponseHeaders() origin: %y enabled: %y", cx.hdr.origin, cors_enable);
+        if (cors_enable) {
             if (allow_all_origins) {
                 return getCorsResponseHeadersIntern(cx);
             } else if (cx.hdr.origin) {
                 foreach string origin_regex in (allowed_origins) {
                     if (regex(cx.hdr.origin, origin_regex, RE_Caseless)) {
-                        return getCorsResponseHeadersIntern(cx, True);
+                        return getCorsResponseHeadersIntern(cx);
                     }
                 }
             }
@@ -46,21 +93,35 @@ class BBM_CorsBase {
     }
 
     #! Returns CORS headers for the request; assumes CORS is enabled and the origin is allowed
-    hash<auto> getCorsResponseHeadersIntern(hash<auto> cx, *bool exact) {
-        hash<auto> hdr = {
-            "Access-Control-Allow-Methods": (foldl $1 + ", " + $2,
-                UserApi::getConfigItemValue(pfx + "-cors-methods")),
-            "Access-Control-Max-Age": UserApi::getConfigItemValue(pfx + "-cors-max-age").toString(),
-            "Access-Control-Allow-Origin": exact ? cx.hdr.origin : "*",
+    hash<auto> getCorsResponseHeadersIntern(hash<auto> cx) {
+        hash<auto> hdr= {
+            "Cross-Origin-Opener-Policy": cors_opener_policy,
+            "Cross-Origin-Resource-Policy": cors_resource_policy,
         };
-        if (exact) {
-            hdr."Vary" = "Origin";
+        # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin
+        # if the server supports clients from multiple origins, it must return the origin for the specific client
+        # making the request
+        if (cx.hdr.origin) {
+            hdr = {
+                "Access-Control-Allow-Origin": cx.hdr.origin,
+                "Vary": "Origin",
+            };
         }
-        if (*list<auto> allow_headers = UserApi::getConfigItemValue(pfx + "-cors-headers")) {
-            hdr."Access-Control-Allow-Headers" = (foldl $1 + ", " + $2, allow_headers);
+         # return other headers for preflight (OPTIONS) requests
+        if (cx.hdr.method == "OPTIONS") {
+            hdr += {
+                "Access-Control-Allow-Methods": cors_allow_methods,
+                "Access-Control-Max-Age": cors_max_age,
+            };
+            if (cors_allow_headers) {
+                hdr."Access-Control-Allow-Headers" = cors_allow_headers;
+            }
         }
-        if (UserApi::getConfigItemValue(pfx + "-cors-credentials")) {
+        if (cors_allow_credentials) {
             hdr."Access-Control-Allow-Credentials" = "true";
+        }
+        if (cors_expose_headers) {
+            hdr."Access-Control-Expose-Headers" = cors_expose_headers;
         }
         return hdr;
     }
@@ -68,8 +129,7 @@ class BBM_CorsBase {
     #! handles OPTIONS requests
     hash<HttpResponseInfo> handleOptions(hash<auto> cx) {
         # check if CORS is enabled
-        *hash<auto> hdr = getCorsResponseHeaders(cx);
-        if (hdr) {
+        if (*hash<auto> hdr = getCorsResponseHeaders(cx)) {
             # return a CORS response
             return AbstractHttpRequestHandler::makeResponse(200, NOTHING, hdr);
         }

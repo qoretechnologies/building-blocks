@@ -125,6 +125,21 @@ config-items:
         interface-type: class
         interface-name: BBM_AwsSnsServiceBase
         interface-version: '1.0'
+  - name: rest-cors-expose-headers
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: rest-cors-opener-policy
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
+  - name: rest-cors-resource-policy
+    parent:
+        interface-type: class
+        interface-name: BBM_AwsSnsServiceBase
+        interface-version: '1.0'
   - name: rest-cors-allow-origin
     parent:
         interface-type: class
