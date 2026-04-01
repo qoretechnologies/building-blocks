@@ -78,7 +78,7 @@ class BBM_CorsBase {
 
     #! Returns CORS headers for the request if CORS is enabled, otherwise returns @ref NOTHING
     *hash<auto> getCorsResponseHeaders(hash<auto> cx) {
-        UserApi::logInfo("getCorsResponseHeaders() origin: %y enabled: %y", cx.hdr.origin, cors_enable);
+        UserApi::logDebug("getCorsResponseHeaders() origin: %y enabled: %y", cx.hdr.origin, cors_enable);
         if (cors_enable) {
             if (allow_all_origins) {
                 return getCorsResponseHeadersIntern(cx);
