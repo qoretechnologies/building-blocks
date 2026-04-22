@@ -1,0 +1,246 @@
+# -*- mode: qore; indent-tabs-mode: nil -*-
+
+%new-style
+%require-types
+%strict-args
+%enable-all-warnings
+
+%requires HttpServerUtil
+%requires HttpServerAsyncIo
+%requires HttpClientStreamingIo
+
+#! REST handler base that can serve Server-Sent Events responses.
+/** Extends @ref BBM_RestHandlerBase with the minimum hooks Qore's
+    HttpServer expects when a REST endpoint returns a \c "text/event-stream"
+    response.  Without these hooks HttpServer.qm refuses to set up the
+    async SSE writer (\c "SSE response returned from handler %y, but the
+    handler does not inherit AbstractHttpSocketHandlerInterface") and
+    sends the 200 response headers without a body — the failure mode that
+    was silently breaking @ref QorusAiStreamingHelper::handleStreaming().
+
+    Handlers that need SSE inherit @ref BBM_StreamingRestHandlerBase
+    instead of @ref BBM_RestHandlerBase.  Plain REST endpoints on the
+    same handler keep working identically; the SSE machinery only kicks
+    in when an endpoint returns \c "Content-Type: text/event-stream".
+
+    ## Contract for SSE endpoints
+
+    A REST endpoint that wants to stream does three things in \c post()
+    (or any verb method):
+
+    -# Build a \c code<*string()> \c send_callback that returns the next
+       pre-formatted SSE frame (e.g. \c "data: \{...\}\n\n") on each
+       invocation and \c NOTHING at end-of-stream.  Bookkeeping that must
+       run on completion (metering, quota finalization) lives inside the
+       callback — the drainer stops calling it after \c NOTHING.
+    -# Call @ref BBM_StreamingRestHandlerBase::registerSseSendCallback()
+       with \c cx.id to register the callback for the current request.
+    -# Return an @ref HttpServer::HttpHandlerResponseInfo "response" with
+       \c "code": 200 and \c "hdr": \c {"Content-Type": "text/event-stream",
+       \c ...} — no \c body / \c send_callback on the response.  The body
+       is delivered by the async I/O controller via the SSE writer this
+       class returns from \c setupAsyncSseConnection*().
+
+    ## Cross-protocol drainer
+
+    One background drainer feeds three protocol-specific writers:
+    - HTTP/1.1: @ref HttpServerAsyncIo::HttpSseStreamPollOperation
+    - HTTP/2:   @ref HttpServerAsyncIo::Http2SseStream
+    - HTTP/3:   @ref HttpServerAsyncIo::Http3SseStream
+
+    Each protocol's \c queueRawString() accepts the same pre-formatted SSE
+    text, so the callback code doesn't branch on protocol.
+
+    Mirrors the @c WebAppHandler pattern in \c qorus/Classes/QorusRestApiHandler.qc
+    (where this design was first proven for qonsole SSE streaming); the
+    code here is factored into BBM so services outside qorus-core get the
+    same streaming capability without copy-pasting.
+*/
+class BBM_StreamingRestHandlerBase inherits BBM_RestHandlerBase, HttpServer::AbstractHttpSocketHandlerInterface {
+    public {
+        #! Pending SSE send_callbacks keyed by request correlation id (\c cx.id).
+        /** REST endpoints call @ref registerSseSendCallback() to register a
+            callback for the current request before returning the
+            \c text/event-stream response; the framework then invokes
+            \c setupAsyncSseConnection*() which pops the callback and
+            hands it to the drainer.
+        */
+        static hash<string, code<*string()>> sse_send_callbacks;
+
+        #! Protects @ref sse_send_callbacks
+        static Mutex sse_send_callbacks_lock();
+    }
+
+    #! Creates the object
+    constructor(AbstractAuthenticator auth = BBM_HttpAuthenticatorBase::getAuthenticator("rest-auth-name",
+            "rest-auth-cookie", "rest-auth-redirect")) : BBM_RestHandlerBase(auth) {
+    }
+
+    #! Registers a send_callback for an upcoming SSE response.
+    /** The callback follows the @ref HttpServer::AbstractHttpRequestHandler
+        \c send_callback contract: each invocation returns the next
+        pre-formatted SSE event as a string, or @ref NOTHING when the
+        stream is complete.
+
+        @param cid the HTTP request correlation id (\c cx.id)
+        @param cb the send_callback closure
+    */
+    static registerSseSendCallback(string cid, code<*string()> cb) {
+        sse_send_callbacks_lock.lock();
+        on_exit sse_send_callbacks_lock.unlock();
+        sse_send_callbacks{cid} = cb;
+    }
+
+    #! Retrieves and removes the callback for a request correlation id.
+    /** HTTP/2 and HTTP/3 pass a compound \c "\<cx.id\>:\<stream_id\>" cid
+        (HttpServer.qm:3339); REST endpoints only have \c cx.id when they
+        register.  Strip the \c :\<stream_id\> suffix so the lookup matches
+        either form.
+    */
+    private static *code<*string()> takeSseSendCallback(string cid) {
+        *list<string> match = (cid =~ x/^([^:]+)(?::.*)?$/);
+        string key = match[0] ?? cid;
+        sse_send_callbacks_lock.lock();
+        on_exit sse_send_callbacks_lock.unlock();
+        return remove sse_send_callbacks{key};
+    }
+
+    #! HTTP/1.1 SSE connection setup.
+    /** HTTP/1.1 SSE has no protocol-level graceful-close signal — the
+        server just closes the TCP connection when the stream ends.
+        @ref HttpServerAsyncIo::HttpSseStreamPollOperation exposes only
+        \c abort() to transition to \c STATE_DISCONNECTED; we use it for
+        both normal end-of-stream and error paths.
+    */
+    HttpServerAsyncIo::HttpSseStreamPollOperation setupAsyncSseConnection(
+            Socket sock, hash<auto> cx, hash<auto> hdr, string cid) {
+        ServiceApi::logInfo("BBM_Streaming.setup: enter cid=%y", cid);
+        *code<*string()> cb = BBM_StreamingRestHandlerBase::takeSseSendCallback(cid);
+        ServiceApi::logInfo("BBM_Streaming.setup: took cb=%y", cb ? "callable" : "null");
+        HttpServerAsyncIo::HttpSseStreamPollOperation poll_op(sock);
+        ServiceApi::logInfo("BBM_Streaming.setup: poll_op created");
+        if (cb) {
+            code<*string()> cb2 = cb;
+            ServiceApi::logInfo("BBM_Streaming.setup: cb2 assigned, calling startSseDrainer");
+            BBM_StreamingRestHandlerBase::startSseDrainer(cid, cb2,
+                sub (string chunk) { poll_op.queueRawString(chunk); },
+                sub () { poll_op.abort(); },
+                sub () { poll_op.abort(); });
+            ServiceApi::logInfo("BBM_Streaming.setup: startSseDrainer returned");
+        } else {
+            ServiceApi::logInfo("BBM_StreamingRestHandlerBase: no SSE send_callback "
+                "registered for cid %y; stream will be empty", cid);
+        }
+        ServiceApi::logInfo("BBM_Streaming.setup: returning poll_op");
+        return poll_op;
+    }
+
+    #! HTTP/2 SSE connection setup.
+    /** Uses \c close() for normal end-of-stream (sends \c END_STREAM on
+        the last DATA frame) and \c abort() (which sends \c RST_STREAM)
+        for the error path.  Without \c close() the client sees
+        \c "stream N was not closed cleanly: CANCEL" because \c abort()
+        resets the stream harshly.
+    */
+    HttpServerAsyncIo::Http2SseStream setupAsyncSseConnectionHttp2(Socket sock, hash<auto> cx,
+            hash<auto> hdr, string cid, int stream_id, *code<nothing()> wake_callback) {
+        *code<*string()> cb = BBM_StreamingRestHandlerBase::takeSseSendCallback(cid);
+        # \c True = headers already submitted by the framework
+        HttpServerAsyncIo::Http2SseStream sse_stream(sock, stream_id, wake_callback, True);
+        if (cb) {
+            BBM_StreamingRestHandlerBase::startSseDrainer(cid, cb,
+                sub (string chunk) { sse_stream.queueRawString(chunk); },
+                sub () { sse_stream.close(); },
+                sub () { sse_stream.abort(); });
+        } else {
+            UserApi::logInfo("BBM_StreamingRestHandlerBase: no SSE send_callback "
+                "registered for HTTP/2 cid %y; stream will be empty", cid);
+        }
+        return sse_stream;
+    }
+
+    #! HTTP/3 SSE connection setup.
+    /** Mirror of HTTP/2: \c close() for graceful end-of-stream,
+        \c abort() for errors.
+    */
+    HttpServerAsyncIo::Http3SseStream setupAsyncSseConnectionHttp3(Socket sock, hash<auto> cx,
+            hash<auto> hdr, string cid, int session_id, int stream_id,
+            *code<nothing()> wake_callback) {
+        *code<*string()> cb = BBM_StreamingRestHandlerBase::takeSseSendCallback(cid);
+        HttpServerAsyncIo::Http3SseStream sse_stream(sock, session_id, stream_id, wake_callback);
+        if (cb) {
+            BBM_StreamingRestHandlerBase::startSseDrainer(cid, cb,
+                sub (string chunk) { sse_stream.queueRawString(chunk); },
+                sub () { sse_stream.close(); },
+                sub () { sse_stream.abort(); });
+        } else {
+            UserApi::logInfo("BBM_StreamingRestHandlerBase: no SSE send_callback "
+                "registered for HTTP/3 cid %y; stream will be empty", cid);
+        }
+        return sse_stream;
+    }
+
+    #! Required by @ref HttpServer::AbstractHttpSocketHandlerInterface.
+    /** SSE responses are delivered via the async I/O controller
+        (@ref setupAsyncSseConnection() and its H2/H3 variants), not the
+        synchronous dedicated-socket path used by WebSocket upgrades.
+        This stub throws if ever invoked, mirroring
+        @c ServerSentEventHandler::startImpl().
+    */
+    private bool startImpl(softstring lid, hash<auto> cx, hash<auto> hdr, Qore::Socket sock) {
+        throw "SSE-SYNC-NOT-SUPPORTED",
+            "synchronous SSE handling is not supported on BBM_StreamingRestHandlerBase; "
+            "responses are streamed via the async I/O controller";
+    }
+
+    #! Background drainer: calls \c cb in a loop and pushes results to \c queueChunk.
+    /** When \c cb returns @ref NOTHING the drainer calls \c closeStream;
+        when \c cb throws it calls \c abortStream.  Either way the drainer
+        exits.  \c closeStream is the graceful path (sends \c END_STREAM
+        on HTTP/2/3, disconnects on HTTP/1.1); \c abortStream is the
+        harsh path (\c RST_STREAM on HTTP/2).
+
+        Qorus services run with \c PO_NO_THREAD_CONTROL, so we cannot use
+        the \c background operator; \c ServiceApi::startThread() is the
+        service-safe equivalent.
+    */
+    private static startSseDrainer(string cid, code<*string()> cb,
+            code<nothing(string)> queueChunk,
+            code<nothing()> closeStream,
+            code<nothing()> abortStream) {
+        ServiceApi::logInfo("BBM_Streaming.drainer: entry cid=%y", cid);
+        ServiceApi::startThread(sub () {
+            ServiceApi::logInfo("BBM_Streaming.drainer: thread started cid=%y", cid);
+            bool aborted = False;
+            try {
+                while (True) {
+                    *string chunk = cb();
+                    if (!exists chunk) {
+                        break;
+                    }
+                    queueChunk(chunk);
+                }
+            } catch (hash<ExceptionInfo> ex) {
+                ServiceApi::logError("BBM_Streaming.drainer (cid %y): "
+                    "%s: %s", cid, ex.err, ex.desc);
+                aborted = True;
+                try {
+                    abortStream();
+                } catch (hash<ExceptionInfo> ex2) {
+                    ServiceApi::logInfo("BBM_Streaming.drainer "
+                        "(cid %y): ignored abort error: %s: %s", cid, ex2.err, ex2.desc);
+                }
+            }
+            if (!aborted) {
+                try {
+                    closeStream();
+                } catch (hash<ExceptionInfo> ex) {
+                    ServiceApi::logInfo("BBM_Streaming.drainer "
+                        "(cid %y): ignored close error: %s: %s", cid, ex.err, ex.desc);
+                }
+            }
+            ServiceApi::logInfo("BBM_Streaming.drainer: thread exiting cid=%y", cid);
+        });
+        ServiceApi::logInfo("BBM_Streaming.drainer: startThread returned cid=%y", cid);
+    }
+}

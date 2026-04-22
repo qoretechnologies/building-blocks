@@ -1,0 +1,19 @@
+type: class
+name: BBM_StreamingRestHandlerBase
+desc: >-
+    REST handler base class that supports Server-Sent Events (SSE)
+    responses in addition to normal REST endpoints.  Inherits
+    @ref BBM_RestHandlerBase and
+    @ref HttpServer::AbstractHttpSocketHandlerInterface so Qore's
+    HttpServer wires the async SSE path when an endpoint returns a
+    \`text/event-stream\` response.
+    REST endpoints register their upstream data source via
+    @ref BBM_StreamingRestHandlerBase::stashStreamSource()
+    before returning the SSE response; the handler drains the source
+    into the downstream poll operation on a background thread.
+lang: qore
+author:
+  - Qore Technologies, s.r.o.
+base-class-name: BBM_RestHandlerBase
+version: '1.0'
+code: BBM_StreamingRestHandlerBase-v1.0.qclass
