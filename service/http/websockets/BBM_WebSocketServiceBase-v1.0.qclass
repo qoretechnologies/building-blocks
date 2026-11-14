@@ -17,7 +17,7 @@ class BBM_WebSocketHandlerBase inherits AbstractServiceWebSocketHandler, BBM_Htt
             BBM_CorsBase("websockets") {
     }
 
-    hash<auto> handleRequest(HttpListenerInterface listener, Socket s, hash<auto> cx, hash<auto> hdr, *data b) {
+    hash<HttpResponseInfo> handleRequest(HttpListenerInterface listener, Socket s, hash<auto> cx, hash<auto> hdr, *data b) {
         if (hdr.method == "OPTIONS") {
             return handleOptions(cx);
         }
