@@ -44,7 +44,7 @@ qctl start
 # setup Kafka
 echo --- downloading Kafka
 cd /opt
-wget https://downloads.apache.org/kafka/3.3.2/kafka_2.12-3.3.2.tgz
+wget https://archive.apache.org/dist/kafka/3.3.2/kafka_2.12-3.3.2.tgz
 echo --- installing Kafka
 tar xvf kafka_2.12-3.3.2.tgz
 cd kafka_2.12-3.3.2
