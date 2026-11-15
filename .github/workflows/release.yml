@@ -39,7 +39,7 @@ jobs:
           SFTP_USERS: foo:pass:::sftp_root
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Install wget and make
         run: |
           apt-get update
@@ -53,7 +53,7 @@ jobs:
           make load-bb-tests -f Makefile
           . ./test/docker/test.sh
       - name: Upload log artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: qorus-logs
           path: /opt/qorus/log/
