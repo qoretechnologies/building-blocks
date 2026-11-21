@@ -111,16 +111,8 @@ class BBM_WebSocketServiceEventSourceHandler inherits BBM_WebSocketHandlerBase {
 
         UserApi::logDebug("sending WS msg to %y: %y", info.cid, info.msg);
 
-        rwl.readLock();
-        on_exit rwl.readUnlock();
-
-        *BBM_WebSocketServiceEventSourceConnection conn = ch{info.cid};
-        if (!conn) {
-            throw "WEBSOCKET-CONNECTION-ERROR", sprintf("unknown/invalid connection ID %y for outbound message",
-                info.cid);
-        }
-
-        conn.send(info.msg);
+        # throws WEBSOCKET-CONNECTION-ERROR if the connection does not exist
+        sendOne(info.cid, info.msg);
     }
 }
 
